@@ -365,6 +365,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">		
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -503,6 +504,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -711,6 +713,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="10" />
+		<property name="maxRpp" value="20" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -817,6 +820,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="10" />
+		<property name="maxRpp" value="20" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -922,6 +926,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="10" />
+		<property name="maxRpp" value="20" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -1029,6 +1034,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="10" />
+		<property name="maxRpp" value="20" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -1135,6 +1141,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="10" />
+		<property name="maxRpp" value="20" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -1243,6 +1250,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 			<bean
 				class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
@@ -1333,6 +1341,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 				<bean class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
 				<property name="metadataFields">
@@ -1434,6 +1443,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 				<bean class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
 				<property name="metadataFields">
@@ -1535,6 +1545,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 				<bean class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
 				<property name="metadataFields">
@@ -1636,6 +1647,7 @@
 		</property>
 		<!--Default result per page -->
 		<property name="defaultRpp" value="50" />
+		<property name="maxRpp" value="100" />
 		<property name="hitHighlightingConfiguration">
 				<bean class="org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration">
 				<property name="metadataFields">
