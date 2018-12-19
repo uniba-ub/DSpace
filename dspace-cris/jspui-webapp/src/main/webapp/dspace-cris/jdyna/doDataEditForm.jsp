@@ -181,6 +181,18 @@
 						});		
 					};
 					var postfunction = function(){
+
+						/*
+						 * Fix ineffective dynaClear within surrounding divs of
+						 * nested fields:
+						 * It checks if the response contains the dynaClear element,
+						 * which indicates the 'New Line' option is checked for this
+						 * field, and appends another one to the surrounding divs.
+						 */
+						if(j(data).find('.dynaClear').length) {
+							j('#viewnested_'+id).after("<div class=\"dynaClear\">&nbsp;</div>");
+						}
+
 						j('#viewnested_'+id+' .nested_edit_button').parent().parent().mouseover(function(){
 							j(this).toggleClass('ui-state-hover');
 						});
