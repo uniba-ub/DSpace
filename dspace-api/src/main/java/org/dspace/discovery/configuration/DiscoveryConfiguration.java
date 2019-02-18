@@ -43,7 +43,7 @@ public class DiscoveryConfiguration implements InitializingBean{
     private DiscoverySortConfiguration searchSortConfiguration;
 
     private int defaultRpp = 10;
-    private int maxRpp = -1;
+    private int maxRpp = 100;
     
     private String id;
     private DiscoveryHitHighlightingConfiguration hitHighlightingConfiguration;
@@ -132,7 +132,7 @@ public class DiscoveryConfiguration implements InitializingBean{
 
     public int getMaxRpp()
     {
-        return (maxRpp < 0) ? (2 * defaultRpp) : maxRpp;
+        return maxRpp;
     }
 
     public void setHitHighlightingConfiguration(DiscoveryHitHighlightingConfiguration hitHighlightingConfiguration) {
