@@ -245,6 +245,7 @@ public class ImportExportUtils {
         
 		// row index
 		int i = 1;
+		int ii = 1;
 		for (ACO rp : rps) {
 		    if(rp!=null) {	
     	        //HEADER_CRISID,HEADER_UUID,HEADER_SOURCEREF,HEADER_SOURCEID
@@ -276,7 +277,6 @@ public class ImportExportUtils {
     				}
     			}
     
-    			int ii = 1;
                 for (IContainable nestedContainable : metadataNestedLevel)
                 {
                     List<ACNO> nestedObject = applicationService
