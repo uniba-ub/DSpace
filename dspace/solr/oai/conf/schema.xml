@@ -28,7 +28,7 @@
     <fieldType name="plong" class="solr.TrieLongField" omitNorms="true"/>
     <fieldType name="pfloat" class="solr.TrieFloatField" omitNorms="true"/>
     <fieldType name="pdouble" class="solr.TrieDoubleField" omitNorms="true"/>
-    <fieldType name="pdate" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="pdate" class="solr.TrieDateField" sortMissingLast="true" omitNorms="true"/>
     <fieldType name="sint" class="solr.TrieIntField" sortMissingLast="true" omitNorms="true"/>
     <fieldType name="slong" class="solr.TrieLongField" sortMissingLast="true" omitNorms="true"/>
     <fieldType name="sfloat" class="solr.TrieFloatField" sortMissingLast="true" omitNorms="true"/>

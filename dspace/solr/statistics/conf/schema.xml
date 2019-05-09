@@ -111,7 +111,7 @@
                       
          Consult the DateField javadocs for more information.
       -->
-    <fieldType name="date" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="date" class="solr.TrieDateField" sortMissingLast="true" omitNorms="true"/>
 
 
     <!-- The "RandomSortField" is not used to store or search any

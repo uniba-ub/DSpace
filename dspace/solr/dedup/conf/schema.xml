@@ -156,7 +156,7 @@
     <fieldType name="plong" class="solr.TrieLongField" omitNorms="true"/>
     <fieldType name="pfloat" class="solr.TrieFloatField" omitNorms="true"/>
     <fieldType name="pdouble" class="solr.TrieDoubleField" omitNorms="true"/>
-    <fieldType name="pdate" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
+    <fieldType name="pdate" class="solr.TrieDateField" sortMissingLast="true" omitNorms="true"/>
 
 
     <!--
