@@ -154,7 +154,7 @@
     -->
     <fieldType name="pint" class="solr.TrieIntField" omitNorms="true"/>
     <fieldType name="plong" class="solr.TrieLongField" omitNorms="true"/>
-    <fieldType name="pfloat" class="solr.FloatField" omitNorms="true"/>
+    <fieldType name="pfloat" class="solr.TrieFloatField" omitNorms="true"/>
     <fieldType name="pdouble" class="solr.DoubleField" omitNorms="true"/>
     <fieldType name="pdate" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
 

@@ -75,7 +75,7 @@
          lexicographic ordering isn't equal to the numeric ordering) -->
     <fieldType name="integer" class="solr.TrieIntField" omitNorms="true"/>
     <fieldType name="long" class="solr.TrieLongField" omitNorms="true"/>
-    <fieldType name="float" class="solr.FloatField" omitNorms="true"/>
+    <fieldType name="float" class="solr.TrieFloatField" omitNorms="true"/>
     <fieldType name="double" class="solr.DoubleField" omitNorms="true"/>
 
 
