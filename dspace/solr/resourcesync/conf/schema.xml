@@ -25,7 +25,7 @@
     <fieldType name="date" class="solr.TrieDateField" omitNorms="true" precisionStep="0" positionIncrementGap="0"/>
     <fieldType name="tdate" class="solr.TrieDateField" omitNorms="true" precisionStep="6" positionIncrementGap="0"/>
     <fieldType name="pint" class="solr.TrieIntField" omitNorms="true"/>
-    <fieldType name="plong" class="solr.LongField" omitNorms="true"/>
+    <fieldType name="plong" class="solr.TrieLongField" omitNorms="true"/>
     <fieldType name="pfloat" class="solr.FloatField" omitNorms="true"/>
     <fieldType name="pdouble" class="solr.DoubleField" omitNorms="true"/>
     <fieldType name="pdate" class="solr.DateField" sortMissingLast="true" omitNorms="true"/>
