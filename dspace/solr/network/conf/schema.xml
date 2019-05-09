@@ -76,7 +76,7 @@
     <fieldType name="integer" class="solr.TrieIntField" omitNorms="true"/>
     <fieldType name="long" class="solr.TrieLongField" omitNorms="true"/>
     <fieldType name="float" class="solr.TrieFloatField" omitNorms="true"/>
-    <fieldType name="double" class="solr.DoubleField" omitNorms="true"/>
+    <fieldType name="double" class="solr.TrieDoubleField" omitNorms="true"/>
 
 
     <!-- Numeric field types that manipulate the value into
