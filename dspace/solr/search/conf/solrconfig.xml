@@ -1048,7 +1048,7 @@
          <str name="update.chain">clones_except_private</str>
        </lst>
   </requestHandler>
-  <requestHandler name="/update/csv" class="solr.CSVRequestHandler">
+  <requestHandler name="/update/csv" class="solr.UpdateRequestHandler">
         <lst name="defaults">
          <str name="stream.contentType">application/csv</str>
          <str name="update.chain">clones_except_private</str>

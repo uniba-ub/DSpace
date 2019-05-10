@@ -1037,7 +1037,7 @@
 
 
   <!-- CSV update handler, loaded on demand -->
-  <requestHandler name="/update/csv" class="solr.CSVRequestHandler" startup="lazy" />
+  <requestHandler name="/update/csv" class="solr.UpdateRequestHandler" startup="lazy" />
 
 
   <!--
