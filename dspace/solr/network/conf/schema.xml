@@ -147,10 +147,10 @@
         -->
      <fieldType name="text" class="solr.TextField" positionIncrementGap="100">
       <analyzer type="index">
-        <tokenizer class="solr.CJKTokenizerFactory"/>
+        <tokenizer class="solr.CJKBigramFilterFactory"/>
       </analyzer>
       <analyzer type="query">
-        <tokenizer class="solr.CJKTokenizerFactory"/>
+        <tokenizer class="solr.CJKBigramFilterFactory"/>
       </analyzer>
     </fieldType>
 
