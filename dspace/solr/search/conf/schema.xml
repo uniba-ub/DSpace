@@ -98,7 +98,7 @@
     <fieldType name="int" class="solr.IntPointField" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="float" class="solr.FloatPointField" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="long" class="solr.LongPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="double" class="solr.DoublePointField" precisionStep="0" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="double" class="solr.DoublePointField" omitNorms="true" positionIncrementGap="0"/>
 
     <!--
      Numeric field types that index each value at various levels of precision
@@ -113,7 +113,7 @@
     <fieldType name="tint" class="solr.IntPointField" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="tfloat" class="solr.FloatPointField" omitNorms="true" positionIncrementGap="0"/>
     <fieldType name="tlong" class="solr.LongPointField" omitNorms="true" positionIncrementGap="0"/>
-    <fieldType name="tdouble" class="solr.DoublePointField" precisionStep="8" omitNorms="true" positionIncrementGap="0"/>
+    <fieldType name="tdouble" class="solr.DoublePointField" omitNorms="true" positionIncrementGap="0"/>
 
     <!-- The format for this date field is of the form 1995-12-31T23:59:59Z, and
          is a more restricted form of the canonical representation of dateTime
