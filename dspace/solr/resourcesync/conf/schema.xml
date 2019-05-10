@@ -168,5 +168,5 @@
  </fields>
  <uniqueKey>uid</uniqueKey>
  <df>uid</df>
- <solrQueryParser defaultOperator="AND"/>
+ <solrQueryParser q.op="AND"/>
 </schema>

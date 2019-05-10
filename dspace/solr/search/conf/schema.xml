@@ -664,8 +664,8 @@
  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
  <df>search_text</df>
 
- <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
- <solrQueryParser defaultOperator="AND"/>
+ <!-- SolrQueryParser configuration: q.op="AND|OR" -->
+ <solrQueryParser q.op="AND"/>
 
   <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,

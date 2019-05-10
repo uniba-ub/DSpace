@@ -192,5 +192,5 @@
  </fields>
  <uniqueKey>item.handle</uniqueKey>
  <df>item.handle</df>
- <solrQueryParser defaultOperator="OR"/>
+ <solrQueryParser q.op="OR"/>
 </schema>

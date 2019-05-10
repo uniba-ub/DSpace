@@ -322,8 +322,8 @@
  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
  <df>value</df>
 
- <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
- <solrQueryParser defaultOperator="OR"/>
+ <!-- SolrQueryParser configuration: q.op="AND|OR" -->
+ <solrQueryParser q.op="OR"/>
 
 
 

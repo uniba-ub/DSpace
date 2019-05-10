@@ -555,7 +555,7 @@
    -->
  <uniqueKey>dedup.uniqueid</uniqueKey>
 
- <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
- <solrQueryParser defaultOperator="AND"/>
+ <!-- SolrQueryParser configuration: q.op="AND|OR" -->
+ <solrQueryParser q.op="AND"/>
 
 </schema>

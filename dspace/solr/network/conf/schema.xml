@@ -265,8 +265,8 @@
   <!-- field for the QueryParser to use when an explicit fieldname is absent -->
   <df>focus</df>
 
-  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
-  <solrQueryParser defaultOperator="OR"/>
+  <!-- SolrQueryParser configuration: q.op="AND|OR" -->
+  <solrQueryParser q.op="OR"/>
 
   <!-- copyField commands copy one field to another at the time a document
         is added to the index.  It's used either to index the same field differently,
