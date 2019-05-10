@@ -662,7 +662,7 @@
  <uniqueKey>search.uniqueid</uniqueKey>
 
  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
- <defaultSearchField>search_text</defaultSearchField>
+ <df>search_text</df>
 
  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
  <solrQueryParser defaultOperator="AND"/>

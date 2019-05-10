@@ -43,7 +43,7 @@
 
  <uniqueKey>PMCID</uniqueKey>
  <!-- field for the QueryParser to use when an explicit fieldname is absent -->
- <defaultSearchField>PMCID</defaultSearchField>
+ <df>PMCID</df>
 
  <!-- SolrQueryParser configuration: defaultOperator="AND|OR" -->
  <solrQueryParser defaultOperator="AND"/>

@@ -167,6 +167,6 @@
    <field name="uid" type="string" indexed="true" stored="true" required="true" docValues="true"/>
  </fields>
  <uniqueKey>uid</uniqueKey>
- <defaultSearchField>uid</defaultSearchField>
+ <df>uid</df>
  <solrQueryParser defaultOperator="AND"/>
 </schema>
