@@ -40,6 +40,12 @@
        affect both how text is indexed and queried.
     -->
     <luceneMatchVersion>7.2.1</luceneMatchVersion>
+  
+    <lib dir='${solr.install.dir}/contrib/analysis-extras/lib/'
+       regex='icu4j-.*\.jar'/>
+    <lib dir='${solr.install.dir}/contrib/analysis-extras/lucene-libs/'
+       regex='lucene-analyzers-icu-.*\.jar'/>
+
 
   <!-- lib directives can be used to instruct Solr to load an Jars identified
        and use them to resolve any "plugins" specified in your solrconfig.xml or
