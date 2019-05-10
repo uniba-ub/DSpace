@@ -15,7 +15,7 @@
        exceed a certain size (in characters).
     -->
     <fieldType name="string" class="solr.StrField" sortMissingLast="true" omitNorms="true"/>
-    <fieldType name="integer" class="solr.TrieIntField" omitNorms="true"/>    
+    <fieldType name="integer" class="solr.IntPointField" omitNorms="true"/>    
   </types>
  
  <fields>
