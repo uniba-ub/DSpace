@@ -96,5 +96,6 @@
 				</div>
 			</div>
 	    </footer>
+    	<jsp:include page="site-policy.jsp"></jsp:include>
     </body>
 </html>
