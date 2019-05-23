@@ -96,6 +96,8 @@
 				</div>
 			</div>
 	    </footer>
-    	<jsp:include page="site-policy.jsp"></jsp:include>
+	    <% if (Boolean.parseBoolean(ConfigurationManager.getProperty("dspace.site.policy.enabled"))) { %>
+    		<jsp:include page="site-policy.jsp"></jsp:include>
+	    <% } %>
     </body>
 </html>
