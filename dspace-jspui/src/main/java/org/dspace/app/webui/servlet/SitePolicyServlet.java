@@ -14,8 +14,10 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.authorize.AuthorizeException;
+import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
 import org.dspace.eperson.EPerson;
 
@@ -58,6 +60,8 @@ public class SitePolicyServlet extends DSpaceServlet
     	 */
     	if(request.getParameter("policyReadChecked") != null) {
     		doDSPost(context, request, response);
+    	} else if (StringUtils.isNotEmpty(sitePolicyURL)){
+    		response.sendRedirect(sitePolicyURL);
     	}
     }
     
