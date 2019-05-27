@@ -30,7 +30,8 @@ import org.dspace.eperson.EPerson;
 public class SitePolicyServlet extends DSpaceServlet
 {
     /** log4j logger */
-    private static Logger log = Logger.getLogger(SitePolicyServlet.class);
+	private static Logger log = Logger.getLogger(SitePolicyServlet.class);
+	private String sitePolicyURL = ConfigurationManager.getProperty("dspace.site.policy.url");
 
     @Override
     protected void doDSPost(Context context, HttpServletRequest request,
