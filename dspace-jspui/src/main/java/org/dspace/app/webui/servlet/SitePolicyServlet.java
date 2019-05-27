@@ -7,7 +7,11 @@
  */
 package org.dspace.app.webui.servlet;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 
 import javax.servlet.ServletException;
@@ -32,6 +36,12 @@ public class SitePolicyServlet extends DSpaceServlet
     /** log4j logger */
 	private static Logger log = Logger.getLogger(SitePolicyServlet.class);
 	private String sitePolicyURL = ConfigurationManager.getProperty("dspace.site.policy.url");
+	private String sitePolicy = ""; 
+	
+	public SitePolicyServlet() throws FileNotFoundException, IOException {
+		super();
+		sitePolicy = StringUtils.isEmpty(sitePolicyURL) ? getSitePolicy() : "";
+	}
 
     @Override
     protected void doDSPost(Context context, HttpServletRequest request,
@@ -57,13 +67,27 @@ public class SitePolicyServlet extends DSpaceServlet
     	 * POST, is overwritten by the original request. If the original request's
     	 * type is GET, this servlet is not able to process the request an will fail.
     	 * Therefore we use this nasty workaround and check whether 'policyReadChecked'
-    	 * is or not and call the proper method.o
+    	 * is set or not and call the proper method.
     	 */
     	if(request.getParameter("policyReadChecked") != null) {
     		doDSPost(context, request, response);
     	} else if (StringUtils.isNotEmpty(sitePolicyURL)){
     		response.sendRedirect(sitePolicyURL);
+    	} else {
+    		response.getWriter().write(sitePolicy);
     	}
+    }
+    
+    private String getSitePolicy() throws FileNotFoundException, IOException {
+    	StringBuilder sb = new StringBuilder();
+    	try(BufferedReader br = new BufferedReader(new FileReader(Paths.get(ConfigurationManager.getProperty("dspace.dir"), "config/site-policy.html").toFile()))) {
+    		String line;
+    		while((line = br.readLine()) != null) {
+    			sb.append(line);
+    		}
+    	}
+    	return sb.toString();
+    	
     }
     
 }

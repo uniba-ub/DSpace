@@ -4,13 +4,16 @@
 
 <%@ page import="org.dspace.eperson.EPerson" %>
 <%@ page import="org.dspace.core.ConfigurationManager"%>
+<%@ page import="org.apache.commons.lang.StringUtils"%>
+
 
 <!-- This modal shows the site policy if requested or not already accepted by the current user -->
 <%
     EPerson user = (EPerson) request.getAttribute("dspace.current.user");
     boolean sitePolicyAccepted = true;
 
-	String sitePolicyURL = ConfigurationManager.getProperty("dspace.site.policy.url");
+	String sitePolicyURL = StringUtils.isNotEmpty(ConfigurationManager.getProperty("dspace.site.policy.url")) ? ConfigurationManager.getProperty("dspace.site.policy.url") : request.getContextPath() + "/sitePolicy";
+	String sandboxOptions = StringUtils.isNotEmpty(ConfigurationManager.getProperty("dspace.site.policy.sandbox.options")) ? ConfigurationManager.getProperty("dspace.site.policy.sandbox.options") : "";
 
     if (user != null)
     {
@@ -58,7 +61,7 @@ user to accept the site policy.
 		  		<h4 style="color:black" class="modal-title"><fmt:message key="jsp.sitepolicy.header"/></h4>
 		</div>
 		<div class="modal-body">
-			<iframe src="<%= sitePolicyURL %>" frameborder="0" width="100%" height="750"></iframe>
+			<iframe sandbox="<%= sandboxOptions %>" src="<%= sitePolicyURL %>" frameborder="0" width="100%" height="750"></iframe>
 		</div>
 		<div class="modal-footer">
 			<!-- If site policy has not been accepted by the current user, he can accept or decline the policy -->
