@@ -40,7 +40,7 @@ public class SitePolicyServlet extends DSpaceServlet
 	
 	public SitePolicyServlet() throws FileNotFoundException, IOException {
 		super();
-		sitePolicy = StringUtils.isEmpty(sitePolicyURL) ? getSitePolicy() : "";
+		sitePolicy = StringUtils.isEmpty(sitePolicyURL) ? getSitePolicyFromFile() : "";
 	}
 
     @Override
@@ -78,7 +78,7 @@ public class SitePolicyServlet extends DSpaceServlet
     	}
     }
     
-    private String getSitePolicy() throws FileNotFoundException, IOException {
+    private String getSitePolicyFromFile() throws FileNotFoundException, IOException {
     	StringBuilder sb = new StringBuilder();
     	try(BufferedReader br = new BufferedReader(new FileReader(Paths.get(ConfigurationManager.getProperty("dspace.dir"), "config/site-policy.html").toFile()))) {
     		String line;
