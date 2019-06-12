@@ -1149,6 +1149,16 @@ public class ImportCRISDataModelConfiguration
             s.setCol(cols);
             s.setRow(rows);
             builderW.addPropertyValue("dimensione", s);
+            /*
+             * Temporary fix to properly render line breaks as long as
+             * JDynA's richt text editors are not available in DSpace CRIS.
+             * 'htmlToolbar' is explicitely set to 'nessuna' otherwise it
+             * would be 'null' which prevents proper rendering of text.
+             * See 4science/JDynA, commit: 4b16d36095fa85ed86569241f01d3450ed605f9d
+             * jdyna-web/jdyna-web-webapp/jdyna-webmvc/jdyna-webmvc-api/target/classes/
+             * META-INF/tags/display.tag, line 394
+             */
+            builderW.addPropertyValue("htmlToolbar", "nessuna");
         }
         else if (widget.equals("boolean"))
         {

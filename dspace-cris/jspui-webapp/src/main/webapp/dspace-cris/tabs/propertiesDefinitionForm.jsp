@@ -309,6 +309,11 @@
 					&nbsp;
 					<dyna:boolean propertyPath="real.rendering.multilinea"
 								labelKey="jsp.layout.hku.label.propertiesdefinition.rendering.text.multiline" helpKey="help.jdyna.message.rendering.text.multiline"/>
+                    <spring:bind path="real.rendering.htmlToolbar">
+                            <dyna:label propertyPath="real.rendering.htmlToolbar" labelKey="jsp.layout.hku.label.propertiesdefinition.rendering.text.toolbar" helpKey="help.jdyna.message.rendering.text.toolbar"/>
+                            <div class="dynaClear"></div>
+                            <input checked="checked" id="real.rendering.htmlToolbar" name="real.rendering.htmlToolbar" type="radio" value="nessuna"> None</input>
+                    </spring:bind>
 					<dyna:text visibility="false" propertyPath="real.rendering.dimensione.row"
 								labelKey="jsp.layout.hku.label.propertiesdefinition.rendering.text.row" helpKey="help.jdyna.message.rendering.text.row"/>
 					<div class="dynaClear">
