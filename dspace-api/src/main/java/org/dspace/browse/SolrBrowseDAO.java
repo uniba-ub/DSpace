@@ -283,7 +283,7 @@ public class SolrBrowseDAO implements BrowseDAO
                 FacetResult c = facet.get(i);
                 String freq = showFrequencies ? String.valueOf(c.getCount())
                         : "";
-                result.add(new String[] { c.getDisplayedValue(),
+                result.add(new String[] { c.getDisplayedValue(), c.getAsFilterQuery(),
                         c.getAuthorityKey(), freq });
             }
         }
@@ -295,7 +295,7 @@ public class SolrBrowseDAO implements BrowseDAO
                 FacetResult c = facet.get(i);
                 String freq = showFrequencies ? String.valueOf(c.getCount())
                         : "";
-                result.add(new String[] { c.getDisplayedValue(),
+                result.add(new String[] { c.getDisplayedValue(), c.getAsFilterQuery(),
                         c.getAuthorityKey(), freq });
             }
         }
