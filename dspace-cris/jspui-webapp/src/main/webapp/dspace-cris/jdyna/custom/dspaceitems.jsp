@@ -75,7 +75,7 @@
 	    }
 	}
 	
-	String query = request.getQueryString();
+	String query = request.getQueryString().replaceAll("[?&]?onlytab=true", "");
 	boolean globalShowFacets = false;
 	if (info!=null && info.getItems()!=null && info.getItems().length > 0) {
 	    
