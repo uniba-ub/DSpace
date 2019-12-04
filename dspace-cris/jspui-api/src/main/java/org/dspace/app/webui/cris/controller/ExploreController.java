@@ -24,6 +24,7 @@ import org.dspace.browse.BrowseDSpaceObject;
 import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
+import org.dspace.app.cris.util.OrganizationUnitTreeMaker;
 import org.dspace.content.Item;
 import org.dspace.core.ConfigurationManager;
 import org.dspace.core.Context;
@@ -50,6 +51,15 @@ public class ExploreController extends BaseAbstractController {
 
 		String configurationName = request.getPathInfo().substring("/explore/".length());
 		Context context = UIUtil.obtainContext(request);
+
+        /*
+         * Check for administrative POST requests
+         */
+        if ("POST".equals(request.getMethod()) && AuthorizeManager.isAdmin(context)) {
+            if(StringUtils.isNotEmpty(request.getParameter("update-ou-tree"))) {
+                OrganizationUnitTreeMaker.getInstance().updateOuTree();
+            }
+        }
 
 		DiscoveryConfiguration discoveryConfiguration = SearchUtils.getDiscoveryConfigurationByName(configurationName);
 
