@@ -34,7 +34,7 @@ import org.springframework.web.util.HtmlUtils;
  * This Servlet lookup Information for the Referenced gnd identifier from SeeAlso-Providers and prints them as tabular data
  * @author Florian Gantner(florian.gantner@uni-bamberg.de)
  */
-public class SeeAlsoServlet extends DSpaceServlet {
+public class SeealsoServlet extends DSpaceServlet {
 	
 	DSpace dspace = new DSpace();
 	ConfigurationService conf = dspace.getConfigurationService();
