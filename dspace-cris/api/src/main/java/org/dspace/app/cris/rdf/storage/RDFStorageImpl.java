@@ -128,12 +128,18 @@ implements RDFStorage
     @Override
     public void store(String uri, Model model)
     {
+    	try {
+
         Node graphNode = NodeFactory.createURI(uri);
         DatasetGraphAccessor accessor = this.getAccessor();
         Dataset ds = DatasetFactory.create(model);
         DatasetGraph dsg = ds.asDatasetGraph();
         Graph g = dsg.getDefaultGraph();
         accessor.httpPut(graphNode, g);
+    	}catch(Exception e) {
+    		//In case some Error exists (f.e. baduri), do not save triple at all
+    		log.error(e.getMessage());
+    	}
     }
     
     public Model load(String uri)

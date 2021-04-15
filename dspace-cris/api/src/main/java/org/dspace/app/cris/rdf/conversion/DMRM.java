@@ -74,6 +74,9 @@ public class DMRM {
     /** <p>A regex that the metadata value has to fulfill if the mapping should become active.</p> */
     public static final Property condition = m_model.createProperty( NS + "condition" );
     
+    /** <p>A regex that the authority value has to fulfill if the mapping should become active.</p> */
+    public static final Property conditionAuth = m_model.createProperty( NS + "conditionAuth" );
+    
     /** <p>Information how the metadata value should be modified before it is inserted in the pattern.</p> */
     public static final Property modifier = m_model.createProperty( NS + "modifier" );
     

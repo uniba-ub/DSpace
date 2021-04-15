@@ -21,6 +21,8 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,7 +33,6 @@ import java.util.Map;
 import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.cris.rdf.RDFUtil;
-import org.dspace.app.cris.rdf.RDFizer;
 import org.dspace.app.util.MetadataExposure;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.DSpaceObject;
@@ -47,7 +48,6 @@ import org.dspace.app.cris.rdf.conversion.MetadataConverterPlugin;
 import org.dspace.app.cris.rdf.conversion.MetadataRDFMapping;
 import org.dspace.app.cris.service.ApplicationService;
 import org.dspace.services.ConfigurationService;
-import org.dspace.app.cris.model.ACrisObject;
 import org.dspace.app.cris.model.CrisConstants;
 import org.dspace.app.cris.model.ResearcherPage;
 import org.dspace.app.cris.model.ResearchObject;
@@ -55,9 +55,15 @@ import org.dspace.app.cris.model.Project;
 import org.dspace.app.cris.model.OrganizationUnit;
 
 /**
- *
+ * 
  * @author Pascal-Nicolas Becker (dspace -at- pascal -hyphen- becker -dot- de)
  */
+/**
+ * Note to CRIS-Entities: Dspace Items might point to Cris-Objects as authority values,
+ * therefore we include the applicationService for identification etc...
+ * For Transformation of CRIS-Entities we recommend the use of the other Converter Plugins.
+ * @commentor: Florian Gantner (florian.gantner@uni-bamberg.de)
+ * */
 public class MetadataConverterPlugin implements ConverterPlugin
 {
     public final static String METADATA_MAPPING_PATH_KEY = "rdf.metadata.mappings";
@@ -71,7 +77,7 @@ public class MetadataConverterPlugin implements ConverterPlugin
     public void setConfigurationService(ConfigurationService configurationService) {
         this.configurationService = configurationService;
     }
-
+ 
     @Override
     public Model convert(Context context, DSpaceObject dso)
             throws SQLException, AuthorizeException {
@@ -156,101 +162,80 @@ public class MetadataConverterPlugin implements ConverterPlugin
                     + "plugin, as it supports Items only!");
             return null;
         }
-        //Items
-        //TODO: easier Way to Check Metadata, redundant code here
-        //Check for ACrisObject
-        //use collections to collect metadata-output
         log.debug("Collecting Metadata for Object " + dso.getHandle());
+       
+        //init ApplicationService for CRIS-ID Lookup before mapping
+        ApplicationService applicationService = new DSpace().getServiceManager().getServiceByName(
+                "applicationService", ApplicationService.class);
+		applicationService.init();
         
         ArrayList<Metadatum> metadata_values = new ArrayList<>();
         
         if(dso instanceof Item) {
             Item item = (Item) dso;
         	Collections.addAll(metadata_values, item.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY));
-        }
-        if(dso instanceof Collection) {
+        }else if(dso instanceof Collection) {
         	Collection item = (Collection) dso;
         	Collections.addAll(metadata_values, item.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY));
-        }
-        if(dso instanceof Community) {
+        }else if(dso instanceof Community) {
         	Community item = (Community) dso;
         	Collections.addAll(metadata_values, item.getMetadata(Item.ANY, Item.ANY, Item.ANY, Item.ANY));
         }
-        if(dso instanceof ResearcherPage) {
-        	ResearcherPage item = (ResearcherPage) dso;
-        	//no item.ANY-modifier for cris-entities, element has to be specified
-        	//have a look at the CRIS-administration for the fields-name in the boxes
-        	Collections.addAll(metadata_values, item.getMetadata("crisrp", "*", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisrp", "fullName", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisrp", "email", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisrp", "orcid", "*", "*"));
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "personalsite", "*", "*"));
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "persongender", "*", "*"));
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "variants", "*", "*"));
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "dept", "*", "*")); //link to OU
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "dept", "name", "*")); //link to OU
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "workgroups", "*", "*"));
-            Collections.addAll(metadata_values, item.getMetadata("crisrp", "affiliation", "*", "*"));
-            //metadata linking to other entities
-            //Collections.addAll(metadata_values, item.getMetadata("crisrp", "mainproj", "title", "*"));
-            //Collections.addAll(metadata_values, item.getMetadata("crisrp", "mainproj", "code", "*"));
-            //Collections.addAll(metadata_values, item.getMetadata("crisrp", "mainproj", "*", "*"));
-            //Collections.addAll(metadata_values, item.getMetadata("crisrp", "bsp_link", "*", "*"));
-            //Collections.addAll(metadata_values, item.getMetadata("crisrp", "bsp_link", "journalsname", "*"));
-            log.debug(metadata_values.size() + " metadata for " + item.getCrisID() + "found.");
-        }
+        /*
+         * To use the MetadataConverter with CRIS-Objects, every field has to be specified in the following way.
+         * Pointers to other entities have to be specified via the qualifier element, wildcard is not working properly on this case
+         *
         if(dso instanceof Project) {
         	Project item = (Project) dso;
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "*", "*", "*"));
+        	/*
+           	Collections.addAll(metadata_values, item.getMetadata("crisproject", "abstract", "*", "*"));
+           	Collections.addAll(metadata_values, item.getMetadata("crisproject", "abstract_en", "*", "*"));
+           	Collections.addAll(metadata_values, item.getMetadata("crisproject", "acronym", "*", "*"));
         	Collections.addAll(metadata_values, item.getMetadata("crisproject", "code", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "title", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "organization", "director", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "organization", "*", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "status", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "abstract", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "description", "*", "*"));
-        	log.debug(metadata_values.size() + " metadata for " + item.getCrisID() + "found.");
+        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "coinvestigators", "fullName", "*")); //link to RP
+          	Collections.addAll(metadata_values, item.getMetadata("crisproject", "description", "*", "*"));
+        	Collections.addAll(metadata_values, item.getMetadata("crisproject", "deptproject", "name", "*")); //link to OU
+        	log.debug(metadata_values.size() + " metadata for " + item.getCrisID() + "found.");		
         }
-        if(dso instanceof OrganizationUnit) {
-        	OrganizationUnit item = (OrganizationUnit) dso;
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "city", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "iso-3166-country", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "description", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "name", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "director", "*", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "director", "fullName", "*")); //link to RP
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "parentorgunit", "*", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "parentorgunit", "name", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "established", "*", "*")); //link to OU
-        	Collections.addAll(metadata_values, item.getMetadata("crisou", "city", "*", "*"));
-        	log.debug(metadata_values.size() + " metadata for " + item.getCrisID() + "found.");
-        }
-        if(dso instanceof ResearchObject) {
-        	//for further control of types, the authorityPrefix could be checked.
-        	ResearchObject item = (ResearchObject) dso;
-        	//e.g. event
-        	Collections.addAll(metadata_values, item.getMetadata("crisevents", "eventsname", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisevents", "eventslocation", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisevents", "eventsstartdate", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisevents", "eventsenddate", "*", "*"));
-        	//e.g. journal
-        	Collections.addAll(metadata_values, item.getMetadata("crisjournals", "journalsname", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisjournals", "journalsdescription", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisjournals", "journalsissn", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisjournals", "journalskeywords", "*", "*"));
-        	//own defined entity with shortname exmp
-        	Collections.addAll(metadata_values, item.getMetadata("crisexmp", "journalsname", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisexmp", "eventssname", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisexmp", "journalsdescription", "*", "*"));
-        	Collections.addAll(metadata_values, item.getMetadata("crisexmp", "eventslocation", "*", "*"));
-        	log.debug(metadata_values.size() + " metadata for " + item.getCrisID() + "found.");	
-        	
-        }
+        */
         log.debug(metadata_values.size() + " metadata values found");
+       
+        {
+   		 // for every handle-entity: add creation-timestamp in ISO 8601 Formats =LiteralType (=xsd:datetime)
+         	Map<String,String> value_map = new HashMap<String,String>();
+         	String fieldname = "metadata.creationdate";
+         	String date = OffsetDateTime.now(ZoneId.of("Europe/Berlin")).toString();
+         	value_map.put("DSpaceValue", date);
+			  Iterator<MetadataRDFMapping> iter = mappings.iterator();
+             while (iter.hasNext()){
+           	  MetadataRDFMapping mapping = iter.next();
+                     if (mapping.matchesName(fieldname)){
+                     //no language information in properties found, thus keeping empty
+                     	mapping.convert(value_map, "", uri, convertedData);
+                     }
+             }	 
+   	  }
+
+        
         for (Metadatum value : metadata_values)
         {
         	
             String fieldname = value.schema + "." + value.element;
+        	String value_string = value.value;
+        	String authorityURIvalue = "";
+        	Map<String,String> value_map = new HashMap<String,String>();
+        	value_map.put("DSpaceValue", value_string); 	
+        	if(value.authority != null && value.authority != "") {
+        		//lookup CrisObject from applicationService by ID
+        		DSpaceObject aco = applicationService.getEntityByCrisId(value.authority);
+        	    if(aco != null) {
+        	    	authorityURIvalue = RDFUtil.generateIdentifier(context, aco); 	
+            		if( authorityURIvalue != null && !authorityURIvalue.equals("")) {
+            			value_map.put("DSpaceAuthority", authorityURIvalue);
+                	}	
+        	    }
+        	}
+        	
             if (value.qualifier != null) 
             {
                 fieldname = fieldname + "." + value.qualifier;
@@ -263,41 +248,18 @@ public class MetadataConverterPlugin implements ConverterPlugin
                 continue;
             }
             boolean converted = false;
+           
+            
             if (value.qualifier != null)
             {
                 Iterator<MetadataRDFMapping> iter = mappings.iterator();
                 while (iter.hasNext())
                 {
-                	String value_string = value.value;
-                	Map<String,String> value_map = new HashMap<String,String>();
-                	value_map.put("DSpaceValue", value_string);
+                	
                     MetadataRDFMapping mapping = iter.next();
-                      	//TODO: authority-check
-                    	//cris Entities pointing to other entities use the qualifier as the Pointing Value
-                    	//e.g. crisrp.proj.*
-                    	//e.g. crisrp.mainproj.title
-                    	//resolve crisID saved in authority
-                    	//resolveHandle and generate identifier
-                    	//Assumption: DspaceObjects link to ACrisObjects as Authority values
-                    	//no external authority values are used.
-                    String authorityURIvalue = ""; 	
-                    	if(value.authority != null && value.authority != "") {
-                    		//lookup CrisObject from applicationService by ID
-                    		ApplicationService as = new DSpace().getServiceManager().getServiceByName(
-                                    "applicationService", ApplicationService.class);
-                    		as.init();
-                    		DSpaceObject aco = as.getEntityByCrisId(value.authority);
-                    	    if(aco != null) {
-                    	    	authorityURIvalue = RDFUtil.generateIdentifier(context, aco); 	
-                        		if( authorityURIvalue != null && !authorityURIvalue.equals("")) {
-                        			value_map.put("DSpaceAuthority", authorityURIvalue);
-                            	}	
-                    	    }
-                    	}
-                    	
                         if (mapping.matchesName(fieldname) &&
-                        	(mapping.fulfills(value_string) ||
-                        			mapping.fulfills(authorityURIvalue)))
+                        	(mapping.fulfills(value_string) &&
+                        			mapping.fulfillsAuth(authorityURIvalue)))
                         {
                         	mapping.convert(value_map, value.language, uri, convertedData);
                         	converted = true;
@@ -306,29 +268,12 @@ public class MetadataConverterPlugin implements ConverterPlugin
             }
             if (!converted)
             {
-            	String value_string = value.value;
-            	Map<String,String> value_map = new HashMap<String,String>();
-            	value_map.put("DSpaceValue", value_string);
-                String name = value.schema + "." + value.element;
+            	String name = value.schema + "." + value.element;
                 Iterator<MetadataRDFMapping> iter = mappings.iterator();
                 while (iter.hasNext() && !converted)
                 {
                     	MetadataRDFMapping mapping = iter.next();
-                    	if(value.authority != null && value.authority != "") {
-                    		//lookup CrisObject from applicationService by ID
-                    		ApplicationService as = new DSpace().getServiceManager().getServiceByName(
-                                    "applicationService", ApplicationService.class);
-                    		as.init();
-                    		DSpaceObject aco = as.getEntityByCrisId(value.authority);
-                    	    if(aco != null) {
-                    	    	String authorityURIvalue = RDFUtil.generateIdentifier(context, aco); 	
-                        		if( authorityURIvalue != null && !authorityURIvalue.equals("")) {
-                        			value_map.put("DSpaceAuthority", authorityURIvalue);
-                            	}	
-                    	    }
-                    	}
-                    	
-                        if (mapping.matchesName(name) && mapping.fulfills(value_string))
+                if (mapping.matchesName(name) && (mapping.fulfills(value_string) && mapping.fulfillsAuth(authorityURIvalue)))
                         {
                         	mapping.convert(value_map, value.language, uri, convertedData);
                         	converted = true;
@@ -337,8 +282,10 @@ public class MetadataConverterPlugin implements ConverterPlugin
             }
             if (!converted)
             {
-                log.debug("Did not convert " + fieldname + ". Found no "
+                log.debug("Did not convert " + fieldname + " with value "+ value_map.get("DSpaceValue") +" and " + value_map.get("DSpaceAuthority") + ". Found no "
                         + "corresponding mapping.");
+                /*System.out.println("Did not convert " + fieldname + " with value "+ value_map.get("DSpaceValue") +" and " + value_map.get("DSpaceAuthority") + ". Found no "
+                       + "corresponding mapping.");*/
             }
         }
         
@@ -355,7 +302,9 @@ public class MetadataConverterPlugin implements ConverterPlugin
     @Override
     public boolean supports(int type) {
         // should be changed, if Communities and Collections have metadata as well.
-        return (type == Constants.ITEM || type == Constants.COLLECTION || type == Constants.COMMUNITY || type == CrisConstants.RP_TYPE_ID || type == CrisConstants.PROJECT_TYPE_ID || type == CrisConstants.OU_TYPE_ID || type >= CrisConstants.CRIS_DYNAMIC_TYPE_ID_START  ); //support for all dynamic objects
+    	// should be changed, if Cris-Objects schould be converted by this Converter
+        //return (type == Constants.ITEM || type == Constants.COLLECTION || type == Constants.COMMUNITY || type == CrisConstants.RP_TYPE_ID || type == CrisConstants.PROJECT_TYPE_ID || type == CrisConstants.OU_TYPE_ID || type >= CrisConstants.CRIS_DYNAMIC_TYPE_ID_START  );
+    	return (type == Constants.ITEM || type == Constants.COLLECTION || type == Constants.COMMUNITY);
     }
     
     protected Model loadConfiguration()

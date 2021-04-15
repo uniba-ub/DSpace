@@ -1,0 +1,739 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix dc:         <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix bibo:       <http://purl.org/ontology/bibo/> .
+@prefix cerifmodel: <https://w3id.org/cerif/model#>.
+@prefix cerif:      <https://w3id.org/cerif/vocab/>.
+@prefix ex:         <https://example.com/>.
+@prefix schema: <http://schema.org/>.
+@prefix dm:         <http://digital-repositories.org/ontologies/dspace-metadata-mapping/0.2.0#> .
+@prefix :           <#> .
+
+# no real mapping defined yet, thus example namespace ex in many cases
+# Our model differs from the standard configuration, thus you must adopted the mapping to your target vocabulary and datamodel
+# We provide some examples for different Types (Value with Authority or not, blank values etc...)
+
+#Using rdf:type here overwrites the more General Type defined in the Converter before. It's removed if it already exists
+
+#blanked nodes, unlabeled
+#https://www.w3.org/TR/turtle/#unlabeled-bnodes
+#can be achieved by nesting properties inside each other
+#Pointer to rp
+#:crisOUdirector
+#  dm:metadataName "crisou.director" ;
+#dm:conditionAuth "^(http://|https://).+";
+#dm:condition ".+";
+#  dm:creates [
+#    dm:subject dm:DSpaceObjectIRI ;
+#    dm:predicate ex:director;
+#    dm:object [
+#    rdfs:label [
+#	a dm:LiteralGenerator;
+#	dm:pattern "$DSpaceValue";
+#];
+#schema:url [
+#	a dm:ResourceGenerator;
+#	dm:pattern "$DSpaceAuthority";
+#];
+#];
+#];
+#. 
+
+#CRISRP
+
+#General: add date of triple creation (might be used for debugging)
+#:crisdate
+#  dm:metadataName "cris.creationdate" ;
+#  dm:creates [
+#    dm:subject dm:DSpaceObjectIRI ;
+#    dm:predicate <http://purl.org/vocab/changeset/schema#createdDate> ;
+#	dm:object [
+#	a dm:LiteralResourceGenerator ;
+#	dm:pattern "$DSpaceValue" ;
+#	dm:literalType xsd:datetime ;
+#    	];
+#  ] ;
+#  .
+
+############################
+#CRISRP:
+#added at every cris-entitiy: url to representation and internal identifier
+#add link to representation of resource in jspui
+:crisrp-crisurl
+  dm:metadataName "crisrp.cris-url"  ;
+  dm:conditionAuth "^(http://|https://).+" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:url ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisrp-crisid
+  dm:metadataName "crisrp.cris-id" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Person.PersonIdentifier ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    	];
+  ] ;
+  .
+
+
+:crisRPName
+  dm:metadataName "crisrp.fullName" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:fullName ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+  
+:crisRPContactEmail
+  dm:metadataName "crisrp.contactemail" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonContactDetails\#Email ;
+dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue";
+	dm:literalType xsd:string;
+    ] ;
+  ] ;
+  .
+
+# Changed to LiteralGenerator because troubles with www. addresses
+:crisRPContactUrl
+  dm:metadataName "crisrp.contacturl" ;
+dm:condition "[^http://|^https://].+"; 
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:url ;
+dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string;
+    ] ;
+] ;
+  .
+
+:crisRPContactUrl2
+  dm:metadataName "crisrp.contacturl" ;
+dm:condition "^(http://|https://).+"; 
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:links ;
+	  dm:object [
+	a dm:ResourceGenerator ;
+      	dm:pattern "$DSpaceValue" ;
+    ];
+  ] ;
+  .
+
+:crisRPpersonalSite
+  dm:metadataName "crisrp.personalSite" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:website ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  . 
+  
+ # Pointer to OU
+:crisRPdept
+  dm:metadataName "crisrp.dept" ;
+dm:condition ".+";
+  dm:conditionAuth "^(http://|https://).+" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfPers_OrgUnit;
+     dm:object [
+	rdfs:label [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+];
+	schema:url [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceAuthority" ;
+];
+    ];
+	];
+  .
+:crisRPdept2
+  dm:metadataName "crisrp.dept" ;
+dm:condition ".+";
+  dm:conditionAuth "" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfPers_OrgUnit;
+     dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+      dm:literalType xsd:string;
+    ];
+	];
+  . 
+  
+
+#orcid uses regex: https://orcid\.org/0000-000(1-[5-9]|2-[0-9]|3-[0-4])[0-9]{3}-[0-9]{3}[0-9X]
+:crisRPorcid
+  dm:metadataName "crisrp.orcid" ;
+  #dm:condition "0000-000(1-[5-9]|2-[0-9]|3-[0-4])[0-9]{3}-[0-9]{3}[0-9X]";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:FederatedIdentifier ;
+    dm:object [
+	a dm:ResourceGenerator ;
+      	dm:pattern "https://orcid.org/$DSpaceValue" ;
+    ];
+  ];
+  .  
+  
+:crisRPaffiliation
+  dm:metadataName "crisrp.affiliation" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:CRISaffiliation ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  . 
+
+:crisRPdept
+  dm:metadataName "crisrp.dept.*" ;
+  dm:condition "^http://" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:partOf;
+     dm:object [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceValue" ;
+    ];
+	];
+  .   
+ 
+############################ 
+## PJ
+
+  :crisPJprojectTitle
+  dm:metadataName "crispj.title" ;
+dm:condition ".+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfTitle ;
+     dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalLanguage "de";
+	dm:literalType xsd:string ;
+    ];
+  ] ;
+ .  
+
+:crisPJprojectTitleEn
+  dm:metadataName "crispj.title_en" ;
+dm:condition ".+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfTitle ;
+dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalLanguage "en";
+ #     dm:literalType xsd:string ;
+    ];
+  ] ;
+ .  
+ 
+  :crisPJabstract
+  dm:metadataName "crisproject.abstract" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:abstract ;
+     dm:object dm:DSpaceValue ;
+     dm:literalType xsd:string ;
+  ] ;
+ .    
+  
+  :crisPJCode
+  dm:metadataName "crisproject.code" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:code ;
+	dm:object dm:DSpaceValue ;
+  ] ;
+ .
+
+  :crisPJkeywords
+  dm:metadataName "crispj.keywords" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Project.Keywords ;
+     dm:object [
+	a dm:LiteralGenerator;
+dm:pattern "$DSpaceValue";
+dm:literalType xsd:string;
+];
+  ] ;
+ .
+ 
+  :crisPJOrganization
+  dm:metadataName "crisproject.organization" ;
+  dm:condition "^http://" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:belongToOrganization;
+     dm:object [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceValue" ;
+    ];
+	];
+ .   
+ 
+ #Pointer to Project
+   :crisPJparentpro
+  dm:metadataName "crispj.parentproject" ;
+  dm:condition ".+";
+  dm:conditionAuth "^(http://|https://).+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:parentproject;
+     dm:object [
+	schema:url [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceAuthority" ;
+];
+rdfs:label [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalType xsd:string;
+	];
+	];
+];
+ .  
+:crisPJparentpro2
+  dm:metadataName "crispj.parentproject" ;
+  dm:condition ".+";
+  dm:conditionAuth "";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:parentproject;
+     dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalType xsd:string;
+    ];
+	];
+ .  
+
+#might not be correctly in xsd-Format, depending on your values
+:crispjexpdate
+  dm:metadataName "crispj.expdate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Project.EndDate ;
+	dm:object [
+	a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+      #dm:literalType xsd:date ;
+    ];
+  ] ;
+ . 
+
+#might not be correctly in xsd-Format, depending on your values
+:crispjstartdate
+  dm:metadataName "crispj.startdate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Project.StartDate ;
+	dm:object [
+	a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+     # dm:literalType xsd:date ;
+    ];
+  ] ;
+ . 
+ 
+ #Pointer to RP
+  :crisPJprincipinvest
+  dm:metadataName "crispj.principalinvestigator" ;
+  dm:condition ".+";
+  dm:conditionAuth "^(http://|https://).+" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonProjectEngagements\#PrincipalInvestigator ;
+     dm:object [
+	rdfs:label [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue";
+dm:literalType xsd:string;
+	];
+	schema:url [
+	a dm:ResourceGenerator;
+	dm:pattern "$DSpaceAuthority";
+	];
+    	];
+    ];
+ .   
+#PrincipalInvest without authority
+  :crisPJprincinvest2
+  dm:metadataName "crispj.principalinvestigator" ;
+  dm:condition ".+";
+  dm:conditionAuth "" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonProjectEngagements\#PrincipalInvestigator ;
+     dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalType xsd:string;
+    	];
+    ];
+ .   
+ 
+ #Pointer to RP
+  :crisPJcoinvest
+  dm:metadataName "crispj.coinvestigators" ;
+  dm:condition ".+";
+  dm:conditionAuth "^(http://|https://).+" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonProjectEngagements\#TeamMember ;
+     dm:object [
+	rdfs:label [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue";
+dm:literalType xsd:string;
+	];
+	schema:url [
+	a dm:ResourceGenerator;
+	dm:pattern "$DSpaceAuthority";
+	];
+    	];
+    ];
+ .   
+#Coinvestigtors without authority
+  :crisPJcoinvest2
+  dm:metadataName "crispj.coinvestigators" ;
+  dm:condition ".+";
+  dm:conditionAuth "" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonProjectEngagements\#TeamMember ;
+     dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalType xsd:string;
+    	];
+    ];
+ .   
+ 
+   :crisPJprojectURL
+  dm:metadataName "crispj.projectURL" ;
+dm:condition "^(http://|https://).+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfURI ;
+dm:object [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceValue" ;
+    ];
+  ] ;
+ .   
+
+#Urls not beginning with http, e.g. www.
+  :crisPJprojectURL2
+  dm:metadataName "crispj.projectURL" ;
+dm:condition "^(?!http).+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:cfURI ;
+dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+     # dm:literalType xsd:anyURI ;
+    ];
+  ] ;
+ .   
+ 
+   :crisPJprojectStatus
+  dm:metadataName "crispj.status" ;
+dm:condition ".+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:status ;
+dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+dm:literalLanguage "de";
+	dm:literalType xsd:string ;
+    ];
+  ] ;
+ .  
+ 
+
+############################
+## OU
+
+:crisou-crisurl
+  dm:metadataName "crisou.cris-url" ;
+ dm:conditionAuth "^(http://|https://).+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:url ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisou-crisid
+  dm:metadataName "crisou.cris-id" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:OrganisationUnitPerson.OrganisationUnitIdentifier ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    	];
+  ] ;
+  .
+ 
+  :crisOUname
+  dm:metadataName "crisou.name" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:name ;
+	dm:object dm:DSpaceValue ;
+ 	dm:literalType xsd:string ;
+  ] ;
+ . 
+ 
+ #Multilingual fields for cris Entities
+ :crisOUnameDE
+  dm:metadataName "crisou.name_de" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:name ;
+	dm:object dm:DSpaceValue ;
+ 	dm:literalType xsd:string ;
+ 	dm:literalLanguage "de";
+  ] ;
+ .
+ 
+  :crisOUnameEN
+  dm:metadataName "crisou.name_en" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:name ;
+	dm:object dm:DSpaceValue ;
+ 	dm:literalType xsd:string ;
+ 	dm:literalLanguage "en";
+  ] ;
+ .
+ 
+ #todo:check if id or link is given as crossid and print URL as Resource 
+  :crisOUcrossrefid
+  dm:metadataName "crisou.crossrefid" ;
+  dm:condition "^(?!http).+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:crossrefid ;
+	dm:object [
+      a dm:LiteralGenerator ;
+      dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    ];
+  ] ;
+ . 
+
+:crisOUcrossrefid2
+  dm:metadataName "crisou.crossrefid" ;
+dm:condition "^(http://|https://).+" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:FederatedIdentifier ;
+dm:object [
+      a dm:ResourceGenerator ;
+      dm:pattern "$DSpaceValue" ;
+    ];
+  ] ;
+ . 
+
+  :crisOUdesc
+  dm:metadataName "crisou.description" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:description ;
+	dm:object dm:DSpaceValue ;
+  ] ;
+ . 
+ 
+  :crisOUcity
+  dm:metadataName "crisou.city" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:city ;
+	dm:object dm:DSpaceValue ;
+	dm:literalType xsd:string ;
+  ] ;
+ . 
+ 
+  :crisOUcountry
+  dm:metadataName "crisou.iso-1336-country.*" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:country ;
+	dm:object dm:DSpaceValue ;
+	dm:literalType xsd:string ;
+  ] ;
+ . 
+ 
+  :crisOUest
+  dm:metadataName "crisou.established" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:est ;
+	dm:object dm:DSpaceValue ;
+       dm:literalType xsd:date ;
+  ] ;
+ . 
+ 
+:crisOUdirector
+  dm:metadataName "crisou.director" ;
+dm:conditionAuth "^(http://|https://).+";
+dm:condition ".+";
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:director;
+    dm:object [
+    rdfs:label [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue";
+];
+ex:link [
+	a dm:ResourceGenerator;
+	dm:pattern "$DSpaceAuthority";
+];
+];
+];
+. 
+ 
+:crisEventsName
+  dm:metadataName "crisevents.eventsname.*" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:name ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .   
+  
+:crisEventsLocation
+  dm:metadataName "crisevents.eventslocation.*" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:location ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .   
+  
+:crisEventsStartdate
+  dm:metadataName "crisevents.startdate.*" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:startdate ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .   
+  
+:crisEventsEndDate
+  dm:metadataName "crisevents.enddate.*" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:events.enddate ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .   
+  
+:crisJournalsName
+  dm:metadataName "crisjournals.journalsname" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:name ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .   
+  
+:crisJournalsDescription
+  dm:metadataName "crisjournals.journalsdescription" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:desc ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+  
+:crisJournalsISSN
+  dm:metadataName "crisjournals.journalsissn" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:issn ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+  
+:crisJournalsKey
+  dm:metadataName "crisjournals.journalskeywords" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:keywords ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+  
+:crisEXMPName
+  dm:metadataName "crisexmp.journalsname" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:name ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+  
+:crisEXMPName2
+  dm:metadataName "crisexmp.eventsname" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:eventsname ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+
+:crisEXMPDesc
+  dm:metadataName "crisexmp.journalsdescription" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:journalsdesc ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+
+:crisEXMPeventsloc
+  dm:metadataName "crisexmp.eventslocation" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:eventslocation ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+

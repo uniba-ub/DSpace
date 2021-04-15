@@ -1,39 +1,33 @@
-/**
- * The contents of this file are subject to the license and copyright
- * detailed in the LICENSE and NOTICE files at the root of the source
- * tree and available online at
- *
- * http://www.dspace.org/license/
- */
-
 package org.dspace.app.cris.rdf.conversion;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.sql.SQLException;
+
+import org.apache.log4j.Logger;
+import org.dspace.app.cris.model.CrisConstants;
+import org.dspace.app.cris.rdf.RDFUtil;
+import org.dspace.content.DSpaceObject;
+import org.dspace.core.Context;
+import org.dspace.services.ConfigurationService;
 
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.util.FileManager;
 import com.hp.hpl.jena.util.FileUtils;
-import java.io.IOException;
-import java.io.InputStream;
-import java.sql.SQLException;
-import org.apache.log4j.Logger;
-import org.dspace.app.cris.rdf.RDFUtil;
-import org.dspace.content.DSpaceObject;
-import org.dspace.core.Constants;
-import org.dspace.core.Context;
-import org.dspace.app.cris.rdf.conversion.ConverterPlugin;
-import org.dspace.app.cris.rdf.conversion.StaticDSOConverterPlugin;
-import org.dspace.services.ConfigurationService;
 
 /**
- *
- * @author Pascal-Nicolas Becker (dspace -at- pascal -hyphen- becker -dot- de)
- */
-public class StaticDSOConverterPlugin
-implements ConverterPlugin
-{
-    private static final Logger log = Logger.getLogger(StaticDSOConverterPlugin.class);
+* Almost similiar to StaticDSOConverterPlugin, but just for CRIS objects.
+* Keep CRIS- and Dspace separated 
+* @see StaticDSOConverterPlugin
+* @adapted florian.gantner@uni-bamberg.de
+* @author Pascal-Nicolas Becker (dspace -at- pascal -hyphen- becker -dot- de)
+*/
+public class StaticCrisConverterPlugin implements ConverterPlugin
+ {
+private static final Logger log = Logger.getLogger(StaticCrisConverterPlugin.class);
     
-    public static final String CONSTANT_DATA_FILENAME_KEY_PREFIX = "rdf.constant.data.";
+    public static final String CONSTANT_DATA_FILENAME_KEY_PREFIX = "rdf.constantcris.data.";
     public static final String CONSTANT_DATA_GENERAL_KEY_SUFFIX = "GENERAL";
 
     protected ConfigurationService configurationService;
@@ -87,7 +81,7 @@ implements ConverterPlugin
             is = FileManager.get().open(path);
             if (is == null)
             {
-                log.warn("StaticDSOConverterPlugin cannot find file '" + path 
+                log.warn("StaticCrisConverterPlugin cannot find file '" + path 
                         + "', ignoring...");
                 return null;
             }
@@ -117,18 +111,23 @@ implements ConverterPlugin
     @Override
     public boolean supports(int type)
     { 
+    	//support for Cris-Objects
+    	if(type >= CrisConstants.CRIS_DYNAMIC_TYPE_ID_START) {
+    		//Workaround for own defined entities
+    		return true;
+    	}
+    	
         switch (type)
         {
-            case (Constants.COLLECTION) :
-                return true;
-            case (Constants.COMMUNITY) :
-                return true;
-            case (Constants.ITEM) :
-                return true;
-            case (Constants.SITE) :
-                return true;
+            case (CrisConstants.RP_TYPE_ID) :
+            	return true;
+            case (CrisConstants.OU_TYPE_ID) :
+            	return true;
+            case (CrisConstants.PROJECT_TYPE_ID) :
+            	return true;
             default :
                 return false;
         }
     }
+
 }

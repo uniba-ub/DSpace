@@ -78,6 +78,7 @@ public class NegotiationFilter implements Filter
         String handle = null;
         String extraPathInfo = null;
         String path = hrequest.getPathInfo();
+        if(path == null) path = "";
         // in JSPUI the pathInfo starts after /handle, in XMLUI it starts with /handle
         Pattern handleCheckPattern = Pattern.compile("^/*handle/(.*)$");
         Matcher handleCheckMatcher = handleCheckPattern.matcher(path);

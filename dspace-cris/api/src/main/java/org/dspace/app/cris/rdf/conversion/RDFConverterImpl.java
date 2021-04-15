@@ -21,6 +21,7 @@ import org.dspace.core.Context;
 import org.dspace.app.cris.rdf.conversion.ConverterPlugin;
 import org.dspace.app.cris.rdf.conversion.RDFConverter;
 import org.dspace.app.cris.rdf.conversion.RDFConverterImpl;
+import org.dspace.app.cris.service.ApplicationService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.utils.DSpace;
 
@@ -31,12 +32,15 @@ import org.dspace.utils.DSpace;
 public class RDFConverterImpl implements RDFConverter
 {
     protected ConfigurationService configurationService;
+    protected ApplicationService applicationService;
+
     protected List<ConverterPlugin> plugins;
     private static final Logger log = Logger.getLogger(RDFConverterImpl.class);
     
     public RDFConverterImpl()
     {
         this.configurationService = new DSpace().getConfigurationService();
+
         this.plugins = new ArrayList<ConverterPlugin>();
         
         String pluginNames[] = RDFConfiguration.getConverterPlugins();

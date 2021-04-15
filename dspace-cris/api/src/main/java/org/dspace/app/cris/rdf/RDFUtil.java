@@ -307,8 +307,14 @@ public class RDFUtil {
     public static void delete(Context ctx, int type, int id, String handle, String[] identifiers)
             throws SQLException, RDFMissingIdentifierException
     {
-        String uri = RDFConfiguration.getURIGenerator().generateIdentifier(ctx,
-                        type, id, handle, identifiers);
+        String uri = null;
+        
+        try {
+        	RDFConfiguration.getURIGenerator().generateIdentifier(ctx,
+        			type, id, handle, identifiers);
+        } catch (Exception e)
+        {
+        }
         if (uri != null)
         {
             RDFConfiguration.getRDFStorage().delete(uri);

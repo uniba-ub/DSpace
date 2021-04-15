@@ -38,12 +38,21 @@ public class MetadataRDFMapping {
     
     protected final String name;
     protected final Pattern fulfills;
+    protected final Pattern fulfillsAuth;
     protected final List<Resource> results;
     
     protected MetadataRDFMapping(String name, Pattern fulfills, List<Resource> results)
     {
         this.name = name;
         this.fulfills = fulfills;
+        this.fulfillsAuth = null;
+        this.results = results;
+    }
+    protected MetadataRDFMapping(String name, Pattern fulfills, List<Resource> results, Pattern fulfillsAuth)
+    {
+        this.name = name;
+        this.fulfills = fulfills;
+        this.fulfillsAuth = fulfillsAuth;
         this.results = results;
     }
             
@@ -141,6 +150,50 @@ public class MetadataRDFMapping {
             }
         }
         
+     // Parse the property condition, if it exists. 
+        RDFNode conditionAuthNode;
+        try
+        {
+            conditionAuthNode = getSingularProperty(mappingResource, DMRM.conditionAuth);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            log.error("There are multiple properties 'conditionAuth' in one "
+                    + "DSpaceMetadataRDFMapping, ignoring it" + uri + ".");
+            return null;
+        }
+        String regexAuth = null;
+        Pattern conditionAuth = null;
+        if (conditionAuthNode != null)
+        {
+            if (conditionAuthNode.isLiteral())
+            {
+                regexAuth = conditionAuthNode.asLiteral().getLexicalForm();
+                log.debug("Found property conditionAuth '" + regexAuth + "'.");
+            } else {
+                log.error("Property 'conditionAuth' is not a literal, ignoring "
+                        + "mapping" + uri + ".");
+                return null;
+            }
+        } else {
+            // there is no property "conditionAuth". As this property is optional 
+            // there is nothing to be done here.
+            log.debug("Didn't find a property \"conditionAuth\".");
+        }
+        if (regexAuth != null)
+        {
+            try
+            {
+                conditionAuth = Pattern.compile(regexAuth);
+            }
+            catch (PatternSyntaxException ex)
+            {
+                log.error("Property 'conditionAuth' does not specify a valid java "
+                        + "regex pattern. Will ignore mapping" + uri + ".", ex);
+                return null;
+            }
+        }
+        
         // parse all properties DMRM.creates.
         List<Resource> results = new ArrayList<>();
         StmtIterator mappingIter = mappingResource.listProperties(DMRM.creates);
@@ -161,7 +214,10 @@ public class MetadataRDFMapping {
             }
             results.add(result.asResource());
         }
-        
+        // create mapping with Condition for Authority Value
+        if(conditionAuth != null) {
+        	return new MetadataRDFMapping(name, condition, results, conditionAuth);
+        }
         // create mapping
         return new MetadataRDFMapping(name, condition, results);
     }
@@ -188,6 +244,23 @@ public class MetadataRDFMapping {
         }
         
         //return this.fulfills.matcher(value).matches();
+    }
+    
+    public boolean fulfillsAuth(String value) {
+    	// if fulfillsAuth exists, we have to check the field value
+        if (this.fulfillsAuth == null)
+        {
+            return true;
+        }
+        
+        if (!this.fulfillsAuth.matcher(value).matches())
+        {
+            log.debug("Value '" + value + "' does not match regex '" + fulfillsAuth.toString() + "'.");
+            return false;
+        } else {
+            return true;
+        }
+        
     }
     
     public void convert(Map<String,String> value, String lang, String dsoIRI, Model m)

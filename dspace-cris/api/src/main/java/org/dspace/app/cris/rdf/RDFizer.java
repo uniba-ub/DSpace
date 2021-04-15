@@ -73,7 +73,8 @@ public class RDFizer {
     protected boolean dryrun;
     protected String lang;
     protected Context context;
-    public ApplicationService application_service;
+    public ApplicationService applicationService;
+    protected String entity;
 
     /**
      * Set to remember with DSpaceObject were converted or deleted from the 
@@ -92,8 +93,9 @@ public class RDFizer {
         this.lang = "TURTLE";
         this.processed = new CopyOnWriteArraySet<String>();
         this.context = new Context(Context.READ_ONLY);
-		this.application_service = new DSpace().getServiceManager().getServiceByName(
+		this.applicationService = new DSpace().getServiceManager().getServiceByName(
                 "applicationService", ApplicationService.class);
+		this.entity = "";
     }
     
     /**
@@ -169,6 +171,33 @@ public class RDFizer {
      */
     public void setDryrun(boolean dryrun) {
         this.dryrun = dryrun;
+    }
+    /**
+     * Returns specified entity
+     * @return 
+     */
+    public String getEntity() {
+        return this.entity;
+    }
+    /**
+     * Returns whether entity has been specified
+     * @return 
+     */
+    public boolean isEntity() {
+    	if(this.entity == null || this.entity.contentEquals("")){
+    		return false;
+    	}else {
+    		return true;
+    	}
+    }
+
+
+    /**
+     * Set new entity
+     * @param entity 
+     */
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
     
     /**
@@ -281,40 +310,63 @@ public class RDFizer {
             throws SQLException
     {
         report("Starting conversion of all DSpaceItems, this may take a while...");
+        if(!isEntity()) {
         this.convert(new Site(), true);
+        }
+        this.applicationService.init();
         report("Starting conversion of all CrisObjects, this may take a while...");
-        this.application_service.init();
+        if(!isEntity() || (isEntity() && getEntity().contentEquals("rp"))) {
         //ResearcherPage
-        List<ResearcherPage> rp_list = this.application_service.getAllResearcherPageByStatus(null);
+        
+        report("Convert ResearcherPages");
+        
+        List<ResearcherPage> rp_list = this.applicationService.getAllResearcherPageByStatus(null);
         for (ListIterator<ResearcherPage> iter = rp_list.listIterator(); iter.hasNext();) {
        		ResearcherPage list_item = iter.next();
        		log.debug("Converting " + list_item.getCrisID() + " -> " + list_item.getDisplayValue() + " -> " + list_item.getType() + " -> " + list_item.getTypeText() + " -> " + CrisConstants.RP_TYPE_ID);
        		convert(list_item, false);
        		}
+        }
+        
+    if(!isEntity() || (isEntity() && getEntity().contentEquals("pj"))) {
         //Project
         report("Convert Projects");
-        List<Project> project_list = this.application_service.getList(Project.class);
+        List<Project> project_list = this.applicationService.getList(Project.class);
         for (ListIterator<Project> iter = project_list.listIterator(); iter.hasNext();) {
           Project list_item_pr = iter.next();
        		log.debug("Converting " + list_item_pr.getCrisID() + " -> " + list_item_pr.getDisplayValue() + " -> " + list_item_pr.getType() + " -> " + list_item_pr.getTypeText() + " -> " + CrisConstants.PROJECT_TYPE_ID);
        		convert(list_item_pr, false);
          }
+    	}
+        if(!isEntity() || (isEntity() && getEntity().contentEquals("ou"))) {
         //OrganizationUnit
-        report("Convert OrganziationUnit");
-        List<OrganizationUnit> ou_list = this.application_service.getList(OrganizationUnit.class);
+        report("Convert OrganizationUnit");
+        List<OrganizationUnit> ou_list = this.applicationService.getList(OrganizationUnit.class);
         for (ListIterator<OrganizationUnit> iter = ou_list.listIterator(); iter.hasNext();) {
           OrganizationUnit list_item_ou = iter.next();
      		log.debug("Converting " + list_item_ou.getCrisID() + " -> " + list_item_ou.getDisplayValue() + " -> " + list_item_ou.getType() + " -> " + list_item_ou.getTypeText() + " -> " + CrisConstants.OU_TYPE_ID);
      		convert(list_item_ou, false);
          }
+        }
+        if(!isEntity() || (isEntity() && getEntity().contentEquals("do"))) {
         //ResearchObject -> dynamic objects
         report("Convert ResearchObject");
-        List<ResearchObject> ro_list = this.application_service.getList(ResearchObject.class);
+        List<ResearchObject> ro_list = this.applicationService.getList(ResearchObject.class);
         for (ListIterator<ResearchObject> iter = ro_list.listIterator(); iter.hasNext();) {
           ResearchObject list_item_ro = iter.next();
           log.debug("Converting " + list_item_ro.getCrisID() + " -> " + list_item_ro.getDisplayValue() + " -> " + list_item_ro.getType() + " -> " + list_item_ro.getTypeText() + " -> " + CrisConstants.CRIS_DYNAMIC_TYPE_ID_START);
        		convert(list_item_ro, false);
          }
+        }else if (isEntity() && getEntity() != null) {
+            //ResearchObject -> specifiy special ressearch object type like journals.
+            report("Convert specified ResearchObject with type " + getEntity());
+            List<ResearchObject> ro_list = this.applicationService.getResearchObjectByShortNameType(getEntity());
+            for (ListIterator<ResearchObject> iter = ro_list.listIterator(); iter.hasNext();) {
+              ResearchObject list_item_ro = iter.next();
+              log.debug("Converting " + list_item_ro.getCrisID() + " -> " + list_item_ro.getDisplayValue() + " -> " + list_item_ro.getType() + " -> " + list_item_ro.getTypeText() + " -> " + CrisConstants.CRIS_DYNAMIC_TYPE_ID_START);
+           		convert(list_item_ro, false);
+             }
+            }
         
         report("Conversion ended.");
     }
@@ -672,7 +724,25 @@ public class RDFizer {
         {
             setStdout(true);
         }
-                
+        if (line.hasOption("entity"))
+        {
+        	String value = line.getOptionValue("entity");
+        	if(value != null) {
+        	     setEntity(value);
+        	}else{
+        		usage(options);
+                System.err.println("\n\n Unknown cris-entity " + value + " | See usage");
+                System.exit(1);
+        	}
+       
+        }
+        
+        if(!line.hasOption("convert-all") && line.hasOption("entity")) {
+        	usage(options);
+            System.err.println("\n\nYou cannot use the option entity without convert-all -c");
+            System.exit(1);
+        }
+        
         // check mutual exclusive arguments
         if (line.hasOption("delete") && line.hasOption("delete-all"))
         {
@@ -703,7 +773,7 @@ public class RDFizer {
         {
             usage(options);
             System.err.println("\n\nYou cannot use the option --stdout together "
-                    + "with --delete or --deleta-all.");
+                    + "with --delete or --delete-all.");
             System.exit(1);
         }
 
@@ -833,8 +903,8 @@ public class RDFizer {
         DSpaceObject dso = null;
         try
         {
-        	this.application_service.init();
-            dso = this.application_service.getEntityByCrisId(handle);
+        	this.applicationService.init();
+            dso = this.applicationService.getEntityByCrisId(handle);
         if (dso == null){
             log.debug("Couldn't resolve identifier '" + handle 
                     + "' in CRIS-Entities, dso was null. Trying handle next");
@@ -902,6 +972,7 @@ public class RDFizer {
                 " that are readable for an anonymous user. This may take a long time" +
                 "depending on the number of stored communties, collections and " +
                 "items. Existing information in the triple store will be updated.");
+        options.addOption("e", "entity", true, "Together with -c, specifies crisentity to convert. Values: rp, pj, ou, do, shortname of specific do");
 
         Option optIdentifiers = OptionBuilder.withLongOpt("identifiers")
             .hasArgs()

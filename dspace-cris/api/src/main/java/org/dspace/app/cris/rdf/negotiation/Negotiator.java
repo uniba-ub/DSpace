@@ -17,8 +17,8 @@ import org.apache.commons.lang.StringUtils;
 import org.apache.log4j.Logger;
 import org.dspace.app.cris.rdf.RDFConfiguration;
 import org.dspace.content.Site;
+import org.dspace.services.ConfigurationService;
 import org.dspace.app.cris.rdf.negotiation.MediaRange;
-import org.dspace.app.cris.rdf.negotiation.Negotiator;
 import org.dspace.utils.DSpace;
 
 /**
@@ -49,12 +49,21 @@ public class Negotiator {
         {
             try
             {
+            	//To much errors and warnings in logs because of client's non-conform accept headers.
+            	//Using two rules to suppress the warnings.
+            	//FIX: for single * (wildcard) as Accept-Header replace with RFC2616 conform- */* Header Value
+            	if(mediaRangeSpec.trim().contentEquals("*")) { 
+            		mediaRangeSpec = "*/*";
+            	}
+            	//Bots send quality Parameter without zero, leading to problems
+            	mediaRangeSpec = mediaRangeSpec.replaceAll("q=\\.", "q=0\\.");
+            	
                 requestedMediaRanges.add(new MediaRange(mediaRangeSpec));
             }
             catch (IllegalArgumentException | IllegalStateException ex)
             {
                 log.warn("Couldn't parse part of an AcceptHeader, ignoring it.\n"
-                        + ex.getMessage(), ex);
+                        + ex.getMessage() + " | (mediaRangeSpec was " + mediaRangeSpec + ")");
             }
         }
         if (requestedMediaRanges.isEmpty())
@@ -265,13 +274,45 @@ public class Negotiator {
         // if html is requested we have to forward to the repositories webui.
         if ("html".equals(lang))
         {
-            urlBuilder.append((new DSpace()).getConfigurationService()
-                    .getProperty("dspace.url"));
+        	ConfigurationService configurationService = new DSpace().getConfigurationService();
+            urlBuilder.append(configurationService.getProperty("dspace.url"));
+            String lastpath = "";
             if (!handle.equals(Site.getSiteHandle()))
             {
-                urlBuilder.append("/handle/");
-                urlBuilder.append(handle).append("/").append(extraPathInfo);
-            }
+                String[] path = handle.split("/");
+                lastpath = path[(path.length -1)];
+             // see rdf.cfg for details of configuration Setting of the crisgenerator
+                //Based on the handle, we have to reconstruct the cris-url
+                //The Last path element could contain uuid, crisid or handlesuffix
+                //and the previous elements must not contain further informations about the suffix 
+               
+                //TODO: Based on the handle.prefx or the rdf.cris.prefix which might (not must) be on the path when created (see rdf.cfg),
+    			//we could make the logic simpler for some clear cases
+    			String crisid_pattern = "^[a-zA-Z]+[0-9]+$";
+    			String handle_pattern = "^[0-9]+$";
+    			String uuid_pattern = "^([a-zA-Z0-9]+)([\\-]{1})([a-zA-Z0-9\\-]+)";
+
+                 //check for single identifier
+                	if(lastpath.matches(uuid_pattern)){
+                		//check uuid -- uuid contains characters and - as separators
+                		urlBuilder.append("/cris/uuid/");
+                	}else if(lastpath.matches(crisid_pattern)) {
+                		//check crisid
+                		urlBuilder.append("/cris/");
+                		//append entityprefix
+                		String crisentity = lastpath.replaceAll("[0-9]", "");
+                		urlBuilder.append(crisentity + "/");
+                	}else if(lastpath.matches(handle_pattern))  {
+                		//check handle
+                		urlBuilder.append("/handle/" + (configurationService
+                        .getProperty("handle.prefix")) + "/");
+                }
+     
+                }
+                urlBuilder.append(lastpath);
+                if(!extraPathInfo.isEmpty()) {
+                	urlBuilder.append("/").append(extraPathInfo);
+                }
             String url = urlBuilder.toString();
 
             log.debug("Will forward to '" + url + "'.");
@@ -301,7 +342,34 @@ public class Negotiator {
             return true;
         }
         // and build the uri to the DataProviderServlet
-        urlBuilder.append("/handle/").append(handle);
+        // Calling handle or cris path for entities (for displaying purposes)
+//FIXME: all entities are on the same path? or check the configurations settings, depending on type of identifier (matches above)        
+        //All Entities on Single Path: //Redirect to rdf/<id> -> thus replace handle/ here, if exist 
+       try {
+	//Split by //, e.g. 
+	 String[] path = handle.split("/");
+	     String lastpath = path[(path.length -1)];
+	     if(lastpath ==lang) {
+	    	 lastpath = path[(path.length -2)];
+	     }
+	     
+	     handle = lastpath;
+	
+        }catch(Exception e) {
+        	log.error(e.getMessage());
+        }
+
+        handle = handle.replace((new DSpace().getConfigurationService().getProperty("handle.prefix")), "");
+        handle = handle.replace("/", "");
+        /*
+        if(handle.contains((new DSpace()).getConfigurationService()
+                .getProperty("handle.prefix"))) {
+            urlBuilder.append("/handle/");
+        	}else {
+        	urlBuilder.append("/cris/");	
+
+        	}*/
+        urlBuilder.append("/").append(handle);
         urlBuilder.append("/").append(lang);
         String url = urlBuilder.toString();
         log.debug("Will forward to '" + url + "'.");

@@ -1,0 +1,518 @@
+@prefix rdf:        <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:       <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:        <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:        <http://www.w3.org/2001/XMLSchema#> .
+@prefix dc:         <http://purl.org/dc/elements/1.1/> .
+@prefix dcterms:    <http://purl.org/dc/terms/> .
+@prefix ubg:        <https://lod.fis.uni-bamberg.de/> .
+@prefix dm:         <http://digital-repositories.org/ontologies/dspace-metadata-mapping/0.2.0#> .
+@prefix schema:     <http://schema.org/>.
+@prefix cerifmodel: <https://w3id.org/cerif/model#>.
+@prefix cerif: <https://w3id.org/cerif/vocab/>.
+@prefix ex:         <https://example.com/>.
+@prefix :           <#> .
+
+#This file is written for processing nested properties
+# Nested Entities have no existence on their own, but are returned as part of the related resource being requested.
+#
+# See rdf.cfg for Informations of the generation of nested entites; they can be identifier by shortname#id or uuid
+#Nested Properties can only be generated with their connected main entity, not alone
+#cris<crisprefix>.link.shortnameofnestedentity -> link of main entity to nested entity
+#cris<crisprefix>.shortnameofentity -> type of nested entity
+#cris.creationdate -> creationdate of entity
+
+#:crisdate
+#  dm:metadataName "cris.creationdate" ;
+#  dm:creates [
+#    dm:subject dm:DSpaceObjectIRI ;
+#    dm:predicate <http://purl.org/vocab/changeset/schema#createdDate> ;
+#	dm:object [
+#	a dm:LiteralResourceGenerator ;
+#	dm:pattern "$DSpaceValue" ;
+#	dm:literalType xsd:datetime ;
+ #   	];
+  #] ;
+  #.
+
+#CRISRP
+
+#education
+#Mapping from crisrp to nested entity
+:crisRPedu1
+  dm:metadataName "crisrp.link.education" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:education ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisRPedu2
+  dm:metadataName "crisrp.education" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:type;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "Test" ;
+    	];
+  ] ;
+  .
+
+:crisRPedu3
+  dm:metadataName "crisrp.education.educationenddate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:endDate ;
+    dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPedu4
+  dm:metadataName "crisrp.education.educationdescription" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:description ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+
+:crisRPedu5
+  dm:metadataName "crisrp.education.educationplace" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:Place ;
+    dm:object dm:DSpaceValue ;
+  ] ;
+  .
+
+:crisRPedu6
+  dm:metadataName "crisrp.education.educationstartdate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:startDate ;
+      dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+#activity
+:crisRPact1
+  dm:metadataName "crisrp.link.activity" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:Activity ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisRPact
+  dm:metadataName "crisrp.activity" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:type;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "Test" ;
+    	];
+  ] ;
+  .
+
+:crisRPact2
+  dm:metadataName "crisrp.activity.activitytype" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:activitytype ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisRPact3
+  dm:metadataName "crisrp.activity.startDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:startDate ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPact4
+  dm:metadataName "crisrp.activity.endDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:endDate ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPact5
+  dm:metadataName "crisrp.activity.description" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:description ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+#career
+:crisRPcar1
+  dm:metadataName "crisrp.link.career" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:careerStation ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisRPcar
+  dm:metadataName "crisrp.career" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:type;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "Test" ;
+    	];
+  ] ;
+  .
+
+:crisRPcar2
+  dm:metadataName "crisrp.career.careerdescription" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:description ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisRPcar3
+  dm:metadataName "crisrp.career.careerstartDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:startCareer ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPcar4
+  dm:metadataName "crisrp.career.careerendDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:endCareer ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPcar5
+  dm:metadataName "crisrp.career.careerplace" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:Place ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+#affiliation
+#career
+:crisRPaff1
+  dm:metadataName "crisrp.link.affiliation" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:PersonOrganisationRoles\#Affiliation ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+
+:crisRPaff
+  dm:metadataName "crisrp.affiliation" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:type;
+    dm:object cerifmodel:Person_OrganisationUnit;
+  ] ;
+  .
+
+#Pointer to OU
+:crisRPaff2
+  dm:metadataName "crisrp.affiliation.affiliationorgunit" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:description ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisRPaff3
+  dm:metadataName "crisrp.affiliation.affiliationstartDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:startCareer ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPaff4
+  dm:metadataName "crisrp.affiliation.affiliationendDate" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:endCareer ;
+	  dm:object [
+	a dm:LiteralGenerator;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:date ;
+]; 
+  ] ;
+  .
+
+:crisRPaff5
+  dm:metadataName "crisrp.affiliation.affiliationrole" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:affrole ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+#CRISPJ
+#funding
+:crisPJfunding1
+  dm:metadataName "crispj.link.funding" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:linksToFunding ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+
+
+:crisPJfunding
+  dm:metadataName "crispj.funding" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate dc:type;
+    dm:object cerif:OrganisationProjectEngagements\#Funder;
+  ] ;
+  .
+
+:crisPJfunding2
+  dm:metadataName "crispj.funding.fundingperiod" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:Durations\#FundingDuration ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJfunding3
+  dm:metadataName "crispj.funding.fundingsupportcode" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Funcing.Acronym ;
+	dm:object [	
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJfunding4
+  dm:metadataName "crispj.funding.fundinggrant" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerifmodel:Funding.Amount ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJfunding5
+  dm:metadataName "crispj.funding.fundingprogram" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:FoundingSourceType\#FundingProgramme ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJfunding6
+  dm:metadataName "crispj.funding.fundingfunder" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate cerif:OrganisationFundingEngagement\#Funder ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+#partnership
+:crisPJpartnership1
+  dm:metadataName "crispj.link.partnership" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:partnership ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceAuthority" ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership
+  dm:metadataName "crispj.partnership" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate "a";
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "Test" ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership2
+  dm:metadataName "crispj.partnership.partnershipprojectpartner" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:Place ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership3
+  dm:metadataName "crispj.partnership.partnershipcooperative" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:Place ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership4
+  dm:metadataName "crispj.partnership.partnershipname" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:title ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+	dm:literalType xsd:string ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership5
+  dm:metadataName "crispj.partnership.partnershipdescription" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:description ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership6
+  dm:metadataName "crispj.partnership.partnershipurl" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate schema:url ;
+	dm:object [
+	a dm:ResourceGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
+:crisPJpartnership7
+  dm:metadataName "crispj.partnership.partnershiptypeofpartnership" ;
+  dm:creates [
+    dm:subject dm:DSpaceObjectIRI ;
+    dm:predicate ex:Place ;
+	dm:object [
+	a dm:LiteralGenerator ;
+	dm:pattern "$DSpaceValue" ;
+    	];
+  ] ;
+  .
+
