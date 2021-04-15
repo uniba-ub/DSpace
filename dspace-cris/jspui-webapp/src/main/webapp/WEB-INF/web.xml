@@ -552,6 +552,11 @@
         <servlet-name>relations</servlet-name>
         <servlet-class>org.dspace.app.webui.cris.servlet.RelationServlet</servlet-class>
     </servlet>
+    
+     <servlet>
+        <servlet-name>seealso</servlet-name>
+        <servlet-class>org.dspace.app.webui.cris.servlet.SeealsoServlet</servlet-class>
+    </servlet>
 
 	<!-- spring mvc cris -->
 	<servlet>
@@ -1033,6 +1038,11 @@
 	    <servlet-name>json</servlet-name>
 	  	<url-pattern>/json/*</url-pattern>
 	</servlet-mapping>
+	
+    	<servlet-mapping>
+     	   <servlet-name>seealso</servlet-name>
+           	<url-pattern>/seealso</url-pattern>
+	 </servlet-mapping>
 	
 
   <servlet-mapping>
