@@ -215,7 +215,7 @@ void generateCollectionTree(javax.servlet.jsp.JspWriter out, CollectionsTree tre
 		for (String provider : searchProviders)
 		{			
 %>
-		<img class="img-thumbnail" src="<%= request.getContextPath() %>/image/submission-lookup-small-<%= provider %>.jpg" />
+		<img class="img-thumbnail" src="<%= request.getContextPath() %>/image/submission-lookup-small-<%= provider %>.jpg" alt="<%= provider %>"/>
 <% 
 		}
 	%>
@@ -276,7 +276,7 @@ void generateCollectionTree(javax.servlet.jsp.JspWriter out, CollectionsTree tre
 			{
 			    if (!"localduplicate".equalsIgnoreCase(provider)) {
 %>
-			<img class="img-thumbnail" src="<%= request.getContextPath() %>/image/submission-lookup-small-<%= provider %>.jpg" />
+			<img class="img-thumbnail" src="<%= request.getContextPath() %>/image/submission-lookup-small-<%= provider %>.jpg" alt="<%= provider %>" />
 <% 				}
 			}
 %>

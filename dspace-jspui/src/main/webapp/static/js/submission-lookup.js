@@ -136,7 +136,7 @@ submissionLookupShowResult = function(info, suffixID){
 		for (var k=0;k<info.result[i].providers.length;k++)
 		{
 			var prov = info.result[i].providers[k];
-			divImg.append(j('<img class="img-thumbnail" src="'+dspaceContextPath+'/image/submission-lookup-small-'+prov+'.jpg">'));
+			divImg.append(j('<img class="img-thumbnail" src="'+dspaceContextPath+'/image/submission-lookup-small-'+prov+'.jpg" alt="'+prov+'">'));
 			if(prov == "localduplicate"){
 				localDupl = true;
 			}
@@ -207,7 +207,7 @@ submissionLookupShowDetails = function(info){
 	for (var k=0;k<info.providers.length;k++)
 	{
 		var prov = info.providers[k];
-		divImg.append(j('<img class="img-thumbnail" src="'+dspaceContextPath+'/image/submission-lookup-small-'+prov+'.jpg">'));
+		divImg.append(j('<img class="img-thumbnail" src="'+dspaceContextPath+'/image/submission-lookup-small-'+prov+'.jpg" alt="'+prov+'">'));
 		if(prov == "localduplicate"){
 			localDupl = true;
 		}
