@@ -78,6 +78,9 @@ public class ScriptDataCiteDeposit
     private static final String USERNAME = ConfigurationManager
             .getProperty("datacite.username");
 
+    private static final int PORT = ConfigurationManager
+            .getIntProperty("datacite.port");    
+
     private static String dbName = ConfigurationManager.getProperty("db.name");
 
     public static String TABLE_NAME_DOI2ITEM = "doi2item";
@@ -170,7 +173,7 @@ public class ScriptDataCiteDeposit
         validator = schema.newValidator();
 
         m_creds = new UsernamePasswordCredentials(USERNAME, PASSWORD);
-        url = new URL(PROTOCOL + HOST);
+        url = new URL(PROTOCOL + "://" + HOST);
         m_authScope = new AuthScope(url.getHost(), AuthScope.ANY_PORT,
                 AuthScope.ANY_REALM);
 
@@ -417,7 +420,7 @@ public class ScriptDataCiteDeposit
             post.setDoAuthentication(true);
 
             HostConfiguration nss = new HostConfiguration();
-            nss.setHost(HOST);
+            nss.setHost(HOST,PORT,PROTOCOL);
 
             responseCode = getHttpClient().executeMethod(nss, post);
             Header location = post.getResponseHeader("Location");

@@ -7,8 +7,11 @@
  */
 package org.dspace.discovery;
 
+import java.io.BufferedReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.URI;
@@ -27,6 +30,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.Vector;
@@ -35,6 +39,7 @@ import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections.MapUtils;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.RandomStringUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.time.DateFormatUtils;
 import org.apache.commons.validator.routines.UrlValidator;
@@ -47,6 +52,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.log4j.Logger;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.SolrQuery.ORDER;
 import org.apache.solr.client.solrj.impl.HttpSolrServer;
 import org.apache.solr.client.solrj.request.AbstractUpdateRequest;
 import org.apache.solr.client.solrj.request.ContentStreamUpdateRequest;
@@ -74,7 +80,6 @@ import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
-import org.dspace.content.ItemIterator;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.Metadatum;
 import org.dspace.content.authority.ChoiceAuthorityManager;
@@ -100,7 +105,10 @@ import org.dspace.discovery.configuration.DiscoverySortConfiguration;
 import org.dspace.discovery.configuration.DiscoverySortFieldConfiguration;
 import org.dspace.discovery.configuration.HierarchicalSidebarFacetConfiguration;
 import org.dspace.handle.HandleManager;
+import org.dspace.storage.rdbms.DatabaseManager;
 import org.dspace.storage.rdbms.DatabaseUtils;
+import org.dspace.storage.rdbms.TableRow;
+import org.dspace.storage.rdbms.TableRowIterator;
 import org.dspace.util.MultiFormatDateParser;
 import org.dspace.utils.DSpace;
 import org.springframework.stereotype.Service;
@@ -2644,6 +2652,96 @@ public class SolrServiceImpl implements SearchService, IndexingService {
 				}
 			}
 		}
+	}
+	
+	@Override
+	public void diffIndex(Context context, Integer type)  throws SQLException, SearchServiceException, IOException {
+        if(type!=Constants.ITEM) {
+            throw new RuntimeException("Only ITEM is supported in this mode - type founded: " + type);
+        }
+        
+    	TableRowIterator tri = DatabaseManager.query(context, "select item_id as identifierobject from item where in_archive='1' or withdrawn='1' order by item_id asc");
+    	List<TableRow> rows = tri.toList();
+    	prepareDiffAndReindex(context, type, "search.resourcetype:2", rows);
+    	
+	}
+
+	protected void prepareDiffAndReindex(Context context, Integer type, String fq, List<TableRow> rows)
+			throws SQLException, SearchServiceException, IOException {
+		System.out.println("Preparing diff...");
+		List<Integer> resultsDB = new ArrayList<Integer>();
+        
+		int countDB = 0;
+        for(TableRow row : rows) {
+        	Integer id = row.getIntColumn("identifierobject");
+        	resultsDB.add(id);
+        	countDB++;
+        	if(countDB%1000==0) {
+        		System.out.println(countDB);
+        	}
+        }
+
+        List<Integer> resultsSOLR = new ArrayList<Integer>();
+        
+		SolrQuery solrQuery = new SolrQuery();
+    	solrQuery.setQuery("*:*");
+    	solrQuery.setStart(0);
+    	solrQuery.setRows(Integer.MAX_VALUE);
+    	solrQuery.addFilterQuery("discoverable: true");
+    	solrQuery.addFilterQuery(fq);
+    	solrQuery.setFields("search.resourceid");
+    	solrQuery.setSort("search.resourceid", ORDER.asc);
+
+        QueryResponse response = search(solrQuery);
+        SolrDocumentList docList = response.getResults();
+        Iterator<SolrDocument> solrDoc = docList.iterator();
+        int countSOLR = 0;
+        while (solrDoc.hasNext())
+        {
+            SolrDocument doc = solrDoc.next();
+            Integer id = (Integer) doc
+                    .getFirstValue("search.resourceid");
+            resultsSOLR.add(id);
+            countSOLR++;
+        	if(countSOLR%1000==0) {
+        		System.out.println(countSOLR);
+        	}
+        }
+        
+        System.out.println("TOTAL DB:"+ countDB);
+        System.out.println("TOTAL SOLR:"+ countSOLR);
+        executeDiffAndReindex(context, type, resultsDB, resultsSOLR);
+	}
+	
+	protected void executeDiffAndReindex(Context context, Integer type, List<Integer> expectedrecords, List<Integer> actualrecords) throws IOException {
+		
+	    int linelength = -1;
+	    
+		List<Integer> unexpectedrecords = new ArrayList<Integer>();
+		
+	    if (expectedrecords.size() > actualrecords.size()) {
+	        linelength = expectedrecords.size();
+	    } else {
+	        linelength = actualrecords.size();
+	    }
+
+	    for (int i = 0; i < linelength; i++) {
+	        if (actualrecords.contains(expectedrecords.get(i))) {
+	            actualrecords.remove(expectedrecords.get(i));
+	        } else {
+	        	Integer item = expectedrecords.get(i);
+				log.info("Reindex Found type:" + type + " - objectID:" + item);
+	        	System.out.println("Reindex Found type:" + type + " - objectID:" + item);
+	            unexpectedrecords.add(item);
+	        }
+	    }
+	    if (unexpectedrecords.isEmpty())
+	    {
+	    	System.out.println("Nothing to update, exiting");
+	    	return;
+		}
+	    System.out.println("Update now...");
+		updateIndex(context, unexpectedrecords, true, type);
 	}
 	
 }

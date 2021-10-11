@@ -64,7 +64,7 @@
           <input-type>onebox</input-type>
           <repeatable>true</repeatable>
           <required />
-          <hint>The authors of this publication</hint>
+          <hint>The authors of this publication. With the external lookup you can search both with the fullname and the ORCID iD</hint>
         </field>
         <field>
           <dc-schema>dc</dc-schema>
@@ -416,7 +416,7 @@ it, please enter the types and the actual numbers or codes. Please only add here
           <input-type>onebox</input-type>
           <repeatable>true</repeatable>
           <required />
-          <hint>The creators of this product</hint>
+          <hint>The creators of this product. With the external lookup you can search both with the fullname and the ORCID iD</hint>
         </field>
         <field>
           <dc-schema>dc</dc-schema>
@@ -636,7 +636,7 @@ You can leave out the day and/or month if they aren't applicable.</hint>
           <input-type>onebox</input-type>
           <repeatable>true</repeatable>
           <required />
-          <hint>The inventor: The actual devisor of an invention that is the subject of a patent.</hint>
+          <hint>The inventor: The actual devisor of an invention that is the subject of a patent. With the external lookup you can search both with the fullname and the ORCID iD</hint>
         </field>
         <field>
           <dc-schema>dcterms</dc-schema>

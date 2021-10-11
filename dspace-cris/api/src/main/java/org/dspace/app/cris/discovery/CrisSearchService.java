@@ -81,17 +81,16 @@ import org.dspace.discovery.SearchUtils;
 import org.dspace.discovery.SolrServiceImpl;
 import org.dspace.discovery.configuration.DiscoveryConfiguration;
 import org.dspace.discovery.configuration.DiscoveryConfigurationParameters;
-import org.dspace.discovery.configuration.DiscoveryConfigurationService;
 import org.dspace.discovery.configuration.DiscoveryHitHighlightFieldConfiguration;
 import org.dspace.discovery.configuration.DiscoveryHitHighlightingConfiguration;
 import org.dspace.discovery.configuration.DiscoverySearchFilter;
 import org.dspace.discovery.configuration.DiscoverySearchFilterFacet;
 import org.dspace.discovery.configuration.DiscoverySortConfiguration;
 import org.dspace.discovery.configuration.DiscoverySortFieldConfiguration;
-import org.dspace.discovery.configuration.DiscoveryViewAndHighlightConfiguration;
-import org.dspace.discovery.configuration.DiscoveryViewConfiguration;
-import org.dspace.discovery.configuration.DiscoveryViewFieldConfiguration;
 import org.dspace.discovery.configuration.HierarchicalSidebarFacetConfiguration;
+import org.dspace.storage.rdbms.DatabaseManager;
+import org.dspace.storage.rdbms.TableRow;
+import org.dspace.storage.rdbms.TableRowIterator;
 import org.dspace.utils.DSpace;
 
 public class CrisSearchService extends SolrServiceImpl
@@ -1054,4 +1053,40 @@ public class CrisSearchService extends SolrServiceImpl
             solrQuery.setFields("clearcache-crismetrics");            
             search(solrQuery);
         }
+        
+    	@Override
+    	public void diffIndex(Context context, Integer type) throws SQLException, SearchServiceException, IOException {
+    		System.out.println("Diff type:"+ type);
+            if (type >= CrisConstants.CRIS_TYPE_ID_START)
+            {
+            	TableRowIterator tri = null;
+            	String fq = "";
+                if (type >= CrisConstants.CRIS_DYNAMIC_TYPE_ID_START) {
+                	tri = DatabaseManager.query(context, "select id as identifierobject from cris_do where status = '1' order by id asc");
+                	fq = "search.resourcetype:[1000 TO *]";
+                }                    
+                else if (CrisConstants.RP_TYPE_ID == type)
+                {
+                	tri = DatabaseManager.query(context, "select id as identifierobject from cris_rpage where status = '1' order by id asc");
+                	fq = "search.resourcetype:9";
+                }
+                else if (CrisConstants.PROJECT_TYPE_ID == type)
+                {
+                	tri = DatabaseManager.query(context, "select id as identifierobject from cris_project where status = '1' order by id asc");
+                	fq = "search.resourcetype:10";
+                }
+                else if (CrisConstants.OU_TYPE_ID == type)
+                {
+                	tri = DatabaseManager.query(context, "select id as identifierobject from cris_ou where status = '1' order by id asc");
+                	fq = "search.resourcetype:11";
+                }
+                
+                List<TableRow> rows = tri.toList();
+            	prepareDiffAndReindex(context, type, fq, rows);
+            }
+            else
+            {
+                super.diffIndex(context, type);
+            }
+    	}        
 }

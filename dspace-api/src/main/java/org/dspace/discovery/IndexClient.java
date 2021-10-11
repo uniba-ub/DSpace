@@ -116,6 +116,8 @@ public class IndexClient {
         
         options.addOption("e", "readfile", true, "Read the identifier from a file");
 
+        options.addOption("d", "diff", false, "Read the identifiers both from database and solr, diff the results and index it (default: item; use with -t to diff another class of entities)");
+        
         try {
             line = new PosixParser().parse(options, args);
         } catch (Exception e) {
@@ -154,6 +156,13 @@ public class IndexClient {
             indexer.optimize();
  		} else if(line.hasOption('s')) {
             checkRebuildSpellCheck(line, indexer);           
+        } else if (line.hasOption("d")) {
+        	log.info("Updating the missed objects");
+        	String optionValue = "2";
+        	if (line.hasOption("t")) { 
+        		optionValue = line.getOptionValue("t");
+        	}
+            indexer.diffIndex(context, Integer.valueOf(optionValue));
         } else if (line.hasOption("t")) {
         	log.info("Updating and Cleaning a specific Index");
             String optionValue = line.getOptionValue("t");			

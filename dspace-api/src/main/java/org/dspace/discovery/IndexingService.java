@@ -68,4 +68,6 @@ public interface IndexingService {
     void optimize() throws SearchServiceException;
 
     void buildSpellCheck() throws SearchServiceException;
+
+	void diffIndex(Context context, Integer type)  throws SQLException, SearchServiceException, IOException;
 }

@@ -152,6 +152,7 @@ public class ExportFormController extends BaseFormController
         }
         catch (Exception e)
         {
+            log.error(e.getMessage(), e);
             errors.reject("jsp.layout.hku.export.validation.notvalid.query");
             return showForm(request, errors, getFormView());
 

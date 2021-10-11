@@ -126,7 +126,8 @@ public class ClaimRPJSONServlet extends JSONRequest{
             {
                 selfClaimGroup = Group.findByName(context,
                         nameGroupSelfClaim);
-                if (Group.isMember(context, selfClaimGroup.getID()))
+                if (selfClaimGroup != null
+                        && Group.isMember(context, selfClaimGroup.getID()))
                 {
                     isSelfClaimed = true;
                 }
