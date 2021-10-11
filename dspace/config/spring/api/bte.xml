@@ -116,8 +116,8 @@
 	            <entry key="pubmed" value-ref="pubmedOnlineDataLoader"/>
 	            <!-- <entry key="pubmedEurope" value-ref="pubmedEuropeOnlineDataLoader"/> -->	            
 	            <entry key="crossref" value-ref="crossRefOnlineDataLoader"/>
+	            <entry key="datacite" value-ref="dataCiteOnlineDataLoader"/>
 	            <entry key="orcid" value-ref="orcidOnlineDataLoader"/>
-	            <entry key="arxiv" value-ref="arXivOnlineDataLoader"/>
 	            <entry key="cinii" value-ref="ciniiOnlineDataLoader"/>
 			    <entry key="localduplicate" value-ref="localDuplicateDataLoader" />
 <!-- 	            depending on your apiKey you should use scopusOnlineDataLoader or scivalOnlineDataLoader or
@@ -152,6 +152,9 @@
 			<entry key="crossref">
 				<value>doi</value>
 			</entry>
+			<entry key="datacite">
+				<value>doi</value>
+			</entry>
 			<entry key="arxiv">
 				<value>url</value>
 			</entry>
@@ -180,6 +183,7 @@
 				<ref bean="mapConverter_classificationASJC" />
 			    <ref bean="mapConverter_scopusType"/>
 			    <ref bean="mapConverter_crossrefType"/>
+			    <ref bean="mapConverter_dataciteType"/>					    			    
 			    <ref bean="mapConverter_wosType"/>			    			    
 			    <ref bean="splitValue"/>							    
 			    <ref bean="removeLastDot"/>
@@ -230,6 +234,19 @@
 	    <constructor-arg value="mapConverter_crossrefType Modifier"/>
 	    <property name="converterNameFile" value="mapConverter-crossrefType.properties"/>
 	    <property name="configurationService" ref="org.dspace.services.ConfigurationService"/>
+	    <property name="fieldKeys">
+	        <list>
+	            <!-- Specify the internal BTE keys that this modifier needs to be applied for -->
+	        	<value>subtype</value>
+	        </list>
+	    </property>
+	</bean>
+	
+	<bean name="mapConverter_dataciteType" class="org.dspace.submit.lookup.MapConverterModifier" init-method="init">
+	    <constructor-arg value="mapConverter_dataciteType Modifier"/>
+	    <property name="converterNameFile" value="mapConverter-dataciteType.properties"/>
+	    <property name="configurationService" ref="org.dspace.services.ConfigurationService"/>
+	    <property name="defaultValue" value="other"/>
 	    <property name="fieldKeys">
 	        <list>
 	            <!-- Specify the internal BTE keys that this modifier needs to be applied for -->
@@ -882,6 +899,67 @@
 			</map>
 		</constructor-arg>
 	</bean>
+	
+		<bean id="dataCiteOnlineDataLoader" class="org.dspace.submit.lookup.DataCiteOnlineDataLoader">
+	    <property name="searchProvider" value="false" /> <!-- Further Identifier Enrichments in MultipleSubmissionLookupDataLoader is not working property with search terms -->
+	    <property name="fieldMap" ref="DataCiteInputMap" />
+	    <property name="doiURL" value="https://api.datacite.org/dois" />
+	    <property name="queryFieldName" value="query" />
+	</bean>
+	
+	<bean name="DataCiteInputMap" class="java.util.HashMap" scope="prototype">
+		<constructor-arg>
+			<map key-type="java.lang.String" value-type="java.lang.String">
+			<!-- key: datacite field value: bte field ; in order of appearance in datacite schema https://doi.org/10.14454/3w3z-sa82 -->
+			<!-- Not all generated fields are correctly mapped in outputMap, because the fields does not exist in the default input-forms -->
+				<entry key="doi" value="doi" />
+				<entry key="author" value="authors" />
+				<entry key="corporationauthor" value="others" />
+				<entry key="authorunspecified" value="authors" />
+				<entry key="title" value="title" />
+				<entry key="titleAlternative" value="titleAlternative" />
+				<entry key="titleSubtitle" value="titleAlternative" />
+				<entry key="titleTranslated" value="titleAlternative" />
+				<entry key="titleOther" value="titleAlternative" />
+				<entry key="publisher" value="publisher"/>
+				<entry key="issued" value="issued" />
+				<entry key="subject" value="keywords"/>
+				<entry key="subjectURI" value="keywords"/>
+				<entry key="contributoreditor" value="editors" />
+				<entry key="contributorcorporation" value="others" />
+				<entry key="contributorsponsor" value="others" />
+				<entry key="contributor" value="others" />
+				<entry key="date" value="date" />
+				<entry key="dateaaccepted" value="dateaaccepted" />
+				<entry key="dateaavailable" value="dateaavailable" />
+				<entry key="dateissued" value="dateissued" />
+				<entry key="language" value="language" />
+				<entry key="generaltype" value="subtype" />
+				<entry key="identifieralternative" value="externalID" />
+				<entry key="identifieralternativeurl" value="url" />
+				<entry key="relateddoi" value="url" />
+				<entry key="relatedurl" value="url" />
+				<entry key="relatedissn" value="relatedissn" />
+				<entry key="relateduri" value="uri" />
+				<entry key="relatedpubmedID" value="pubmedID" />
+				<entry key="relatedisbn" value="pisbn" />
+				<entry key="relatedidentifier" value="relatedidentifier" />
+				<entry key="size" value="size" />
+				<entry key="format" value="format" />
+				<entry key="version" value="version" />
+				<entry key="rightsURI" value="rights" />
+				<entry key="rights" value="rights" />
+				<entry key="abstract" value="abstract" />
+				<entry key="abstractother" value="abstract" />
+				<!-- 
+				<entry key="geoloc" value="geoloc" />
+				<entry key="funding" value="funding" />
+				<entry key="relateditem" value="relateditems" />
+				 -->
+				<entry key="internalcomment" value="internalcomment" />
+			</map>
+		</constructor-arg>
+	</bean>
 	<!-- **************************************************************************************************** -->
 	<!-- Output Mapping 																					  -->
 	<!-- **************************************************************************************************** -->
@@ -935,7 +1013,8 @@
 				<entry value="rights" key="dc.rights" />
 				<entry value="note" key="dc.description" />
 				<entry value="externalID" key="dc.identifier.external" />				
-				
+				<entry value="relatedissn" key="dc.relation.issn" />
+				<entry value="version" key="dc.description.version" />
 				<!-- Not used - new metadata fields need to be declared for them in DSpace registry -->
 				<!-- 
 				<entry value="url" key="" />
@@ -945,6 +1024,8 @@
 				<entry value="publicationStatus" key="" />
 				<entry value="jeissn" key="" />
 				<entry value="eisbn" key="" />
+				
+				
 
 				
 				<entry value="authorAlternative" key="" />
