@@ -183,7 +183,7 @@ public class DatabaseUtils {
 
                     // "migrate" allows for an OPTIONAL second argument (only one may be specified):
                     //    - "ignored" = Also run any previously "ignored" migrations during the migration
-                    //    - "ignore-missing" = Ignore prviously "ignored" migrations during the migration
+                    //    - "ignore-missing" = Ignore "missing" migrations during the migration
                     //    - "force" = Even if no pending migrations exist, still run a migration to trigger callbacks.
                     //    - [version] = ONLY run migrations up to a specific DSpace version (ONLY FOR TESTING)
                     if (argv.length == 2) {
@@ -199,7 +199,7 @@ public class DatabaseUtils {
                                     "Migrating database to latest version ignoring \"Missing\" " +
                                         "migrations... (Check logs for details)");
                             // Update the database to latest version, but set "outOfOrder=true"
-                            // This will ensure any old migrations in the "ignored" state are now run
+                            // This will ensure any old migrations in the "missing" state are not run
                              updateDatabase(dataSource, connection, null, true, true);
                         } else if (argv[1].equalsIgnoreCase("force")) {
                              System.out.println(
