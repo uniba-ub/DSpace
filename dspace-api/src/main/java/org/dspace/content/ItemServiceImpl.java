@@ -1341,7 +1341,7 @@ prevent the generation of resource policy entry values with null dspace_object a
      * @throws AuthorizeException if authorization error Exception indicating the
      *                            current user of the context does not have
      *                            permission
-     * 
+     *
      */
     @Override
     public Iterator<Item> findArchivedByMetadataField(Context context,
@@ -1874,7 +1874,7 @@ prevent the generation of resource policy entry values with null dspace_object a
 
         Map<Item, String> profileAndPutCodeMap = orcidHistoryService.findLastPutCodes(context, entity);
         for (Item profile : profileAndPutCodeMap.keySet()) {
-            if (orcidSynchronizationService.isSynchronizationAllowed(profile, entity)) {
+            if (orcidSynchronizationService.isSynchronizationAllowed(context, profile, entity)) {
                 String putCode = profileAndPutCodeMap.get(profile);
                 String title = getMetadataFirstValue(entity, "dc", "title", null, Item.ANY);
                 orcidQueueService.createEntityDeletionRecord(context, profile, title, entityType, putCode);

@@ -18,10 +18,7 @@ import static org.dspace.content.Item.ANY;
 import static org.dspace.profile.OrcidEntitySyncPreference.DISABLED;
 
 import java.sql.SQLException;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -181,7 +178,7 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
     }
 
     @Override
-    public boolean isSynchronizationAllowed(Item profile, Item item) {
+    public boolean isSynchronizationAllowed(Context context, Item profile, Item item) {
 
         if (isOrcidSynchronizationDisabled()) {
             return false;
@@ -193,9 +190,23 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
         }
 
         if (OrcidEntityType.isValidEntityType(entityType)) {
-            return getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType))
-                .filter(pref -> pref != DISABLED)
-                .isPresent();
+            Optional<OrcidEntitySyncPreference> option = getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType));
+            if(option.isPresent()){
+                if(option.get().equals(DISABLED)) return false;
+                if(option.get().equals(OrcidEntitySyncPreference.ALL)) return true;
+                if(option.get().equals(OrcidEntitySyncPreference.MINE) || option.get().equals(OrcidEntitySyncPreference.MY_SELECTED) ){
+                    String filterrelationname = configurationService.getProperty("orcid.relationpreference." + entityType + "." + option.get().name());
+                    if(Objects.isNull(filterrelationname)) return false;
+                    Iterator<Item> entities = checkRelation(context, profile, item, filterrelationname);
+                    if (entities.hasNext()) {
+                        return true;
+                    }else{
+                        return false;
+                    }
+                }
+            }else{
+                return false;
+            }
         }
 
         if (entityType.equals(researcherProfileService.getProfileType())) {
@@ -204,6 +215,16 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
 
         return false;
 
+    }
+
+    public Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname) {
+        DiscoverQuery discoverQuery = new DiscoverQuery();
+        discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
+        discoverQuery.addFilterQueries("search.resourceid:" + item.getID());
+        filterrelationname = filterrelationname.replace("{0}", profile.getID().toString());
+        discoverQuery.addFilterQueries(filterrelationname);
+        discoverQuery.setMaxResults(1);
+        return new DiscoverResultItemIterator(context, discoverQuery);
     }
 
     @Override
