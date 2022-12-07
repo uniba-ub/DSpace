@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -85,6 +86,7 @@ import org.dspace.identifier.service.IdentifierService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.util.ItemUtils;
+import org.dspace.util.UUIDUtils;
 import org.dspace.utils.DSpace;
 import org.dspace.workflow.WorkflowException;
 import org.dspace.xmlworkflow.WorkflowConfigurationException;
@@ -547,11 +549,15 @@ public class ItemImportOA {
         Item myitem = null;
         WorkspaceItem wsi = null;
         c.setCurrentUser(myEPerson);
-
-        wsi = workspaceItemService.create(c, mycollections[0], false);
+        UUID predefineduuid = UUIDUtils.fromString(handle);
+        if (Objects.nonNull(predefineduuid)) {
+            wsi = workspaceItemService.create(c, mycollections[0], predefineduuid,false);
+        } else {
+            wsi = workspaceItemService.create(c, mycollections[0], false);
+        }
         myitem = wsi.getItem();
 
-        if (StringUtils.isNotEmpty(handle)) {
+        if (Objects.isNull(predefineduuid) && StringUtils.isNotEmpty(handle)) {
             identifierService.register(c, myitem, handle);
         }
 
