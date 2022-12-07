@@ -25,6 +25,7 @@ import org.dspace.content.authority.ItemAuthority;
 import org.dspace.content.authority.service.ChoiceAuthorityService;
 import org.dspace.content.security.service.CrisSecurityService;
 import org.dspace.content.service.ItemService;
+import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.exception.SQLRuntimeException;
 import org.dspace.eperson.EPerson;
@@ -62,7 +63,8 @@ public class LayoutSecurityServiceImpl implements LayoutSecurityService {
 
     @Override
     public boolean hasAccess(LayoutSecurity layoutSecurity, Context context, EPerson user,
-                             Set<MetadataField> metadataSecurityFields, Item item) throws SQLException {
+                             Set<MetadataField> metadataSecurityFields,
+                             Set<Group> groupSecurityFields, Item item) throws SQLException {
 
         switch (layoutSecurity) {
             case PUBLIC:
@@ -70,12 +72,14 @@ public class LayoutSecurityServiceImpl implements LayoutSecurityService {
             case OWNER_ONLY:
                 return crisSecurityService.isOwner(user, item);
             case CUSTOM_DATA:
-                return customDataGrantAccess(context, user, metadataSecurityFields, item);
+                return customDataGrantAccess(context, user, metadataSecurityFields, item)
+                    || customDataGrantAccessGroup(context, groupSecurityFields);
             case ADMINISTRATOR:
                 return authorizeService.isAdmin(context);
             case CUSTOM_DATA_AND_ADMINISTRATOR:
                 return authorizeService.isAdmin(context)
-                    || customDataGrantAccess(context, user, metadataSecurityFields, item);
+                    || customDataGrantAccess(context, user, metadataSecurityFields, item)
+                    || customDataGrantAccessGroup(context, groupSecurityFields);
             case OWNER_AND_ADMINISTRATOR:
                 return authorizeService.isAdmin(context) || crisSecurityService.isOwner(user, item);
             default:
@@ -90,8 +94,10 @@ public class LayoutSecurityServiceImpl implements LayoutSecurityService {
                                      .filter(Objects::nonNull)
                                      .filter(metadataValues -> !metadataValues.isEmpty())
                                      .anyMatch(values -> checkUser(context, user, item, values));
+    }
 
-
+    private boolean customDataGrantAccessGroup(Context context, Set<Group> groupSecurityFields) {
+        return groupSecurityFields.stream().anyMatch(group -> isMemberOfGroup(context, group));
     }
 
     private List<MetadataValue> getMetadata(Item item, MetadataField mf) {
@@ -132,11 +138,15 @@ public class LayoutSecurityServiceImpl implements LayoutSecurityService {
         String element = metadataValue.getMetadataField().getElement();
         String qualifier = metadataValue.getMetadataField().getQualifier();
         Collection collection = item.getOwningCollection();
-        String authorityName = choiceAuthorityService.getChoiceAuthorityName(schema, element, qualifier, collection);
+        String authorityName = choiceAuthorityService.getChoiceAuthorityName(schema, element, qualifier, Constants.ITEM,
+                collection);
         return authorityName != null ? choiceAuthorityService.getChoiceAuthorityByAuthorityName(authorityName) : null;
     }
 
     private boolean isAuthorityEqualsTo(MetadataValue metadataValue, EPerson user) {
+        if (Objects.isNull(metadataValue) || Objects.isNull(user)) {
+            return false;
+        }
         return StringUtils.equals(metadataValue.getAuthority(), user.getID().toString());
     }
 
@@ -162,6 +172,14 @@ public class LayoutSecurityServiceImpl implements LayoutSecurityService {
             throw new SQLRuntimeException(e);
         }
 
+    }
+
+    private boolean isMemberOfGroup(Context context, Group group) {
+        try {
+            return groupService.isMember(context, group);
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
+        }
     }
 
 }

@@ -28,6 +28,7 @@ import org.dspace.builder.WorkflowItemBuilder;
 import org.dspace.content.Collection;
 import org.dspace.content.Community;
 import org.dspace.content.EntityType;
+import org.dspace.core.CrisConstants;
 import org.dspace.external.provider.AbstractExternalDataProvider;
 import org.dspace.external.provider.ExternalDataProvider;
 import org.dspace.external.service.ExternalDataService;
@@ -57,7 +58,7 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
                 ExternalSourceMatcher.matchExternalSource("sherpaJournal", "sherpaJournal", false),
                 ExternalSourceMatcher.matchExternalSource("sherpaPublisher", "sherpaPublisher", false),
                 ExternalSourceMatcher.matchExternalSource("pubmed", "pubmed", false))))
-            .andExpect(jsonPath("$.page.totalElements", Matchers.is(15)));
+            .andExpect(jsonPath("$.page.totalElements", Matchers.is(16)));
     }
 
     @Test
@@ -199,6 +200,107 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
     }
 
     @Test
+    public void testAuthorityImportDataProviderExternalSourceWithPlaceholder() throws Exception {
+        context.turnOffAuthorisationSystem();
+        configurationService.setProperty("choises.externalsource.dc.contributor.author", "authorAuthority");
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1).withName("Collection 1")
+                .withWorkflowGroup(1, admin).build();
+
+        //2. a workflow item
+        XmlWorkflowItem witem = WorkflowItemBuilder.createWorkflowItem(context, col1)
+                .withTitle("Workflow Item 1")
+                .withIssueDate("2017-10-17")
+                .withAuthor("Smith, Donald").withAuthor("Doe, John")
+                .withAuthorAffiliation("Affiliation one").withAuthorAffiliation(
+                        CrisConstants.PLACEHOLDER_PARENT_METADATA_VALUE)
+                .withSubject("ExtraEntry")
+                .build();
+
+        UUID itemUUID = witem.getItem().getID();
+
+        context.restoreAuthSystemState();
+
+        String exteranlSourceId = UUIDUtils.toString(itemUUID) + ":0";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("dc.title",
+                                   "Smith, Donald", "0"))))
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("person.affiliation.name",
+                                   "Affiliation one", "0"))));
+
+        exteranlSourceId = UUIDUtils.toString(itemUUID) + ":1";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("dc.title",
+                                   "Doe, John", "0"))))
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchMetadataDoesNotExist("person.affiliation.name"))));
+
+        exteranlSourceId = UUIDUtils.toString(itemUUID) + ":2";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testAuthorityImportDataProviderExternalSourceWithEmptyValue() throws Exception {
+        context.turnOffAuthorisationSystem();
+        configurationService.setProperty("choises.externalsource.dc.contributor.author", "authorAuthority");
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1).withName("Collection 1")
+                .withWorkflowGroup(1, admin).build();
+
+        //2. a workflow item
+        XmlWorkflowItem witem = WorkflowItemBuilder.createWorkflowItem(context, col1)
+                .withTitle("Workflow Item 1")
+                .withIssueDate("2017-10-17")
+                .withAuthor("Smith, Donald").withAuthor("Doe, John")
+                .withAuthorAffiliation("Affiliation one").withAuthorAffiliation("")
+                .withSubject("ExtraEntry")
+                .build();
+
+        UUID itemUUID = witem.getItem().getID();
+
+        context.restoreAuthSystemState();
+
+        String exteranlSourceId = UUIDUtils.toString(itemUUID) + ":0";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("dc.title",
+                                   "Smith, Donald", "0"))))
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("person.affiliation.name",
+                                   "Affiliation one", "0"))));
+
+        exteranlSourceId = UUIDUtils.toString(itemUUID) + ":1";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchItemWithGivenMetadata("dc.title",
+                                   "Doe, John", "0"))))
+                   .andExpect(jsonPath("$", Matchers.is(
+                           ExternalSourceEntryMatcher.matchMetadataDoesNotExist("person.affiliation.name"))));
+
+        exteranlSourceId = UUIDUtils.toString(itemUUID) + ":2";
+        getClient().perform(get("/api/integration/externalsources/authorAuthority/entryValues/" + exteranlSourceId))
+                   .andExpect(status().isBadRequest());
+    }
+
+    @Test
     public void findExternalSourcesByEntityTypeTest() throws Exception {
         List<ExternalDataProvider> publicationProviders =
                 externalDataService.getExternalDataProvidersForEntityType("Publication");
@@ -281,6 +383,12 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
 
         String tokenAdmin = getAuthToken(admin.getEmail(), password);
 
+        List<String> mockSupportedEntityTypes = ((AbstractExternalDataProvider) externalDataService
+            .getExternalDataProvider("mock")).getSupportedEntityTypes();
+
+        List<String> pubmedSupportedEntityTypes = ((AbstractExternalDataProvider) externalDataService
+            .getExternalDataProvider("pubmed")).getSupportedEntityTypes();
+
         try {
             ((AbstractExternalDataProvider) externalDataService.getExternalDataProvider("mock"))
                                .setSupportedEntityTypes(Arrays.asList("Publication", "OrgUnit"));
@@ -305,9 +413,9 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
                                  .andExpect(jsonPath("$.page.totalElements", Matchers.is(3)));
         } finally {
             ((AbstractExternalDataProvider) externalDataService.getExternalDataProvider("mock"))
-                    .setSupportedEntityTypes(null);
+                    .setSupportedEntityTypes(mockSupportedEntityTypes);
             ((AbstractExternalDataProvider) externalDataService.getExternalDataProvider("pubmed"))
-                    .setSupportedEntityTypes(null);
+                    .setSupportedEntityTypes(pubmedSupportedEntityTypes);
         }
     }
 
@@ -346,6 +454,9 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
 
         context.restoreAuthSystemState();
 
+        List<String> mockSupportedEntityTypes = ((AbstractExternalDataProvider) externalDataService
+            .getExternalDataProvider("mock")).getSupportedEntityTypes();
+
         String tokenAdmin = getAuthToken(admin.getEmail(), password);
 
         try {
@@ -374,7 +485,7 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
 
         } finally {
             ((AbstractExternalDataProvider) externalDataService.getExternalDataProvider("mock"))
-                    .setSupportedEntityTypes(null);
+                    .setSupportedEntityTypes(mockSupportedEntityTypes);
         }
     }
 

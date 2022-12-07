@@ -36,6 +36,13 @@
 		<qualifier>definition</qualifier>
         <scope_note>Metadata to link a collection with a submission type</scope_note>
 	</dc-type>
+    
+    <dc-type>
+        <schema>cris</schema>
+        <element>submission</element>
+        <qualifier>definition-correction</qualifier>
+        <scope_note>Metadata to link a collection with a correction submission type</scope_note>
+    </dc-type>
 
     <dc-type>
 		<schema>cris</schema>
@@ -43,76 +50,6 @@
 		<qualifier>name</qualifier>
         <scope_note>Metadata to link a collection with a workflow type</scope_note>
 	</dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>owner</element>
-        <qualifier></qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>access-token</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>refresh-token</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>scope</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>sync-mode</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>sync-publications</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>sync-fundings</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>sync-profile</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>webhook</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>cris</schema>
-        <element>orcid</element>
-        <qualifier>authenticated</qualifier>
-        <scope_note></scope_note>
-    </dc-type>
 
     <dc-type>
         <schema>cris</schema>
@@ -214,8 +151,36 @@
 
     <dc-type>
         <schema>cris</schema>
+        <element>virtual</element>
+        <qualifier>author-orcid</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>virtual</element>
+        <qualifier>editor-orcid</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
         <element>virtualsource</element>
         <qualifier>department</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>virtualsource</element>
+        <qualifier>author-orcid</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>virtualsource</element>
+        <qualifier>editor-orcid</qualifier>
         <scope_note></scope_note>
     </dc-type>
 
@@ -237,6 +202,68 @@
         <schema>cris</schema>
         <element>cms</element>
         <qualifier>footer</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>customurl</element>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>customurl</element>
+        <qualifier>old</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>scopus</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>scopus-person</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>scopus-publication</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>wos</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>wos-person</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>wos-publication</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>entity</element>
+        <qualifier>style</qualifier>
         <scope_note></scope_note>
     </dc-type>
 

@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -117,5 +118,13 @@ public interface DSpaceRunnableHandler {
     public void writeFilestream(Context context, String fileName, InputStream inputStream, String type)
         throws IOException, SQLException, AuthorizeException;
 
+    /**
+     * This method will return a List of UUIDs for the special groups
+     * associated with the processId contained by specific implementations of this interface.
+     * Otherwise, it returns an empty collection.
+     * @return List containing UUIDs of Special Groups of the associated Process.
+     */
     public List<UUID> getSpecialGroups();
+
+    public Locale getLocale();
 }

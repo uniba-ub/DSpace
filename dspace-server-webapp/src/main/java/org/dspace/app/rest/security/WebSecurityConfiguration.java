@@ -12,9 +12,12 @@ import org.dspace.authenticate.service.AuthenticationService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.RequestService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -66,6 +69,10 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
     @Autowired
     private ConfigurationService configurationService;
 
+    @Value("${management.endpoints.web.base-path:/actuator}")
+    private String actuatorBasePath;
+
+
     @Override
     public void configure(WebSecurity webSecurity) throws Exception {
         // Define URL patterns which Spring Security will ignore entirely.
@@ -84,7 +91,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         // Configure authentication requirements for ${dspace.server.url}/api/ URL only
         // NOTE: REST API is hardcoded to respond on /api/. Other modules (OAI, SWORD, IIIF, etc) use other root paths.
         http.requestMatchers()
-            .antMatchers("/api/**", "/iiif/**")
+            .antMatchers("/api/**", "/iiif/**", actuatorBasePath + "/**")
             .and()
             // Enable Spring Security authorization on these paths
             .authorizeRequests()
@@ -92,6 +99,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers(HttpMethod.POST,"/api/authn/login").permitAll()
                 // Everyone can call GET on the status endpoint (used to check your authentication status)
                 .antMatchers(HttpMethod.GET, "/api/authn/status").permitAll()
+                .antMatchers(HttpMethod.GET, actuatorBasePath + "/info").hasAnyAuthority(ADMIN_GRANT)
             .and()
             // Tell Spring to not create Sessions
             .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS).and()
@@ -106,8 +114,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
             // While we primarily use JWT in headers, CSRF protection is needed because we also support JWT via Cookies
             .csrf()
                 .ignoringAntMatchers(configurationService.getArrayProperty("csrf.ignore-paths"))
-                .csrfTokenRepository(this.getCsrfTokenRepository())
+                .csrfTokenRepository(this.csrfTokenRepository())
                 .sessionAuthenticationStrategy(this.sessionAuthenticationStrategy())
+                .ignoringRequestMatchers(this.dspaceCsrfRequestMatcher())
             .and()
             .exceptionHandling()
                 // Return 401 on authorization failures with a correct WWWW-Authenticate header
@@ -143,8 +152,8 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                              LogoutFilter.class)
             //Add a filter before our ORCID endpoints to do the authentication based on the data in the
             // HTTP request
-            .addFilterBefore(new OrcidAuthenticationFilter("/api/authn/orcid", authenticationManager(),
-                                                      restAuthenticationService),
+            .addFilterBefore(new OrcidLoginFilter("/api/authn/orcid", authenticationManager(),
+                                                       restAuthenticationService),
                              LogoutFilter.class)
             .addFilterBefore(new OidcLoginFilter("/api/authn/oidc", authenticationManager(),
                                                       restAuthenticationService),
@@ -177,8 +186,14 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
      *
      * @return CsrfTokenRepository as described above
      */
-    public CsrfTokenRepository getCsrfTokenRepository() {
+    @Lazy
+    @Bean
+    public CsrfTokenRepository csrfTokenRepository() {
         return new DSpaceCsrfTokenRepository();
+    }
+
+    public DSpaceCsrfIgnoringRequestMatcher dspaceCsrfRequestMatcher() {
+        return new DSpaceCsrfIgnoringRequestMatcher(csrfTokenRepository());
     }
 
     /**
@@ -186,7 +201,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
      * is only refreshed when it is used (or attempted to be used) by the client.
      */
     private SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-        return new DSpaceCsrfAuthenticationStrategy(getCsrfTokenRepository());
+        return new DSpaceCsrfAuthenticationStrategy(csrfTokenRepository());
     }
 
 }

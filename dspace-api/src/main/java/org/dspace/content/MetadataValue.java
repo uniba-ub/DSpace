@@ -60,7 +60,7 @@ public class MetadataValue implements ReloadableEntity<Integer> {
      * The value of the field
      */
     @Lob
-    @Type(type = "org.hibernate.type.MaterializedClobType")
+    @Type(type = "org.dspace.storage.rdbms.hibernate.DatabaseAwareLobType")
     @Column(name = "text_value")
     private String value;
 
@@ -268,6 +268,13 @@ public class MetadataValue implements ReloadableEntity<Integer> {
         hash = 47 * hash + this.getID();
         hash = 47 * hash + this.getDSpaceObject().getID().hashCode();
         return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "MetadataValue [id=" + id + ", metadataField=" + metadataField + ", value=" + value + ", language="
+            + language + ", place=" + place + ", authority=" + authority + ", confidence=" + confidence
+            + ", securityLevel=" + securityLevel + "]";
     }
 
     public String getSchema() {

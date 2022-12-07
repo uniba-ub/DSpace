@@ -18,9 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import java.util.HashMap;
 import java.util.Map;
 
-import org.dspace.app.orcid.client.OrcidClient;
-import org.dspace.app.orcid.factory.OrcidServiceFactory;
-import org.dspace.app.orcid.factory.OrcidServiceFactoryImpl;
 import org.dspace.app.rest.matcher.ItemAuthorityMatcher;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.builder.CollectionBuilder;
@@ -34,6 +31,9 @@ import org.dspace.content.authority.service.ChoiceAuthorityService;
 import org.dspace.core.service.PluginService;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
+import org.dspace.orcid.client.OrcidClient;
+import org.dspace.orcid.factory.OrcidServiceFactory;
+import org.dspace.orcid.factory.OrcidServiceFactoryImpl;
 import org.dspace.services.ConfigurationService;
 import org.hamcrest.Matchers;
 import org.junit.After;
@@ -122,16 +122,22 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
                         .andExpect(jsonPath("$._embedded.entries", Matchers.containsInAnyOrder(
                             ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_1.getID().toString(),
                                 "Author 1", "Author 1", "vocabularyEntry",
-                                "data-oairecerif_author_affiliation", "OrgUnit_1::"
-                                    + orgUnit_1.getID()),
+                                Map.of("data-oairecerif_author_affiliation", "OrgUnit_1::"
+                                    + orgUnit_1.getID(),
+                                    "oairecerif_author_affiliation", "OrgUnit_1::"
+                                        + orgUnit_1.getID())),
                             ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_2.getID().toString(),
                                 "Author 2", "Author 2", "vocabularyEntry",
-                                "data-oairecerif_author_affiliation", "OrgUnit_1::"
-                                    + orgUnit_1.getID()),
+                                Map.of("data-oairecerif_author_affiliation", "OrgUnit_1::"
+                                    + orgUnit_1.getID(),
+                                    "oairecerif_author_affiliation", "OrgUnit_1::"
+                                        + orgUnit_1.getID())),
                             ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_3.getID().toString(),
                                 "Author 3", "Author 3", "vocabularyEntry",
-                                "data-oairecerif_author_affiliation", "OrgUnit_2::"
-                                    + orgUnit_2.getID())
+                                Map.of("data-oairecerif_author_affiliation", "OrgUnit_2::"
+                                    + orgUnit_2.getID(),
+                                    "oairecerif_author_affiliation", "OrgUnit_2::"
+                                        + orgUnit_2.getID()))
                         )))
                         .andExpect(jsonPath("$.page.totalElements", Matchers.is(3)));
     }
@@ -198,13 +204,16 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
                                // filled with AuthorAuthority extra metadata generator
                                ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_1.getID().toString(),
                                "Author 1(OrgUnit_1)", "Author 1", "vocabularyEntry",
-                               "data-oairecerif_author_affiliation", "OrgUnit_1::" + orgUnit_1.getID()),
+                               Map.of("data-oairecerif_author_affiliation", "OrgUnit_1::" + orgUnit_1.getID(),
+                                   "oairecerif_author_affiliation", "OrgUnit_1::" + orgUnit_1.getID())),
                                ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_1.getID().toString(),
                                "Author 1(OrgUnit_2)", "Author 1", "vocabularyEntry",
-                               "data-oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID()),
+                               Map.of("data-oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID(),
+                                   "oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID())),
                                ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_2.getID().toString(),
                                "Author 2(OrgUnit_2)", "Author 2", "vocabularyEntry",
-                               "data-oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID()),
+                               Map.of("data-oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID(),
+                                   "oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID())),
                                // filled with EditorAuthority extra metadata generator
                                ItemAuthorityMatcher.matchItemAuthorityProperties(author_1.getID().toString(),
                                "Author 1", "Author 1", "vocabularyEntry"),
@@ -238,7 +247,8 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
                        .andExpect(status().isOk())
                        .andExpect(jsonPath("$._embedded.entries", Matchers.contains(
                            ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_1.getID().toString(),
-                               "Author 1", "Author 1", "vocabularyEntry", "data-oairecerif_author_affiliation", "")
+                                "Author 1", "Author 1", "vocabularyEntry",
+                                Map.of("data-oairecerif_author_affiliation", "", "oairecerif_author_affiliation", ""))
                        )))
                        .andExpect(jsonPath("$.page.totalElements", Matchers.is(1)));
     }
@@ -269,7 +279,7 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
 
        context.restoreAuthSystemState();
 
-       String token = getAuthToken(eperson.getEmail(), password);
+       String token = getAuthToken(admin.getEmail(), password);
        getClient(token).perform(get("/api/submission/vocabularies/EPersonAuthority/entries")
                        .param("filter", "Andrea"))
                        .andExpect(status().isOk())

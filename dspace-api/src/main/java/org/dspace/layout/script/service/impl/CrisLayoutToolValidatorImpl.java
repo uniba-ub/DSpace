@@ -17,8 +17,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import javax.annotation.PostConstruct;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -33,7 +36,9 @@ import org.dspace.content.service.MetadataFieldService;
 import org.dspace.core.Context;
 import org.dspace.core.ReloadableEntity;
 import org.dspace.core.exception.SQLRuntimeException;
+import org.dspace.eperson.service.GroupService;
 import org.dspace.layout.CrisLayoutBoxTypes;
+import org.dspace.layout.script.service.CrisLayoutToolRenderValidator;
 import org.dspace.layout.script.service.CrisLayoutToolValidationResult;
 import org.dspace.layout.script.service.CrisLayoutToolValidator;
 import org.dspace.util.WorkbookUtils;
@@ -53,6 +58,20 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
     @Autowired
     private MetadataFieldService metadataFieldService;
 
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private List<CrisLayoutToolRenderValidator> renderingValidators;
+
+    private Map<String, CrisLayoutToolRenderValidator> renderingValidatorsByName;
+
+    @PostConstruct
+    private void setup() {
+        renderingValidatorsByName = renderingValidators.stream()
+            .collect(Collectors.toMap(CrisLayoutToolRenderValidator::getName, Function.identity()));
+    }
+
     @Override
     public CrisLayoutToolValidationResult validate(Context context, Workbook workbook) {
 
@@ -67,8 +86,8 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
         validateBox2MetadataSheet(allMetadataFields, workbook, result);
         validateMetadataGroupsSheet(allMetadataFields, workbook, result);
         validateBox2MetricsSheet(workbook, result);
-        validateBoxPolicySheet(allMetadataFields, workbook, result);
-        validateTabPolicySheet(allMetadataFields, workbook, result);
+        validateBoxPolicySheet(context, allMetadataFields, workbook, result);
+        validateTabPolicySheet(context, allMetadataFields, workbook, result);
 
         return result;
     }
@@ -183,7 +202,7 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
         if (metadataColumn == -1) {
             result.addError("The sheet " + BOX2METADATA_SHEET + " has no " + METADATA_COLUMN + " column");
         } else {
-            validateMetadataFields(allMetadataFields, box2metadataSheet, metadataColumn, result);
+            validateMetadataFields(allMetadataFields, box2metadataSheet, metadataColumn, fieldTypeColumn, result);
         }
 
         int entityTypeColumn = getCellIndexFromHeaderName(box2metadataSheet, ENTITY_COLUMN);
@@ -200,6 +219,8 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
             validatePresenceInBoxSheet(result, box2metadataSheet, entityTypeColumn, boxColumn);
         }
 
+        validateRenderingColumn(box2metadataSheet, fieldTypeColumn, result);
+
     }
 
     private void validateMetadataGroupsSheet(List<String> allMetadataFields,
@@ -213,19 +234,23 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
 
         validateColumnsPresence(metadataGroupsSheet, result, ENTITY_COLUMN);
 
+        int fieldTypeColumn = getCellIndexFromHeaderName(metadataGroupsSheet, FIELD_TYPE_COLUMN);
+
         int metadataColumn = getCellIndexFromHeaderName(metadataGroupsSheet, METADATA_COLUMN);
         if (metadataColumn == -1) {
             result.addError("The sheet " + METADATAGROUPS_SHEET + " has no " + METADATA_COLUMN + " column");
         } else {
-            validateMetadataFields(allMetadataFields, metadataGroupsSheet, metadataColumn, result);
+            validateMetadataFields(allMetadataFields, metadataGroupsSheet, metadataColumn, fieldTypeColumn, result);
         }
 
         int parentColumn = getCellIndexFromHeaderName(metadataGroupsSheet, PARENT_COLUMN);
         if (parentColumn == -1) {
             result.addError("The sheet " + METADATAGROUPS_SHEET + " has no " + PARENT_COLUMN + " column");
         } else {
-            validateMetadataFields(allMetadataFields, metadataGroupsSheet, parentColumn, result);
+            validateMetadataFields(allMetadataFields, metadataGroupsSheet, parentColumn, fieldTypeColumn, result);
         }
+
+        validateRenderingColumn(metadataGroupsSheet, fieldTypeColumn, result);
 
     }
 
@@ -241,17 +266,17 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
 
     }
 
-    private void validateBoxPolicySheet(List<String> allMetadataFields, Workbook workbook,
+    private void validateBoxPolicySheet(Context context, List<String> allMetadataFields, Workbook workbook,
         CrisLayoutToolValidationResult result) {
-        validatePolicySheet(allMetadataFields, workbook, result, BOX_POLICY_SHEET);
+        validatePolicySheet(context, allMetadataFields, workbook, result, BOX_POLICY_SHEET);
     }
 
-    private void validateTabPolicySheet(List<String> allMetadataFields, Workbook workbook,
+    private void validateTabPolicySheet(Context context, List<String> allMetadataFields, Workbook workbook,
         CrisLayoutToolValidationResult result) {
-        validatePolicySheet(allMetadataFields, workbook, result, TAB_POLICY_SHEET);
+        validatePolicySheet(context, allMetadataFields, workbook, result, TAB_POLICY_SHEET);
     }
 
-    private void validatePolicySheet(List<String> allMetadataFields, Workbook workbook,
+    private void validatePolicySheet(Context context, List<String> allMetadataFields, Workbook workbook,
         CrisLayoutToolValidationResult result, String policySheetName) {
 
         Sheet policySheet = workbook.getSheet(policySheetName);
@@ -263,12 +288,19 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
         int metadataColumn = getCellIndexFromHeaderName(policySheet, METADATA_COLUMN);
         if (metadataColumn == -1) {
             result.addError("The sheet " + policySheetName + " has no " + METADATA_COLUMN + " column");
-        } else {
-            validateMetadataFields(allMetadataFields, policySheet, metadataColumn, result);
+        }
+
+        int groupColumn = getCellIndexFromHeaderName(policySheet, GROUP_COLUMN);
+        if (groupColumn == -1) {
+            result.addError("The sheet " + policySheetName + " has no " + GROUP_COLUMN + " column");
+        }
+
+        if (metadataColumn != -1 && groupColumn != -1) {
+            validateMetadataAndGroupFields(context, allMetadataFields, policySheet,
+                                           metadataColumn, groupColumn, result);
         }
 
         validateColumnsPresence(policySheet, result, ENTITY_COLUMN, SHORTNAME_COLUMN);
-
     }
 
     private void validateBox2MetadataFieldTypes(Sheet sheet, CrisLayoutToolValidationResult result, int typeColumn) {
@@ -318,16 +350,106 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
     }
 
     private void validateMetadataFields(List<String> allMetadataFields, Sheet sheet,
-        int metadataColumn, CrisLayoutToolValidationResult result) {
+        int metadataColumn, int fieldTypeColumn, CrisLayoutToolValidationResult result) {
 
         for (Cell cell : getColumnWithoutHeader(sheet, metadataColumn)) {
+
             String metadataField = WorkbookUtils.getCellValue(cell);
+
+            if (StringUtils.isBlank(metadataField) && isNotBitstreamType(cell.getRow(), fieldTypeColumn)) {
+                result.addError("The " + sheet.getSheetName() + " contains an empty metadata "
+                    + "field at row " + cell.getRowIndex());
+            }
+
             if (StringUtils.isNotBlank(metadataField) && !allMetadataFields.contains(metadataField)) {
                 result.addError("The " + sheet.getSheetName() + " contains an unknown metadata field " + metadataField
                     + " at row " + cell.getRowIndex());
             }
         }
 
+    }
+
+    private void validateRenderingColumn(Sheet sheet, int fieldTypeColumn, CrisLayoutToolValidationResult result) {
+
+        int renderingColumn = getCellIndexFromHeaderName(sheet, RENDERING_COLUMN);
+        if (renderingColumn == -1) {
+            result.addError("The sheet " + sheet.getSheetName() + " has no " + RENDERING_COLUMN + " column");
+            return;
+        }
+
+        for (Cell cell : getColumnWithoutHeader(sheet, renderingColumn)) {
+            if (WorkbookUtils.isCellNotEmpty(cell)) {
+                validateRenderType(cell, fieldTypeColumn, result);
+            }
+        }
+
+    }
+
+    private void validateRenderType(Cell cell, int fieldTypeColumn, CrisLayoutToolValidationResult result) {
+
+        String renderType = WorkbookUtils.getCellValue(cell);
+
+        String fieldType = getCellValue(cell.getRow(), fieldTypeColumn);
+        if (StringUtils.isEmpty(fieldType)) {
+            fieldType = CrisLayoutBoxTypes.METADATA.name();
+        }
+
+        String sheetName = cell.getRow().getSheet().getSheetName();
+
+        CrisLayoutToolRenderValidator renderValidator = findRenderValidatorByName(renderType);
+
+        if (renderValidator == null) {
+            result.addError("The sheet " + sheetName + " contains an unknown RENDERING type " + renderType + " at row "
+                + cell.getRow().getRowNum());
+            return;
+        }
+
+        renderValidator.validate(renderType, fieldType)
+            .ifPresent(validationError -> result.addError("The sheet " + sheetName + " contains an invalid "
+                + "RENDERING type at row " + cell.getRow().getRowNum() + ": " + validationError));
+
+    }
+
+    private CrisLayoutToolRenderValidator findRenderValidatorByName(String renderType) {
+        String renderName = renderType.split("\\.")[0];
+        return renderingValidatorsByName.get(renderName);
+    }
+
+    private void validateMetadataAndGroupFields(Context context, List<String> allMetadataFields, Sheet sheet,
+                                                int metadataColumn, int groupColumn,
+                                                CrisLayoutToolValidationResult result) {
+        List<Cell> metadataCells = getColumnWithoutHeader(sheet, metadataColumn);
+        List<Cell> groupCells = getColumnWithoutHeader(sheet, groupColumn);
+
+        // Only METADATA or GROUP column must have a value for each row
+        for (int i = 0; i < metadataCells.size(); i++) {
+            String metadataValue = getCellValue(metadataCells.get(i));
+            String groupValue = getCellValue(groupCells.get(i));
+
+            if (StringUtils.isBlank(metadataValue) == StringUtils.isBlank(groupValue)) {
+                result.addError("The " + sheet.getSheetName() + " at row " + i
+                    + " contains invalid values for METADATA/GROUP column.");
+                return;
+            }
+
+            if (StringUtils.isNotBlank(metadataValue) && !allMetadataFields.contains(metadataValue)) {
+                result.addError("The " + sheet.getSheetName() + " contains an unknown metadata field: '" + metadataValue
+                                    + "' at row " + i);
+            }
+
+            if (StringUtils.isNotBlank(groupValue) && !doesGroupExists(context, groupValue)) {
+                result.addError("The " + sheet.getSheetName() + " contains an unknown group field: '" + groupValue
+                                    + "' at row " + i);
+            }
+        }
+    }
+
+    private boolean isNotBitstreamType(Row row, int fieldTypeColumn) {
+        if (fieldTypeColumn == -1) {
+            return true;
+        }
+
+        return !BITSTREAM_TYPE.equals(getCellValue(row, fieldTypeColumn));
     }
 
     private void validatePresenceInBoxSheet(CrisLayoutToolValidationResult result, Sheet sheet,
@@ -633,6 +755,14 @@ public class CrisLayoutToolValidatorImpl implements CrisLayoutToolValidator {
 
     private String[] splitByCommaAndTrim(String name) {
         return Arrays.stream(name.split(",")).map(String::trim).toArray(String[]::new);
+    }
+
+    private boolean doesGroupExists(Context context, String groupName) {
+        try {
+            return groupService.findByName(context, groupName) != null;
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
+        }
     }
 
 }

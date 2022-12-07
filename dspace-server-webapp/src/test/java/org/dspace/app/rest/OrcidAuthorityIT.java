@@ -22,13 +22,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
+import java.util.Map;
 
-import org.dspace.app.orcid.client.OrcidClient;
-import org.dspace.app.orcid.client.OrcidConfiguration;
-import org.dspace.app.orcid.exception.OrcidClientException;
-import org.dspace.app.orcid.factory.OrcidServiceFactory;
-import org.dspace.app.orcid.factory.OrcidServiceFactoryImpl;
-import org.dspace.app.orcid.model.OrcidTokenResponseDTO;
 import org.dspace.app.rest.matcher.ItemAuthorityMatcher;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.builder.CollectionBuilder;
@@ -37,6 +32,12 @@ import org.dspace.builder.ItemBuilder;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.authority.OrcidAuthority;
+import org.dspace.orcid.client.OrcidClient;
+import org.dspace.orcid.client.OrcidConfiguration;
+import org.dspace.orcid.exception.OrcidClientException;
+import org.dspace.orcid.factory.OrcidServiceFactory;
+import org.dspace.orcid.factory.OrcidServiceFactoryImpl;
+import org.dspace.orcid.model.OrcidTokenResponseDTO;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.hamcrest.Matcher;
@@ -55,7 +56,6 @@ import org.orcid.jaxb.model.v3.release.search.expanded.ExpandedSearch;
  */
 public class OrcidAuthorityIT extends AbstractControllerIntegrationTest {
 
-    private static final String AFFILIATION_INFO = "data-oairecerif_author_affiliation";
     private static final String ORCID_INFO = OrcidAuthority.ORCID_EXTRA;
     private static final String ORCID_INSTITUTION = OrcidAuthority.INSTITUTION_EXTRA;
 
@@ -669,7 +669,8 @@ public class OrcidAuthorityIT extends AbstractControllerIntegrationTest {
 
     private Matcher<? super Object> affiliationEntry(Item item, String title, String otherInfoValue) {
         return ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(id(item), title,
-            title, "vocabularyEntry", AFFILIATION_INFO, otherInfoValue);
+            title, "vocabularyEntry", Map.of("data-oairecerif_author_affiliation", otherInfoValue,
+                "oairecerif_author_affiliation", otherInfoValue));
     }
 
     private Matcher<? super Object> orcidEntry(String title, String authorityPrefix, String orcid) {

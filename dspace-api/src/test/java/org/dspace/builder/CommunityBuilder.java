@@ -65,6 +65,10 @@ public class CommunityBuilder extends AbstractDSpaceObjectBuilder<Community> {
         return setMetadataSingleValue(community, MetadataSchemaEnum.DC.getName(), "title", null, communityName);
     }
 
+    public CommunityBuilder withNameForLanguage(final String communityName, String language) {
+        return addMetadataValue(community, MetadataSchemaEnum.DC.getName(), "title", null, language, communityName);
+    }
+
     public CommunityBuilder withTitle(final String communityTitle) {
         return addMetadataValue(community, MetadataSchemaEnum.DC.getName(), "title", null, communityTitle);
     }
@@ -116,6 +120,7 @@ public class CommunityBuilder extends AbstractDSpaceObjectBuilder<Community> {
     @Override
     public void cleanup() throws Exception {
        try (Context c = new Context()) {
+            c.setDispatcher("noindex");
             c.turnOffAuthorisationSystem();
             // Ensure object and any related objects are reloaded before checking to see what needs cleanup
             community = c.reloadEntity(community);

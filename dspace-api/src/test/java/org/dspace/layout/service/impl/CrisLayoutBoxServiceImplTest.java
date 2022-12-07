@@ -27,17 +27,21 @@ import java.util.stream.Collectors;
 
 import org.dspace.app.metrics.CrisMetrics;
 import org.dspace.authorize.service.AuthorizeService;
+import org.dspace.content.Bitstream;
+import org.dspace.content.Bundle;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataField;
+import org.dspace.content.MetadataFieldName;
 import org.dspace.content.MetadataSchema;
 import org.dspace.content.MetadataValue;
+import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.discovery.configuration.DiscoveryConfigurationUtilsService;
-import org.dspace.eperson.EPerson;
 import org.dspace.layout.CrisLayoutBox;
 import org.dspace.layout.CrisLayoutBoxTypes;
 import org.dspace.layout.CrisLayoutField;
+import org.dspace.layout.CrisLayoutFieldBitstream;
 import org.dspace.layout.CrisLayoutMetric2Box;
 import org.dspace.layout.dao.CrisLayoutBoxDAO;
 import org.dspace.metrics.CrisItemMetricsService;
@@ -74,6 +78,9 @@ public class CrisLayoutBoxServiceImplTest {
 
     @Mock
     private DiscoveryConfigurationUtilsService searchConfigurationUtilsService;
+
+    @Mock
+    private ItemService itemService;
 
     @Test
     public void testHasContentWithMetadataBox() {
@@ -145,6 +152,62 @@ public class CrisLayoutBoxServiceImplTest {
     }
 
     @Test
+    public void testHasContentWithBoxWithBitstream() {
+
+        MetadataField titleField = metadataField("dc", "title", null);
+        MetadataField typeField = metadataField("dc", "type", null);
+
+        Item item = item();
+
+        Bitstream bitstream = mock(Bitstream.class);
+
+        MetadataValue bitstreamType = metadataValue(typeField, "thumbnail");
+        when(bitstream.getMetadata()).thenReturn(List.of(bitstreamType));
+
+        Bundle bundle = mock(Bundle.class);
+        when(bundle.getBitstreams()).thenReturn(List.of(bitstream));
+
+        when(item.getBundles("ORIGINAL")).thenReturn(List.of(bundle));
+
+        CrisLayoutFieldBitstream fieldBitstream = new CrisLayoutFieldBitstream();
+        fieldBitstream.setBundle("ORIGINAL");
+        fieldBitstream.setMetadataValue("thumbnail");
+        fieldBitstream.setMetadataField(typeField);
+
+        CrisLayoutBox box = new CrisLayoutBox();
+        box.addLayoutField(crisLayoutField(titleField));
+        box.addLayoutField(fieldBitstream);
+        box.setShortname("Main Box");
+        box.setType("METADATA");
+
+        assertThat(crisLayoutBoxService.hasContent(context, box, item), is(true));
+
+    }
+
+    @Test
+    public void testHasNoContentWithBoxWithBitstream() {
+
+        MetadataField titleField = metadataField("dc", "title", null);
+        MetadataField typeField = metadataField("dc", "type", null);
+
+        Item item = item();
+
+        CrisLayoutFieldBitstream fieldBitstream = new CrisLayoutFieldBitstream();
+        fieldBitstream.setBundle("ORIGINAL");
+        fieldBitstream.setMetadataValue("thumbnail");
+        fieldBitstream.setMetadataField(typeField);
+
+        CrisLayoutBox box = new CrisLayoutBox();
+        box.addLayoutField(crisLayoutField(titleField));
+        box.addLayoutField(fieldBitstream);
+        box.setShortname("Main Box");
+        box.setType("METADATA");
+
+        assertThat(crisLayoutBoxService.hasContent(context, box, item), is(false));
+
+    }
+
+    @Test
     public void testHasMetricsBoxContent() throws SQLException {
 
         when(authorizeService.authorizeActionBoolean(eq(context), any(), eq(Constants.READ))).thenReturn(true);
@@ -189,176 +252,34 @@ public class CrisLayoutBoxServiceImplTest {
     }
 
     @Test
-    public void testOrcidAuthorizationBoxHasContentWithOwner() {
+    public void testIiifBoxHasContentWithMetadataTrue() {
+        Item item = item();
 
-        UUID userUuid = UUID.randomUUID();
-        EPerson currentUser = ePerson(userUuid);
-        when(context.getCurrentUser()).thenReturn(currentUser);
+        when(itemService.getMetadataFirstValue(item, new MetadataFieldName("dspace", "iiif", "enabled"),
+        Item.ANY)).thenReturn("true");
 
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", userUuid.toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_AUTHORIZATIONS");
+        CrisLayoutBox box = crisLayoutBox("Box", "IIIFVIEWER");
 
         assertTrue(crisLayoutBoxService.hasContent(context, box, item));
-
     }
 
-    @Test
-    public void testOrcidAuthorizationBoxHasNoContentWithNoOwner() {
+    @Test public void testIiifBoxHasNoContentWithMetadataFalse() {
+        Item item = item();
 
-        EPerson currentUser = ePerson(UUID.randomUUID());
-        when(context.getCurrentUser()).thenReturn(currentUser);
+        when(itemService.getMetadataFirstValue(item, new MetadataFieldName("dspace", "iiif", "enabled"),
+        Item.ANY)).thenReturn("false");
 
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_AUTHORIZATIONS");
+        CrisLayoutBox box = crisLayoutBox("Box", "IIIFVIEWER");
 
         assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
     }
 
-    @Test
-    public void testOrcidAuthorizationBoxHasNoContentWithoutLoggedUser() {
+    @Test public void testIiifBoxHasNoContentWithMetadataUndefined() {
+        Item item = item();
 
-        when(context.getCurrentUser()).thenReturn(null);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_AUTHORIZATIONS");
+        CrisLayoutBox box = crisLayoutBox("Box", "IIIFVIEWER");
 
         assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidSettingsBoxHasNoContentWithOwnerWithoutOrcidFields() {
-
-        UUID userUuid = UUID.randomUUID();
-        EPerson currentUser = ePerson(userUuid);
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", userUuid.toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_SETTINGS");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidSettingsBoxHasContent() {
-
-        UUID userUuid = UUID.randomUUID();
-        EPerson currentUser = ePerson(userUuid);
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        MetadataField orcidField = metadataField("person", "identifier", "orcid");
-        MetadataField tokenField = metadataField("cris", "orcid", "access-token");
-        Item item = item(metadataValue(ownerField, "Owner", userUuid.toString()),
-            metadataValue(orcidField, "0000-0000-1234-456X"), metadataValue(tokenField, "121321432432"));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_SETTINGS");
-
-        assertTrue(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidSettingsBoxHasNoContentWithNoOwner() {
-
-        EPerson currentUser = ePerson(UUID.randomUUID());
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_SETTINGS");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidSettingsBoxHasNoContentWithoutLoggedUser() {
-
-        when(context.getCurrentUser()).thenReturn(null);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_SETTINGS");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidQueueBoxHasNoContentWithOwnerWithoutOrcidFields() {
-
-        UUID userUuid = UUID.randomUUID();
-        EPerson currentUser = ePerson(userUuid);
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", userUuid.toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_QUEUE");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidQueueBoxHasContent() {
-
-        UUID userUuid = UUID.randomUUID();
-        EPerson currentUser = ePerson(userUuid);
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        MetadataField orcidField = metadataField("person", "identifier", "orcid");
-        MetadataField tokenField = metadataField("cris", "orcid", "access-token");
-        Item item = item(metadataValue(ownerField, "Owner", userUuid.toString()),
-            metadataValue(orcidField, "0000-0000-1234-456X"), metadataValue(tokenField, "121321432432"));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_QUEUE");
-
-        assertTrue(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidQueueBoxHasNoContentWithNoOwner() {
-
-        EPerson currentUser = ePerson(UUID.randomUUID());
-        when(context.getCurrentUser()).thenReturn(currentUser);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_QUEUE");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
-    }
-
-    @Test
-    public void testOrcidQueueBoxHasNoContentWithoutLoggedUser() {
-
-        when(context.getCurrentUser()).thenReturn(null);
-
-        MetadataField ownerField = metadataField("cris", "owner", null);
-        Item item = item(metadataValue(ownerField, "Owner", UUID.randomUUID().toString()));
-
-        CrisLayoutBox box = crisLayoutBox("Box", "ORCID_SYNC_QUEUE");
-
-        assertFalse(crisLayoutBoxService.hasContent(context, box, item));
-
     }
 
     private CrisLayoutBox crisLayoutMetadataBox(String shortname, MetadataField... metadataFields) {
@@ -409,12 +330,6 @@ public class CrisLayoutBoxServiceImplTest {
         when(metadataValue.getValue()).thenReturn(value);
         when(metadataValue.getAuthority()).thenReturn(authority);
         return metadataValue;
-    }
-
-    private EPerson ePerson(UUID uuid) {
-        EPerson ePerson = mock(EPerson.class);
-        when(ePerson.getID()).thenReturn(uuid);
-        return ePerson;
     }
 
     private CrisLayoutField crisLayoutField(MetadataField metadataField) {

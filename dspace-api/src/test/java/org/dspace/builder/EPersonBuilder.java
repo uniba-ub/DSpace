@@ -32,6 +32,7 @@ public class EPersonBuilder extends AbstractDSpaceObjectBuilder<EPerson> {
     @Override
     public void cleanup() throws Exception {
         try (Context c = new Context()) {
+            c.setDispatcher("noindex");
             c.turnOffAuthorisationSystem();
             // Ensure object and any related objects are reloaded before checking to see what needs cleanup
             ePerson = c.reloadEntity(ePerson);
@@ -130,16 +131,6 @@ public class EPersonBuilder extends AbstractDSpaceObjectBuilder<EPerson> {
 
     public EPersonBuilder withOrcid(final String orcid) {
         setMetadataSingleValue(ePerson, "eperson", "orcid", null, orcid);
-        return this;
-    }
-
-    public EPersonBuilder withOrcidAccessToken(final String accessToken) {
-        setMetadataSingleValue(ePerson, "eperson", "orcid", "access-token", accessToken);
-        return this;
-    }
-
-    public EPersonBuilder withOrcidRefreshToken(final String refreshToken) {
-        setMetadataSingleValue(ePerson, "eperson", "orcid", "refresh-token", refreshToken);
         return this;
     }
 

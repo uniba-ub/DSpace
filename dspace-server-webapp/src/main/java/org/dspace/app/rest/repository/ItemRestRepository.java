@@ -7,12 +7,16 @@
  */
 package org.dspace.app.rest.repository;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
+
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.UUID;
 import javax.servlet.ServletInputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -22,6 +26,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.dspace.app.customurl.CustomUrlService;
 import org.dspace.app.rest.Parameter;
 import org.dspace.app.rest.SearchRestMethod;
 import org.dspace.app.rest.authorization.impl.EditMetadataFeature;
@@ -49,6 +54,7 @@ import org.dspace.content.service.RelationshipService;
 import org.dspace.content.service.RelationshipTypeService;
 import org.dspace.content.service.WorkspaceItemService;
 import org.dspace.core.Context;
+import org.dspace.core.exception.SQLRuntimeException;
 import org.dspace.util.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -102,6 +108,9 @@ public class ItemRestRepository extends DSpaceObjectRestRepository<Item, ItemRes
 
     @Autowired
     private UriListHandlerService uriListHandlerService;
+
+    @Autowired
+    private CustomUrlService customUrlService;
 
     public ItemRestRepository(ItemService dsoService) {
         super(dsoService);
@@ -311,6 +320,18 @@ public class ItemRestRepository extends DSpaceObjectRestRepository<Item, ItemRes
         item.setLastModified(itemRest.getLastModified());
         metadataConverter.setMetadata(context, item, itemRest.getMetadata());
 
+        String entityType = itemService.getEntityType(item);
+        String collectionEntityType = collectionService.getEntityType(collection);
+
+        if (isNotBlank(entityType) && isNotBlank(collectionEntityType) && !collectionEntityType.equals(entityType)) {
+            throw new UnprocessableEntityException("The specified entity type is not consistent "
+                + "with the collection's entity type (" + collectionEntityType + ")");
+        }
+
+        if (isBlank(entityType) && isNotBlank(collectionEntityType)) {
+            itemService.setEntityType(context, item, collectionEntityType);
+        }
+
         Item itemToReturn = installItemService.installItem(context, workspaceItem);
 
         return converter.toRest(itemToReturn, utils.obtainProjection());
@@ -393,4 +414,29 @@ public class ItemRestRepository extends DSpaceObjectRestRepository<Item, ItemRes
 
         return converter.toRestPage(items, pageable, items.size(), utils.obtainProjection());
     }
+
+    @SearchRestMethod(name = "findByCustomURL")
+    public ItemRest findByCustomUrl(@Parameter(value = "q", required = true) String customUrl) {
+        return findItemByUuidOrCustomUrl(obtainContext(), customUrl)
+            .map(item -> (ItemRest) converter.toRest(item, utils.obtainProjection()))
+            .orElse(null);
+    }
+
+    private Optional<Item> findItemByUuidOrCustomUrl(Context context, String customUrl) {
+
+        UUID uuid = UUIDUtils.fromString(customUrl);
+        if (uuid != null) {
+
+            try {
+                return Optional.ofNullable(itemService.find(context, uuid));
+            } catch (SQLException e) {
+                throw new SQLRuntimeException(e);
+            }
+
+        }
+
+        return customUrlService.findItemByCustomUrl(context, customUrl);
+
+    }
+
 }

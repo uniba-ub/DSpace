@@ -15,7 +15,9 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.dspace.app.rest.model.patch.AddOperation;
@@ -172,13 +174,12 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(userA)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
+                                .withDescriptionAbstract("A secured abstract")
                                 .build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, userA.getID().toString());
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField title = mfss.findByElement(context, "dc", "title", null);
@@ -264,13 +265,12 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(userA)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
+                                .withDescriptionAbstract("A secured abstract")
                                 .build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, userA.getID().toString());
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField title = mfss.findByElement(context, "dc", "title", null);
@@ -449,6 +449,188 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                    .andExpect(jsonPath("$.metadata['dc.description.abstract']").doesNotExist());
     }
 
+
+    @Test
+    public void customDataTestWithOneGroup() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType eType = EntityTypeBuilder.createEntityTypeBuilder(context, "Publication").build();
+
+        EPerson userA = EPersonBuilder.createEPerson(context)
+            .withNameInMetadata("Mykhaylo", "Boychuk")
+            .withEmail("user.a@example.com")
+            .withPassword(password)
+            .build();
+        EPerson userB = EPersonBuilder.createEPerson(context)
+            .withNameInMetadata("Volodyner", "Chornenkiy")
+            .withEmail("user.b@example.com")
+            .withPassword(password)
+            .build();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+            .withEntityType("Publication")
+            .withName("Collection 1")
+            .build();
+
+        Item itemA = ItemBuilder.createItem(context, col1)
+            .withTitle("Public item A")
+            .withIssueDate("2015-06-25")
+            .withAuthor("Smith, Maria")
+            .build();
+
+        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
+
+        MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
+
+        CrisLayoutBox box1 = CrisLayoutBoxBuilder.createBuilder(context, eType, true, true)
+            .withShortname("box-shortname-one")
+            .withSecurity(LayoutSecurity.CUSTOM_DATA)
+            .build();
+
+        // Create Group with member userA
+        Set<Group> groups = new HashSet<>();
+        Group testGroup = GroupBuilder.createGroup(context)
+                .withName("testGroup")
+                .addMember(userA)
+                .build();
+
+        groups.add(testGroup);
+        box1.setGroupSecurityFields(groups);
+
+        CrisLayoutFieldBuilder.createMetadataField(context, abs, 0, 0)
+            .withLabel("LABEL ABS")
+            .withRendering("RENDERIGN ABS")
+            .withRowStyle("STYLE")
+            .withBox(box1)
+            .build();
+
+        context.restoreAuthSystemState();
+
+        String tokenUserA = getAuthToken(userA.getEmail(), password);
+        String tokenUserB = getAuthToken(userB.getEmail(), password);
+
+        // userA and box1 are both part of the same Group, abstract is present
+        getClient(tokenUserA).perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract'].[0].value",
+                                is ("A secured abstract")))
+            .andExpect(jsonPath("$.metadata['dc.title'].[0].value", is ("Public item A")));
+
+        // userB is not part of the same group as box1, abstract is not present
+        getClient(tokenUserB).perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.title'].[0].value", is ("Public item A")))
+            .andExpect(jsonPath("$.metadata['dc.description.abstract']").doesNotExist());
+
+        getClient().perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract']").doesNotExist());
+    }
+
+    @Test
+    public void customDataTestWithMultipleGroup() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType eType = EntityTypeBuilder.createEntityTypeBuilder(context, "Publication").build();
+
+        EPerson userA = EPersonBuilder.createEPerson(context)
+            .withNameInMetadata("Mykhaylo", "Boychuk")
+            .withEmail("user.a@example.com")
+            .withPassword(password)
+            .build();
+        EPerson userB = EPersonBuilder.createEPerson(context)
+            .withNameInMetadata("Volodyner", "Chornenkiy")
+            .withEmail("user.b@example.com")
+            .withPassword(password)
+            .build();
+
+        EPerson userC = EPersonBuilder.createEPerson(context)
+            .withNameInMetadata("Simone", "Proni")
+            .withEmail("user.c@example.com")
+            .withPassword(password)
+            .build();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity)
+            .withEntityType("Publication")
+            .withName("Collection 1")
+            .build();
+
+        Item itemA = ItemBuilder.createItem(context, col1)
+            .withTitle("Public item A")
+            .withIssueDate("2015-06-25")
+            .withAuthor("Smith, Maria")
+            .build();
+
+        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
+
+        MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
+
+        CrisLayoutBox box1 = CrisLayoutBoxBuilder.createBuilder(context, eType, true, true)
+            .withShortname("box-shortname-one")
+            .withSecurity(LayoutSecurity.CUSTOM_DATA)
+            .build();
+
+        // Create Group with member userA
+        Set<Group> boxGroups = new HashSet<>();
+
+        Group testGroup = GroupBuilder.createGroup(context)
+            .withName("testGroup")
+            .addMember(userA)
+            .build();
+
+        Group testGroup1 = GroupBuilder.createGroup(context)
+            .withName("testGroup1")
+            .addMember(userB)
+            .build();
+
+        boxGroups.add(testGroup);
+        boxGroups.add(testGroup1);
+        box1.setGroupSecurityFields(boxGroups);
+
+        CrisLayoutFieldBuilder.createMetadataField(context, abs, 0, 0)
+            .withLabel("LABEL ABS")
+            .withRendering("RENDERIGN ABS")
+            .withRowStyle("STYLE")
+            .withBox(box1)
+            .build();
+
+        context.restoreAuthSystemState();
+
+        String tokenUserA = getAuthToken(userA.getEmail(), password);
+        String tokenUserB = getAuthToken(userB.getEmail(), password);
+        String tokenUserC = getAuthToken(userC.getEmail(), password);
+
+        // userA and box1 share one Group together, abstract is present
+        getClient(tokenUserA).perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract'].[0].value",
+                                is ("A secured abstract")))
+            .andExpect(jsonPath("$.metadata['dc.title'].[0].value", is ("Public item A")));
+
+        // userB and box1 share one Group together, abstract is present
+        getClient(tokenUserB).perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract'].[0].value",
+                                is ("A secured abstract")))
+            .andExpect(jsonPath("$.metadata['dc.title'].[0].value", is ("Public item A")));
+
+        // userC and box1 do not share any groups, abstract is not present
+        getClient(tokenUserC).perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract']").doesNotExist())
+            .andExpect(jsonPath("$.metadata['dc.title'].[0].value", is ("Public item A")));
+
+        getClient().perform(get("/api/core/items/" + itemA.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.metadata['dc.description.abstract']").doesNotExist());
+    }
+
     @Test
     public void configurationContainAllLayoutSecurityAspectTest() throws Exception {
         context.turnOffAuthorisationSystem();
@@ -485,17 +667,14 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(userB)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
+                                .withDescriptionAbstract("A secured abstract")
+                                .withCrisPolicyEPerson(userA.getFullName(), userA.getID().toString())
+                                .withCrisPolicyGroup(groupA.getName(), groupA.getID().toString())
                                 .build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
-        itemService.addMetadata(context, itemA, "cris", "policy", "eperson", null, userA.getFullName(),
-                                userA.getID().toString(), 600);
-        itemService.addMetadata(context, itemA, "cris", "policy", "group", null, groupA.getName(),
-                                groupA.getID().toString(), 600);
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, userB.getID().toString());
 
         MetadataField policyEperson = mfss.findByElement(context, "cris", "policy", "eperson");
         MetadataField policyGroup = mfss.findByElement(context, "cris", "policy", "group");
@@ -925,9 +1104,11 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(eperson)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
+                                .withDescriptionAbstract("A secured abstract")
                                 .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context)
@@ -935,9 +1116,6 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withAction(Constants.WRITE)
                              .withUser(eperson)
                              .build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, eperson.getID().toString());
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField title = mfss.findByElement(context, "dc", "title", null);
@@ -1392,9 +1570,11 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(userA)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
+                                .withDescriptionAbstract("A secured abstract")
                                 .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context)
@@ -1406,9 +1586,6 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
                              .withUser(userA).build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, userA.getID().toString());
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField title = mfss.findByElement(context, "dc", "title", null);
@@ -1616,10 +1793,13 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                            .build();
 
         Item itemA = ItemBuilder.createItem(context, col1)
+                                .withDspaceObjectOwner(eperson)
                                 .withTitle("Public item A")
                                 .withIssueDate("2015-06-25")
                                 .withAuthor("Smith, Maria")
                                 .withAuthor("Doe, John")
+                                .withDescriptionAbstract("First Abstract description")
+                                .withDescriptionAbstract("Second Abstract description")
                                 .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context)
@@ -1627,11 +1807,6 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withAction(Constants.WRITE)
                              .withUser(eperson)
                              .build();
-
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "First Abstract description");
-        itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "Second Abstract description");
-        itemService.addMetadata(context, itemA, "cris", "owner", null, null, eperson.getID().toString());
-
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField author = mfss.findByElement(context, "dc", "contributor", "author");
@@ -2200,7 +2375,7 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
         Item itemA = ItemBuilder.createItem(context, col1).build();
         itemService.addSecuredMetadata(context, itemA, "dc", "description", "abstract", null, "Metadata Secured",
             null, 0, 2);
-        itemService.addMetadata(context, itemA, "cris", "owner", "", null, "Owner of the item",
+        itemService.addMetadata(context, itemA, "dspace", "object", "owner", null, "Owner of the item",
             admin.getID().toString(), 0, 1);
         MetadataField description = mfss.findByElement(context, "dc", "description", "abstract");
 
@@ -2253,7 +2428,7 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
         Item itemA = ItemBuilder.createItem(context, col1).build();
         itemService.addSecuredMetadata(context, itemA, "dc", "description", "provenance", null, "Metadata Secured",
             null, 0, 0);
-        itemService.addMetadata(context, itemA, "cris", "owner", "", null, "Owner of the item",
+        itemService.addMetadata(context, itemA, "dspace", "object", "owner", null, "Owner of the item",
             admin.getID().toString(), 0, 1);
         MetadataField description = mfss.findByElement(context, "dc", "description", "provenance");
 
@@ -2272,21 +2447,24 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
         String tokenEperson = getAuthToken(eperson.getEmail(), password);
         String tokenAdmin = getAuthToken(admin.getEmail(), password);
         // An admin can see the dc.description.provenance metadata
-        getClient(tokenAdmin).perform(get("/api/core/items/" + itemA.getID()))
+        getClient(tokenAdmin).perform(get("/api/core/items/" + itemA.getID())
+                                 .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value", is ("Metadata Secured")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].securityLevel", is (0)));
 
         // An user who is not admin can not see the dc.description.provenance metadata
-        getClient(tokenEperson).perform(get("/api/core/items/" + itemA.getID()))
+        getClient(tokenEperson).perform(get("/api/core/items/" + itemA.getID())
+                                   .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value", is ("Metadata Secured")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].securityLevel", is (0)));
 
         // An anonymous user can not see the dc.description.provenance metadata
-        getClient().perform(get("/api/core/items/" + itemA.getID()))
+        getClient().perform(get("/api/core/items/" + itemA.getID())
+                       .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value", is ("Metadata Secured")))
@@ -2314,7 +2492,7 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
         Item itemA = ItemBuilder.createItem(context, col1).build();
         itemService.addSecuredMetadata(context, itemA, "dc", "description", "provenance", null, "Metadata Secured",
             null, 0, 1);
-        itemService.addMetadata(context, itemA, "cris", "owner", "", null, "Owner of the item",
+        itemService.addMetadata(context, itemA, "dspace", "object", "owner", null, "Owner of the item",
             admin.getID().toString(), 0, 1);
         MetadataField description = mfss.findByElement(context, "dc", "description", "provenance");
 
@@ -2335,21 +2513,24 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
         String tokenEperson = getAuthToken(ePersonService.find(context, eperson.getID()).getEmail(), password);
         String tokenAdmin = getAuthToken(admin.getEmail(), password);
         // An admin can see the dc.description.provenance metadata
-        getClient(tokenAdmin).perform(get("/api/core/items/" + itemA.getID()))
+        getClient(tokenAdmin).perform(get("/api/core/items/" + itemA.getID())
+                                 .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value", is ("Metadata Secured")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].securityLevel", is (1)));
 
         // An user that belongs to 'Trusted' group can see the dc.description.provenance metadata
-        getClient(tokenEperson).perform(get("/api/core/items/" + itemA.getID()))
+        getClient(tokenEperson).perform(get("/api/core/items/" + itemA.getID())
+                                   .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value", is ("Metadata Secured")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].securityLevel", is (1)));
 
         // An anonymous user can not see the dc.description.provenance metadata
-        getClient().perform(get("/api/core/items/" + itemA.getID()))
+        getClient().perform(get("/api/core/items/" + itemA.getID())
+                       .param("projection", "allLanguages"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.metadata['dspace.entity.type'].[0].value", is ("Person")))
                 .andExpect(jsonPath("$.metadata['dc.description.provenance'].[1].value").doesNotExist())

@@ -12,15 +12,21 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.service.AuthorizeService;
+import org.dspace.content.Bitstream;
+import org.dspace.content.DSpaceObject;
 import org.dspace.content.EntityType;
 import org.dspace.content.Item;
-import org.dspace.content.MetadataValue;
+import org.dspace.content.MetadataField;
+import org.dspace.content.MetadataFieldName;
+import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.exception.SQLRuntimeException;
@@ -28,6 +34,7 @@ import org.dspace.discovery.configuration.DiscoveryConfigurationUtilsService;
 import org.dspace.layout.CrisLayoutBox;
 import org.dspace.layout.CrisLayoutBoxConfiguration;
 import org.dspace.layout.CrisLayoutField;
+import org.dspace.layout.CrisLayoutFieldBitstream;
 import org.dspace.layout.dao.CrisLayoutBoxDAO;
 import org.dspace.layout.service.CrisLayoutBoxAccessService;
 import org.dspace.layout.service.CrisLayoutBoxService;
@@ -55,6 +62,9 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
 
     @Autowired
     private CrisItemMetricsService crisMetricService;
+
+    @Autowired
+    private ItemService itemService;
 
     public CrisLayoutBoxServiceImpl() {
     }
@@ -135,10 +145,9 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
     @Override
     public boolean hasContent(Context context, CrisLayoutBox box, Item item) {
         String boxType = box.getType();
-        List<MetadataValue> values = item.getMetadata();
 
         if (StringUtils.isEmpty(boxType)) {
-            return hasMetadataBoxContent(box, values);
+            return hasMetadataBoxContent(box, item);
         }
 
         switch (boxType.toUpperCase()) {
@@ -146,14 +155,11 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
                 return hasRelationBoxContent(context, box, item);
             case "METRICS":
                 return hasMetricsBoxContent(context, box, item);
-            case "ORCID_SYNC_SETTINGS":
-            case "ORCID_SYNC_QUEUE":
-                return hasOrcidSyncBoxContent(context, box, values);
-            case "ORCID_AUTHORIZATIONS":
-                return hasOrcidAuthorizationsBoxContent(context, box, values);
+            case "IIIFVIEWER":
+                return isIiifEnabled(item);
             case "METADATA":
             default:
-                return hasMetadataBoxContent(box, values);
+                return hasMetadataBoxContent(box, item);
         }
 
     }
@@ -168,21 +174,43 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
         return new CrisLayoutBoxConfiguration(box);
     }
 
-    private boolean hasMetadataBoxContent(CrisLayoutBox box, List<MetadataValue> values) {
+    private boolean hasMetadataBoxContent(CrisLayoutBox box, Item item) {
+
         List<CrisLayoutField> boxFields = box.getLayoutFields();
-        if (boxFields == null || boxFields.isEmpty()) {
+        if (CollectionUtils.isEmpty(boxFields)) {
             return false;
         }
 
-        for (MetadataValue value : values) {
-            for (CrisLayoutField field : boxFields) {
-                if (value.getMetadataField().equals(field.getMetadataField())) {
-                    return true;
-                }
+        for (CrisLayoutField field : boxFields) {
+
+            if (field.isMetadataField() && isMetadataFieldPresent(item, field.getMetadataField())) {
+                return true;
+            } else if (field.isBitstreamField() && isBitstreamPresent(item, (CrisLayoutFieldBitstream) field)) {
+                return true;
             }
+
         }
 
         return false;
+    }
+
+    private boolean isMetadataFieldPresent(DSpaceObject item, MetadataField metadataField) {
+        return item.getMetadata().stream()
+            .anyMatch(metadataValue -> Objects.equals(metadataField, metadataValue.getMetadataField()));
+    }
+
+    private boolean isBitstreamPresent(Item item, CrisLayoutFieldBitstream field) {
+
+        return item.getBundles(field.getBundle()).stream()
+            .flatMap(bundle -> bundle.getBitstreams().stream())
+            .anyMatch(bitstream -> isMetadataPresent(bitstream, field.getMetadataField(), field.getMetadataValue()));
+
+    }
+
+    private boolean isMetadataPresent(Bitstream bitstream, MetadataField metadataField, String value) {
+        return bitstream.getMetadata().stream()
+            .filter(metadataValue -> Objects.equals(metadataField, metadataValue.getMetadataField()))
+            .anyMatch(metadataValue -> Objects.equals(value, metadataValue.getValue()));
     }
 
     private boolean hasRelationBoxContent(Context context, CrisLayoutBox box, Item item) {
@@ -212,39 +240,17 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
         return false;
     }
 
+    private boolean isIiifEnabled(Item item) {
+        return BooleanUtils.toBoolean(itemService.getMetadataFirstValue(item,
+            new MetadataFieldName("dspace.iiif.enabled"), Item.ANY));
+    }
+
     private boolean currentUserIsNotAllowedToReadItem(Context context, Item item) {
         try {
             return !authorizeService.authorizeActionBoolean(context, item, Constants.READ);
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }
-    }
-
-    private boolean hasOrcidSyncBoxContent(Context context, CrisLayoutBox box, List<MetadataValue> values) {
-        return isOwnProfile(context, values)
-            && findFirstByMetadataField(values, "person.identifier.orcid") != null
-            && findFirstByMetadataField(values, "cris.orcid.access-token") != null;
-    }
-
-    private boolean hasOrcidAuthorizationsBoxContent(Context context, CrisLayoutBox box, List<MetadataValue> values) {
-        return isOwnProfile(context, values);
-    }
-
-    private boolean isOwnProfile(Context context, List<MetadataValue> values) {
-        MetadataValue crisOwner = findFirstByMetadataField(values, "cris.owner");
-
-        if (crisOwner == null || crisOwner.getAuthority() == null || context.getCurrentUser() == null) {
-            return false;
-        }
-
-        return crisOwner.getAuthority().equals(context.getCurrentUser().getID().toString());
-    }
-
-    private MetadataValue findFirstByMetadataField(List<MetadataValue> values, String metadataField) {
-        return values.stream()
-            .filter(metadata -> metadata.getMetadataField().toString('.').equals(metadataField))
-            .findFirst()
-            .orElse(null);
     }
 
     public List<CrisLayoutBox> findByEntityAndType(Context context,String entity, String type) {

@@ -19,6 +19,7 @@
     <bean name="metadataValidation" class="org.dspace.validation.MetadataValidator">
         <property name="name" value="submission-form"/>
         <property name="itemService" ref="org.dspace.content.ItemServiceImpl"/>
+        <property name="configurationService" ref="org.dspace.services.ConfigurationService"/>
         <property name="metadataAuthorityService" ref="org.dspace.content.authority.MetadataAuthorityServiceImpl"/>
     </bean>
 
@@ -26,6 +27,10 @@
         <property name="name" value="upload"/>
         <property name="itemService" ref="org.dspace.content.ItemServiceImpl"/>
         <property name="uploadConfigurationService" ref="uploadConfigurationService"/>
+    </bean>
+
+    <bean name="licenseValidation" class="org.dspace.validation.LicenseValidator">
+        <property name="name" value="license"/>
     </bean>
     
     <bean name="testValidation" class="org.dspace.validation.LogicalStatementValidator">
@@ -37,6 +42,10 @@
         	</list>
         </property>
         <property name="filter" ref="test_filter"/>
+    </bean>
+    
+    <bean name="customUrlValidation" class="org.dspace.validation.CustomUrlValidator">
+        <property name="name" value="custom-url"/>
     </bean>
     
     <bean id="test_filter" class="org.dspace.content.logic.DefaultFilter">

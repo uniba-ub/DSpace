@@ -13,7 +13,9 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -56,6 +58,7 @@ public class RestDSpaceRunnableHandler implements DSpaceRunnableHandler {
     private Integer processId;
     private String scriptName;
     private UUID ePersonId;
+    private Locale locale;
 
     /**
      * This constructor will initialise the handler with the process created from the parameters
@@ -63,14 +66,18 @@ public class RestDSpaceRunnableHandler implements DSpaceRunnableHandler {
      * @param scriptName    The name of the script for which is a process will be created
      * @param parameters    The parameters for this process
      * @param specialGroups The list of special groups related to eperson creating process at process creation time
+     * @param currentLocale The context current locale to use inside the runnable handler
      */
     public RestDSpaceRunnableHandler(EPerson ePerson, String scriptName, List<DSpaceCommandLineParameter> parameters,
-                                     final List<Group> specialGroups) {
+            final List<Group> specialGroups, final Locale currentLocale) {
         Context context = new Context();
+        this.locale = Optional.ofNullable(currentLocale).orElse(context.getCurrentLocale());
+        context.setCurrentLocale(this.locale);
         try {
-            ePersonId = Objects.nonNull(ePerson) ? ePerson.getID() : null;
-            Process process = processService.create(context, ePerson, scriptName, parameters, specialGroups);
-            processId = process.getID();
+            this.ePersonId = Objects.nonNull(ePerson) ? ePerson.getID() : null;
+            Process process = processService.create(context, ePerson, scriptName, parameters,
+                new HashSet<>(specialGroups));
+            this.processId = process.getID();
             this.scriptName = process.getName();
 
             context.complete();
@@ -328,5 +335,9 @@ public class RestDSpaceRunnableHandler implements DSpaceRunnableHandler {
             }
         }
         return specialGroups;
+    }
+
+    public Locale getLocale() {
+        return this.locale;
     }
 }

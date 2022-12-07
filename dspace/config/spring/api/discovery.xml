@@ -36,6 +36,8 @@
     <bean id="solrServiceHiddenRelationsRestrictionPlugin" class="org.dspace.discovery.SolrServiceHiddenRelationsRestrictionPlugin"/>
     <bean id="solrServiceMetricsIndexPlugin" class="org.dspace.discovery.SolrServiceMetricsIndexPlugin"/>
     <bean id="solrServiceCrisValuePairsIndexPlugin" class="org.dspace.discovery.SolrServiceValuePairsIndexPlugin"/>
+    <bean id="solrServiceCustomUrlIndexPlugin" class="org.dspace.discovery.SolrServiceCustomUrlIndexPlugin"/>
+    <bean id="solrServiceLastImportIndexPlugin" class="org.dspace.discovery.SolrServiceLastImportIndexPlugin"/>
 
 
     <alias name="solrServiceResourceIndexPlugin" alias="org.dspace.discovery.SolrServiceResourceRestrictionPlugin"/>
@@ -82,6 +84,7 @@
                 <entry key="journal" value-ref="journal"/>
                 <entry key="project_funding" value-ref="project_funding"/>
                 <entry key="project" value-ref="project"/>
+                <entry key="project-relationships" value-ref="projectRelationships"/>
                 <entry key="homePageTopItems" value-ref="homePageTopItemsConfiguration"/>
                 <!-- search for an entity that can be a Person or an OrgUnit -->
                 <entry key="personOrOrgunit" value-ref="personOrOrgunit"/>
@@ -106,6 +109,7 @@
                 <entry key="editCommunity" value-ref="editCommunityConfiguration"/>
                 <entry key="editCollection" value-ref="editCollectionConfiguration"/>
                 <entry key="lucky-search" value-ref="lucky"/>
+                <entry key="multilanguage-types" value-ref="multilanguage-types"/>
             </map>
         </property>
         <property name="toIgnoreMetadataFields">
@@ -297,9 +301,9 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -431,9 +435,9 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -551,7 +555,6 @@
                 <ref bean="searchFilterContentInOriginalBundle"/>
                 <ref bean="searchFilterEntityType"/>
                 <ref bean="searchFilterLanguage" />
-                <ref bean="searchFilterTypes" />
             </list>
         </property>
         <!-- Set TagCloud configuration per discovery configuration -->
@@ -576,7 +579,6 @@
                 <ref bean="searchFilterIsPublicationOfJournalIssueRelation"/>
                 <ref bean="searchFilterIsJournalOfPublicationRelation"/>
                 <ref bean="searchFilterLanguage" />
-                <ref bean="searchFilterTypes" />
             </list>
         </property>
         <!--The sort filters for the discovery search (same as defaultConfiguration above)-->
@@ -585,9 +587,12 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
-                        <ref bean="sortDateAccessioned" />
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortTitleDesc" />
+                        <ref bean="sortDateIssuedAsc" />
+                        <ref bean="sortDateIssuedDesc" />
+                        <ref bean="sortDateAccessionedAsc" />
+                        <ref bean="sortDateAccessionedDesc" />
                     </list>
                 </property>
             </bean>
@@ -685,8 +690,8 @@
                 <property name="sortFields">
                     <list>
                     	<ref bean="sortLastModified" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
                     </list>
                 </property>
             </bean>
@@ -756,8 +761,8 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortLastModified" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
                     </list>
                 </property>
             </bean>
@@ -827,8 +832,8 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
                     </list>
                 </property>
             </bean>
@@ -891,7 +896,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByProjectsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -901,7 +906,7 @@
         <property name="defaultFilterQueries">
             <list>
                 <!--Only find related items. The placeholder {0} will be replaced with scope (UUID of item)-->
-                <value>projectinvestigators_authority:{0}</value>
+                <value>projectinvestigators_authority:{0} AND search.resourcetype:Item</value>
             </list>
         </property>
         <!--Default result per page  -->
@@ -964,7 +969,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByResearchOutputsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -974,7 +979,7 @@
         <property name="defaultFilterQueries">
             <list>
                 <!--Only find related items. The placeholder {0} will be replaced with scope (UUID of item)-->
-                <value>author_authority:{0}</value>
+                <value>author_authority:{0} AND search.resourcetype:Item</value>
             </list>
         </property>
         <!--Default result per page  -->
@@ -1003,7 +1008,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByRPProjectsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1028,7 +1033,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByPublicationsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1053,7 +1058,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByRPPublicationsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1078,7 +1083,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByPeopleSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1103,7 +1108,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByProjectsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1128,7 +1133,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByOrganizationsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1153,7 +1158,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByProjectsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1178,7 +1183,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByFundingsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1203,7 +1208,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortByResearchOutputsSelection" />
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1257,9 +1262,9 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle" />
-                        <ref bean="sortDateIssued" />
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortTitleAsc" />
+                        <ref bean="sortDateIssuedDesc" />
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1326,9 +1331,9 @@
             <property name="sortFields">
                 <list>
                     <ref bean="sortScore" />
-                    <ref bean="sortTitle" />
-                    <ref bean="sortDateIssued" />
-                    <ref bean="sortDateAccessioned"/>
+                    <ref bean="sortTitleAsc" />
+                    <ref bean="sortDateIssuedDesc" />
+                    <ref bean="sortDateAccessionedDesc"/>
                     <ref bean="sortViews"/>
                     <ref bean="sortDownloads"/>
                     <ref bean="sortCitations"/>
@@ -1387,8 +1392,8 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortTitleAsc"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1443,7 +1448,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                     </list>
                 </property>
             </bean>
@@ -1453,6 +1458,60 @@
         <property name="defaultFilterQueries">
             <list>
                 <!--Only find items, communities and collections-->
+                <value>search.resourcetype:Item AND entityType_keyword:Project</value>
+            </list>
+        </property>
+        <!--Default result per page  -->
+        <property name="defaultRpp" value="10"/>
+        <property name="recentSubmissionConfiguration">
+            <bean class="org.dspace.discovery.configuration.DiscoveryRecentSubmissionsConfiguration">
+                <property name="metadataSortField" value="dc.date.accessioned"/>
+                <property name="type" value="date"/>
+                <property name="max" value="5"/>
+                <property name="useAsHomePage" value="false"/>
+            </bean>
+        </property>
+
+        <!-- When true a "did you mean" example will be displayed, value can be true or false -->
+        <property name="spellCheckEnabled" value="true"/>
+    </bean>
+    
+    <bean id="projectRelationships" class="org.dspace.discovery.configuration.DiscoveryConfiguration" scope="prototype">
+        <property name="id" value="project"/>
+        <property name="indexAlways" value="true"/>
+        <!--Which sidebar facets are to be displayed-->
+        <property name="sidebarFacets">
+            <list>
+                <ref bean="searchFilterSubject"/>
+            </list>
+        </property>
+        <!--The search filters which can be used on the discovery search page-->
+        <property name="searchFilters">
+            <list>
+                <ref bean="searchFilterSubject"/>
+                <ref bean="searchFilterIdentifier"/>
+                <ref bean="searchFilterIsOrgUnitOfProjectRelation"/>
+                <ref bean="searchFilterIsPersonOfProjectRelation"/>
+                <ref bean="searchFilterIsPublicationOfProjectRelation"/>
+            </list>
+        </property>
+        <!--The sort filters for the discovery search-->
+        <property name="searchSortConfiguration">
+            <bean class="org.dspace.discovery.configuration.DiscoverySortConfiguration">
+                <property name="sortFields">
+                    <list>
+                        <ref bean="sortScore" />
+                        <ref bean="sortTitleAsc"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+        <!--Any default filter queries, these filter queries will be used for all
+            queries done by discovery for this configuration -->
+        <property name="defaultFilterQueries">
+            <list>
+                <!--Only find items, communities and collections-->
+                <!-- NOTE: NOT filtered on latestVersion = true -->
                 <value>search.resourcetype:Item AND entityType_keyword:Project</value>
             </list>
         </property>
@@ -1500,7 +1559,7 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                     </list>
                 </property>
             </bean>
@@ -1559,7 +1618,7 @@
                         <ref bean="sortOrganizationAddressCountry"/>
                         <ref bean="sortOrganizationAddressLocality"/>
                         <ref bean="sortOrganizationFoundingDate"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1597,7 +1656,7 @@
             <bean class="org.dspace.discovery.configuration.DiscoverySortConfiguration">
                 <property name="sortFields">
                     <list>
-                        <ref bean="sortTitle" />
+                        <ref bean="sortTitleAsc" />
                     </list>
                 </property>
             </bean>
@@ -1651,8 +1710,8 @@
                 <!--DefaultSortOrder can either be desc or asc (desc is default)-->
                 <property name="sortFields">
                     <list>
-                        <ref bean="sortTitle"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortTitleAsc"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1709,9 +1768,9 @@
                     <list>
                         <ref bean="sortScore" />
                         <ref bean="sortPublicationIssueNumber"/>
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                         <ref bean="sortCreativeWorkDatePublished"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1767,9 +1826,9 @@
                     <list>
                         <ref bean="sortScore" />
                         <ref bean="sortPublicationVolumeNumber"/>
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                         <ref bean="sortCreativeWorkDatePublished"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1825,9 +1884,9 @@
                 <property name="sortFields">
                     <list>
                         <ref bean="sortScore" />
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                         <ref bean="sortCreativeWorkDatePublished"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1897,7 +1956,7 @@
                         <ref bean="sortOrganizationAddressCountry"/>
                         <ref bean="sortOrganizationAddressLocality"/>
                         <ref bean="sortOrganizationFoundingDate"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                         <ref bean="sortFamilyName"/>
                         <ref bean="sortGivenName"/>
                         <ref bean="sortBirthDate"/>
@@ -1955,7 +2014,7 @@
                         <ref bean="sortOrganizationAddressCountry"/>
                         <ref bean="sortOrganizationAddressLocality"/>
                         <ref bean="sortOrganizationFoundingDate"/>
-                        <ref bean="sortDateAccessioned"/>
+                        <ref bean="sortDateAccessionedDesc"/>
                     </list>
                 </property>
             </bean>
@@ -1990,7 +2049,7 @@
             <bean class="org.dspace.discovery.configuration.DiscoverySortConfiguration">
                 <property name="sortFields">
                     <list>
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                     </list>
                 </property>
             </bean>
@@ -2119,7 +2178,7 @@
             <bean class="org.dspace.discovery.configuration.DiscoverySortConfiguration">
                 <property name="sortFields">
                     <list>
-                        <ref bean="sortDateAccessioned" />
+                        <ref bean="sortDateAccessionedDesc" />
                         <ref bean="sortViews" />
                     </list>
                 </property>
@@ -3026,17 +3085,35 @@
         <property name="defaultSortOrder" value="desc"/>
     </bean>
 
-    <bean id="sortTitle" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+    <bean id="sortTitleAsc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
         <property name="metadataField" value="dc.title"/>
         <property name="defaultSortOrder" value="asc"/>
     </bean>
 
-    <bean id="sortDateIssued" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+    <bean id="sortTitleDesc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+        <property name="metadataField" value="dc.title"/>
+        <property name="defaultSortOrder" value="desc"/>
+    </bean>
+
+    <bean id="sortDateIssuedAsc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+        <property name="metadataField" value="dc.date.issued"/>
+        <property name="type" value="date"/>
+        <property name="defaultSortOrder" value="asc"/>
+    </bean>
+
+    <bean id="sortDateIssuedDesc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
         <property name="metadataField" value="dc.date.issued"/>
         <property name="type" value="date"/>
         <property name="defaultSortOrder" value="desc"/>
     </bean>
-    <bean id="sortDateAccessioned" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+
+    <bean id="sortDateAccessionedAsc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
+        <property name="metadataField" value="dc.date.accessioned"/>
+        <property name="type" value="date"/>
+        <property name="defaultSortOrder" value="asc"/>
+    </bean>
+
+    <bean id="sortDateAccessionedDesc" class="org.dspace.discovery.configuration.DiscoverySortFieldConfiguration">
         <property name="metadataField" value="dc.date.accessioned"/>
         <property name="type" value="date"/>
         <property name="defaultSortOrder" value="desc"/>
@@ -3230,7 +3307,7 @@
                 <!--DefaultSortOrder can either be desc or asc (desc is default)-->
                 <property name="sortFields">
                     <list>
-                        <ref bean="sortTitle"/>
+                        <ref bean="sortTitleAsc"/>
                     </list>
                 </property>
             </bean>
@@ -3245,6 +3322,44 @@
                 <ref bean="searchFilterOrcid" />
                 <ref bean="searchFilterDoi" />
                 <ref bean="searchFilterLegacyId" />
+            </list>
+        </property>
+    </bean>
+    <!-- variant of common configuration having types facet in its multilanguage version -->
+    <bean id="multilanguage-types" class="org.dspace.discovery.configuration.DiscoveryConfiguration" parent="commonConfiguration">
+        <property name="sidebarFacets">
+            <list>
+                <ref bean="searchFilterTypes" />
+                <ref bean="graphPublicationByType" />
+                <ref bean="graphPublicationByDate" />
+                <ref bean="searchFilterAuthor" />
+                <ref bean="searchFilterSubject" />
+                <ref bean="searchFilterIssued" />
+                <ref bean="searchFilterContentInOriginalBundle"/>
+                <ref bean="searchFilterEntityType"/>
+                <ref bean="searchFilterLanguage" />
+            </list>
+        </property>
+        <!--The search filters which can be used on the discovery search page (same as defaultConfiguration above)-->
+        <property name="searchFilters">
+            <list>
+                <ref bean="searchFilterTypes" />
+                <ref bean="graphPublicationByType" />
+                <ref bean="graphPublicationByDate" />
+                <ref bean="searchFilterTitle" />
+                <ref bean="searchFilterAuthor" />
+                <ref bean="searchFilterSubject" />
+                <ref bean="searchFilterIssued" />
+                <ref bean="searchFilterContentInOriginalBundle"/>
+                <ref bean="searchFilterFileNameInOriginalBundle" />
+                <ref bean="searchFilterFileDescriptionInOriginalBundle" />
+                <ref bean="searchFilterEntityType"/>
+                <ref bean="searchFilterIsAuthorOfPublicationRelation"/>
+                <ref bean="searchFilterIsProjectOfPublicationRelation"/>
+                <ref bean="searchFilterIsOrgUnitOfPublicationRelation"/>
+                <ref bean="searchFilterIsPublicationOfJournalIssueRelation"/>
+                <ref bean="searchFilterIsJournalOfPublicationRelation"/>
+                <ref bean="searchFilterLanguage" />
             </list>
         </property>
     </bean>

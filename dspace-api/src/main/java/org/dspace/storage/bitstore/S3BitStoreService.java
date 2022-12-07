@@ -8,8 +8,12 @@
 package org.dspace.storage.bitstore;
 
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Map;
 
 import com.amazonaws.AmazonClientException;
@@ -25,9 +29,13 @@ import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
-import com.amazonaws.services.s3.model.PutObjectResult;
-import com.amazonaws.services.s3.model.S3Object;
-import org.apache.commons.io.FileUtils;
+import com.amazonaws.services.s3.transfer.Download;
+import com.amazonaws.services.s3.transfer.TransferManager;
+import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
+import com.amazonaws.services.s3.transfer.Upload;
+import com.amazonaws.services.s3.transfer.model.UploadResult;
+import org.apache.commons.codec.binary.Base64;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpStatus;
 import org.apache.logging.log4j.LogManager;
@@ -53,6 +61,9 @@ public class S3BitStoreService implements BitStoreService {
      * log4j log
      */
     private static final Logger log = LogManager.getLogger(S3BitStoreService.class);
+
+    public static final String TEMP_PREFIX = "s3-virtual-path";
+    public static final String TEMP_SUFFIX = "temp";
 
     /**
      * Checksum algorithm
@@ -162,9 +173,20 @@ public class S3BitStoreService implements BitStoreService {
     public InputStream get(Bitstream bitstream) throws IOException {
         String key = getFullKey(bitstream.getInternalId());
         try {
-            S3Object object = s3Service.getObject(new GetObjectRequest(bucketName, key));
-            return (object != null) ? object.getObjectContent() : null;
-        } catch (AmazonClientException e) {
+            File tempFile = File.createTempFile("s3-disk-copy", "temp");
+            tempFile.deleteOnExit();
+
+            GetObjectRequest getObjectRequest = new GetObjectRequest(bucketName, key);
+
+            TransferManager transferManager = TransferManagerBuilder.standard()
+                .withS3Client(s3Service)
+                .build();
+
+            Download download = transferManager.download(getObjectRequest, tempFile);
+            download.waitForCompletion();
+
+            return new DeleteOnCloseFileInputStream(tempFile);
+        } catch (AmazonClientException | InterruptedException e) {
             log.error("get(" + key + ")", e);
             throw new IOException(e);
         }
@@ -186,22 +208,42 @@ public class S3BitStoreService implements BitStoreService {
         String key = getFullKey(bitstream.getInternalId());
         //Copy istream to temp file, and send the file, with some metadata
         File scratchFile = File.createTempFile(bitstream.getInternalId(), "s3bs");
-        try {
-            FileUtils.copyInputStreamToFile(in, scratchFile);
-            long contentLength = scratchFile.length();
-
+        try (
+                FileOutputStream fos = new FileOutputStream(scratchFile);
+                // Read through a digest input stream that will work out the MD5
+                DigestInputStream dis = new DigestInputStream(in, MessageDigest.getInstance(CSA));
+        ) {
+            Utils.bufferedCopy(dis, fos);
+            in.close();
+            long fileSize = scratchFile.length();
+            byte[] md5Digest = dis.getMessageDigest().digest();
+            String md5Base64 = Base64.encodeBase64String(md5Digest);
+            ObjectMetadata objMetadata = new ObjectMetadata();
+            objMetadata.setContentMD5(md5Base64);
+            objMetadata.setContentLength(fileSize);
             PutObjectRequest putObjectRequest = new PutObjectRequest(bucketName, key, scratchFile);
-            PutObjectResult putObjectResult = s3Service.putObject(putObjectRequest);
+            putObjectRequest.setMetadata(objMetadata);
+            TransferManager transferManager = TransferManagerBuilder.standard()
+                .withS3Client(s3Service)
+                .build();
 
-            bitstream.setSizeBytes(contentLength);
-            bitstream.setChecksum(putObjectResult.getETag());
+            Upload upload = transferManager.upload(putObjectRequest);
+            UploadResult uploadResult = upload.waitForUploadResult();
+
+            bitstream.setSizeBytes(fileSize);
+            // we cannot use the S3 ETAG here as it could be not a MD5 in case of multipart upload (large files) or if
+            // the bucket is encrypted
+            bitstream.setChecksum(Utils.toHex(md5Digest));
             bitstream.setChecksumAlgorithm(CSA);
 
             scratchFile.delete();
 
-        } catch (AmazonClientException | IOException e) {
+        } catch (AmazonClientException | IOException | InterruptedException e) {
             log.error("put(" + bitstream.getInternalId() + ", is)", e);
             throw new IOException(e);
+        } catch (NoSuchAlgorithmException nsae) {
+            // Should never happen
+            log.warn("Caught NoSuchAlgorithmException", nsae);
         } finally {
             if (scratchFile.exists()) {
                 scratchFile.delete();
@@ -483,4 +525,15 @@ public class S3BitStoreService implements BitStoreService {
         store.get(id);
 */
     }
+
+    @Override
+    public String path(Bitstream bitstream) throws IOException {
+        final File tempFile = File.createTempFile(TEMP_PREFIX, TEMP_SUFFIX);
+        tempFile.deleteOnExit();
+        try (FileOutputStream out = new FileOutputStream(tempFile)) {
+            IOUtils.copy(get(bitstream), out);
+        }
+        return tempFile.getAbsolutePath();
+    }
+
 }

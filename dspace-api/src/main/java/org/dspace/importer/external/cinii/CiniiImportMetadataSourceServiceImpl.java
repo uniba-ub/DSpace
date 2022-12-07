@@ -9,39 +9,59 @@ package org.dspace.importer.external.cinii;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import javax.el.MethodNotFoundException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
 
-import org.apache.axiom.om.OMAttribute;
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.OMXMLBuilderFactory;
-import org.apache.axiom.om.OMXMLParserWrapper;
-import org.apache.axiom.om.xpath.AXIOMXPath;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.http.HttpException;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.dspace.content.Item;
 import org.dspace.importer.external.datamodel.ImportRecord;
 import org.dspace.importer.external.datamodel.Query;
 import org.dspace.importer.external.exception.MetadataSourceException;
+import org.dspace.importer.external.liveimportclient.service.LiveImportClient;
 import org.dspace.importer.external.metadatamapping.MetadatumDTO;
 import org.dspace.importer.external.service.AbstractImportMetadataSourceService;
 import org.dspace.importer.external.service.components.QuerySource;
 import org.dspace.services.ConfigurationService;
-import org.jaxen.JaxenException;
+import org.jdom2.Attribute;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.filter.Filters;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-public class CiniiImportMetadataSourceServiceImpl
-    extends AbstractImportMetadataSourceService<OMElement> implements QuerySource {
+/**
+ * Implements a data source for querying Cinii
+ * 
+ * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+ */
+public class CiniiImportMetadataSourceServiceImpl extends AbstractImportMetadataSourceService<Element>
+        implements QuerySource {
 
-    Client client;
+    private final static Logger log = LogManager.getLogger();
+
+    private String url;
+    private String urlSearch;
+
+    @Autowired
+    private LiveImportClient liveImportClient;
 
     @Autowired
     private ConfigurationService configurationService;
@@ -52,14 +72,12 @@ public class CiniiImportMetadataSourceServiceImpl
     }
 
     @Override
-    public void init() throws Exception {
-        this.client = ClientBuilder.newClient();
-    }
+    public void init() throws Exception {}
 
     @Override
     public ImportRecord getRecord(String id) throws MetadataSourceException {
         List<ImportRecord> records = retry(new SearchByIdCallable(id));
-        return records == null || records.isEmpty() ? null : records.get(0);
+        return CollectionUtils.isNotEmpty(records) ? records.get(0) : null;
     }
 
     @Override
@@ -85,7 +103,7 @@ public class CiniiImportMetadataSourceServiceImpl
     @Override
     public ImportRecord getRecord(Query query) throws MetadataSourceException {
         List<ImportRecord> records = retry(new SearchByIdCallable(query));
-        return records == null || records.isEmpty() ? null : records.get(0);
+        return CollectionUtils.isNotEmpty(records) ? records.get(0) : null;
     }
 
     @Override
@@ -95,10 +113,35 @@ public class CiniiImportMetadataSourceServiceImpl
 
     @Override
     public Collection<ImportRecord> findMatchingRecords(Item item) throws MetadataSourceException {
-        throw new MethodNotFoundException("This method is not implemented for CrossRef");
+        throw new MethodNotFoundException("This method is not implemented for Cinii");
     }
 
+    public String getUrl() {
+        return url;
+    }
 
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getUrlSearch() {
+        return urlSearch;
+    }
+
+    public void setUrlSearch(String urlSearch) {
+        this.urlSearch = urlSearch;
+    }
+
+    /**
+     * This class is a Callable implementation to get CiNii entries based on
+     * query object.
+     * 
+     * This Callable use as query value the string queryString passed to constructor.
+     * If the object will be construct through Query.class instance, a Query's map entry with key "query" will be used.
+     * Pagination is supported too, using the value of the Query's map with keys "start" and "count".
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+     */
     private class SearchByQueryCallable implements Callable<List<ImportRecord>> {
 
         private Query query;
@@ -120,28 +163,26 @@ public class CiniiImportMetadataSourceServiceImpl
             Integer count = query.getParameterAsClass("count", Integer.class);
             Integer start = query.getParameterAsClass("start", Integer.class);
             String queryString = query.getParameterAsClass("query", String.class);
-            String appId = configurationService.getProperty("submission.lookup.cinii.appid");
+            String appId = configurationService.getProperty("cinii.appid");
             List<String> ids = getCiniiIds(appId, count, null, null, null, start, queryString);
-            if (ids != null && ids.size() > 0) {
+            if (CollectionUtils.isNotEmpty(ids)) {
                 for (String id : ids) {
                     List<ImportRecord> tmp = search(id, appId);
-                    if (tmp != null) {
-                        MetadatumDTO metadatumDto = new MetadatumDTO();
-                        metadatumDto.setSchema("dc");
-                        metadatumDto.setElement("identifier");
-                        metadatumDto.setQualifier("other");
-                        metadatumDto.setValue(id);
-                        for (ImportRecord ir : tmp) {
-                            ir.addValue(metadatumDto);
-                        }
-                        records.addAll(tmp);
+                    if (CollectionUtils.isNotEmpty(tmp)) {
+                        tmp.forEach(x -> x.addValue(createIdentifier(id)));
                     }
+                    records.addAll(tmp);
                 }
             }
             return records;
         }
     }
 
+    /**
+     * This class is a Callable implementation to get an CiNii entry using CiNii ID
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+     */
     private class SearchByIdCallable implements Callable<List<ImportRecord>> {
         private Query query;
 
@@ -156,21 +197,23 @@ public class CiniiImportMetadataSourceServiceImpl
 
         @Override
         public List<ImportRecord> call() throws Exception {
-            String appId = configurationService.getProperty("submission.lookup.cinii.appid");
+            String appId = configurationService.getProperty("cinii.appid");
             String id = query.getParameterAsClass("id", String.class);
             List<ImportRecord> importRecord = search(id, appId);
-            MetadatumDTO metadatumDto = new MetadatumDTO();
-            metadatumDto.setSchema("dc");
-            metadatumDto.setElement("identifier");
-            metadatumDto.setQualifier("other");
-            metadatumDto.setValue(id);
-            for (ImportRecord ir : importRecord) {
-                ir.addValue(metadatumDto);
+            if (CollectionUtils.isNotEmpty(importRecord)) {
+                importRecord.forEach(x -> x.addValue(createIdentifier(id)));
             }
             return importRecord;
         }
     }
 
+    /**
+     * This class is a Callable implementation to search CiNii entries
+     * using author, title and year.
+     * Pagination is supported too, using the value of the Query's map with keys "start" and "count".
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+     */
     private class FindMatchingRecordCallable implements Callable<List<ImportRecord>> {
 
         private Query query;
@@ -187,22 +230,15 @@ public class CiniiImportMetadataSourceServiceImpl
             Integer year = query.getParameterAsClass("year", Integer.class);
             Integer maxResult = query.getParameterAsClass("maxResult", Integer.class);
             Integer start = query.getParameterAsClass("start", Integer.class);
-            String appId = configurationService.getProperty("submission.lookup.cinii.appid");
+            String appId = configurationService.getProperty("cinii.appid");
             List<String> ids = getCiniiIds(appId, maxResult, author, title, year, start, null);
-            if (ids != null && ids.size() > 0) {
+            if (CollectionUtils.isNotEmpty(ids)) {
                 for (String id : ids) {
-                    List<ImportRecord> tmp = search(id, appId);
-                    if (tmp != null) {
-                        MetadatumDTO metadatumDto = new MetadatumDTO();
-                        metadatumDto.setSchema("dc");
-                        metadatumDto.setElement("identifier");
-                        metadatumDto.setQualifier("other");
-                        metadatumDto.setValue(id);
-                        for (ImportRecord ir : tmp) {
-                            ir.addValue(metadatumDto);
-                        }
-                        records.addAll(tmp);
+                    List<ImportRecord> importRecords = search(id, appId);
+                    if (CollectionUtils.isNotEmpty(importRecords)) {
+                        importRecords.forEach(x -> x.addValue(createIdentifier(id)));
                     }
+                    records.addAll(importRecords);
                 }
             }
             return records;
@@ -210,6 +246,12 @@ public class CiniiImportMetadataSourceServiceImpl
 
     }
 
+    /**
+     * This class is a Callable implementation to count the number
+     * of entries for an CiNii query.
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+     */
     private class CountByQueryCallable implements Callable<Integer> {
         private Query query;
 
@@ -225,12 +267,11 @@ public class CiniiImportMetadataSourceServiceImpl
 
         @Override
         public Integer call() throws Exception {
-            String appId = configurationService.getProperty("submission.lookup.cinii.appid");
+            String appId = configurationService.getProperty("cinii.appid");
             String queryString = query.getParameterAsClass("query", String.class);
             return countCiniiElement(appId, null, null, null, null, null, queryString);
         }
     }
-
 
     /**
      * Get metadata by searching CiNii RDF API with CiNii NAID
@@ -243,137 +284,164 @@ public class CiniiImportMetadataSourceServiceImpl
      */
     protected List<ImportRecord> search(String id, String appId)
         throws IOException, HttpException {
-        List<ImportRecord> records = new LinkedList<ImportRecord>();
-        WebTarget webTarget = client.target("https://ci.nii.ac.jp/naid/" + id + ".rdf?appid=" + appId);
-        Invocation.Builder invocationBuilder = webTarget.request();
-        Response response = invocationBuilder.get();
-        String responseString = response.readEntity(String.class);
-        System.out.println(responseString);
-        if (response.getStatus() != 200) {
-            return null;
-        }
-        List<OMElement> omElements = splitToRecords(responseString);
-        for (OMElement record : omElements) {
-            records.add(transformSourceRecords(record));
-        }
-        return records;
-    }
-
-    private List<OMElement> splitToRecords(String recordsSrc) {
-        OMXMLParserWrapper records = OMXMLBuilderFactory.createOMBuilder(new StringReader(recordsSrc));
-        OMElement element = records.getDocumentElement();
-        AXIOMXPath xpath = null;
         try {
-            xpath = new AXIOMXPath("//rdf:Description");
-            xpath.addNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-            List<OMElement> recordsList = xpath.selectNodes(element);
-            return recordsList;
-        } catch (JaxenException e) {
-            return null;
+            List<ImportRecord> records = new LinkedList<ImportRecord>();
+            URIBuilder uriBuilder = new URIBuilder(this.url + id + ".rdf?appid=" + appId);
+            Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+            String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
+            List<Element> elements = splitToRecords(response);
+            for (Element record : elements) {
+                records.add(transformSourceRecords(record));
+            }
+            return records;
+        } catch (URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
+    private List<Element> splitToRecords(String recordsSrc) {
+        try {
+            SAXBuilder saxBuilder = new SAXBuilder();
+            Document document = saxBuilder.build(new StringReader(recordsSrc));
+            Element root = document.getRootElement();
+            return root.getChildren();
+        } catch (JDOMException | IOException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Returns a list of uri links (for example:https://cir.nii.ac.jp/crid/123456789)
+     * to the searched CiNii articles
+     * 
+     * @param appId       Application ID
+     * @param maxResult   The number of search results per page
+     * @param author      Author name
+     * @param title       Article name
+     * @param year        Year of publication
+     * @param start       Start number for the acquired search result list
+     * @param query       Keyword to be searched
+     */
     private List<String> getCiniiIds(String appId, Integer maxResult, String author, String title,
         Integer year, Integer start, String query) {
-        List<String> ids = new ArrayList<>();
-        WebTarget webTarget = client.target("https://ci.nii.ac.jp/opensearch/search");
-        webTarget = webTarget.queryParam("format", "rss");
-        webTarget = webTarget.queryParam("appid", appId);
-        if (maxResult != null && maxResult != 0) {
-            webTarget = webTarget.queryParam("count", maxResult);
-        }
-        if (start != null) {
-            webTarget = webTarget.queryParam("start", start);
-        }
-        if (title != null) {
-            webTarget = webTarget.queryParam("title", title);
-        }
-        if (author != null) {
-            webTarget = webTarget.queryParam("author", author);
-        }
-        if (query != null) {
-            webTarget = webTarget.queryParam("q", query);
-        }
-        if (year != null && year != -1 && year != 0) {
-            webTarget = webTarget.queryParam("year_from", String.valueOf(year));
-            webTarget = webTarget.queryParam("year_to", String.valueOf(year));
-        }
-        Invocation.Builder invocationBuilder = webTarget.request();
-        Response response = invocationBuilder.get();
-        String responseString = response.readEntity(String.class);
-        System.out.println(responseString);
-        if (response.getStatus() != 200) {
-            return null;
-        }
-
-        OMXMLParserWrapper records = OMXMLBuilderFactory.createOMBuilder(new StringReader(responseString));
-        OMElement element = records.getDocumentElement();
-        AXIOMXPath xpath = null;
-        int url_len = "http://ci.nii.ac.jp/naid/".length();
         try {
-            xpath = new AXIOMXPath("//ns:item/@rdf:about");
-            xpath.addNamespace("ns", "http://purl.org/rss/1.0/");
-            xpath.addNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-            List<OMAttribute> recordsList = xpath.selectNodes(element);
-            for (OMAttribute item : recordsList) {
-                String value = item.getAttributeValue();
+            List<String> ids = new ArrayList<>();
+            URIBuilder uriBuilder = new URIBuilder(this.urlSearch);
+            uriBuilder.addParameter("format", "rss");
+            if (StringUtils.isNotBlank(appId)) {
+                uriBuilder.addParameter("appid", appId);
+            }
+            if (Objects.nonNull(maxResult) && maxResult != 0) {
+                uriBuilder.addParameter("count", maxResult.toString());
+            }
+            if (Objects.nonNull(start)) {
+                uriBuilder.addParameter("start", start.toString());
+            }
+            if (StringUtils.isNotBlank(title)) {
+                uriBuilder.addParameter("title", title);
+            }
+            if (StringUtils.isNotBlank(author)) {
+                uriBuilder.addParameter("author", author);
+            }
+            if (StringUtils.isNotBlank(query)) {
+                uriBuilder.addParameter("q", query);
+            }
+            if (Objects.nonNull(year) && year != -1 && year != 0) {
+                uriBuilder.addParameter("year_from", String.valueOf(year));
+                uriBuilder.addParameter("year_to", String.valueOf(year));
+            }
+            Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+            String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
+            int url_len = this.url.length() - 1;
+            SAXBuilder saxBuilder = new SAXBuilder();
+            Document document = saxBuilder.build(new StringReader(response));
+            Element root = document.getRootElement();
+            List<Namespace> namespaces = Arrays.asList(
+                 Namespace.getNamespace("ns", "http://purl.org/rss/1.0/"),
+                 Namespace.getNamespace("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#"));
+            XPathExpression<Attribute> xpath = XPathFactory.instance().compile("//ns:item/@rdf:about",
+                    Filters.attribute(), null, namespaces);
+            List<Attribute> recordsList = xpath.evaluate(root);
+            for (Attribute item : recordsList) {
+                String value = item.getValue();
                 if (value.length() > url_len) {
                     ids.add(value.substring(url_len + 1));
                 }
             }
-        } catch (JaxenException e) {
-            return null;
+            return ids;
+        } catch (JDOMException | IOException | URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
-        return ids;
     }
 
+    /**
+     * Returns the total number of CiNii articles returned by a specific query
+     * 
+     * @param appId       Application ID
+     * @param maxResult   The number of search results per page
+     * @param author      Author name
+     * @param title       Article name
+     * @param year        Year of publication
+     * @param start       Start number for the acquired search result list
+     * @param query       Keyword to be searched
+     */
     private Integer countCiniiElement(String appId, Integer maxResult, String author, String title,
             Integer year, Integer start, String query) {
-        List<String> ids = new ArrayList<>();
-        WebTarget webTarget = client.target("https://ci.nii.ac.jp/opensearch/search");
-        webTarget = webTarget.queryParam("format", "rss");
-        webTarget = webTarget.queryParam("appid", appId);
-        if (maxResult != null && maxResult != 0) {
-            webTarget = webTarget.queryParam("count", maxResult);
-        }
-        if (start != null) {
-            webTarget = webTarget.queryParam("start", start);
-        }
-        if (title != null) {
-            webTarget = webTarget.queryParam("title", title);
-        }
-        if (author != null) {
-            webTarget = webTarget.queryParam("author", author);
-        }
-        if (query != null) {
-            webTarget = webTarget.queryParam("q", query);
-        }
-        if (year != null && year != -1 && year != 0) {
-            webTarget = webTarget.queryParam("year_from", String.valueOf(year));
-            webTarget = webTarget.queryParam("year_to", String.valueOf(year));
-        }
-        Invocation.Builder invocationBuilder = webTarget.request();
-        Response response = invocationBuilder.get();
-        String responseString = response.readEntity(String.class);
-        System.out.println(responseString);
-        if (response.getStatus() != 200) {
-            return null;
-        }
-        OMXMLParserWrapper records = OMXMLBuilderFactory.createOMBuilder(new StringReader(responseString));
-        OMElement element = records.getDocumentElement();
         try {
-            AXIOMXPath xpath = new AXIOMXPath("//opensearch:totalResults");
-            xpath.addNamespace("opensearch", "http://a9.com/-/spec/opensearch/1.1/");
-            List<Object> nodes = xpath.selectNodes(element);
+            URIBuilder uriBuilder = new URIBuilder(this.urlSearch);
+            uriBuilder.addParameter("format", "rss");
+            uriBuilder.addParameter("appid", appId);
+            if (Objects.nonNull(maxResult) && maxResult != 0) {
+                uriBuilder.addParameter("count", maxResult.toString());
+            }
+            if (Objects.nonNull(start)) {
+                uriBuilder.addParameter("start", start.toString());
+            }
+            if (StringUtils.isNotBlank(title)) {
+                uriBuilder.addParameter("title", title);
+            }
+            if (StringUtils.isNotBlank(author)) {
+                uriBuilder.addParameter("author", author);
+            }
+            if (StringUtils.isNotBlank(query)) {
+                uriBuilder.addParameter("q", query);
+            }
+            if (Objects.nonNull(year) && year != -1 && year != 0) {
+                uriBuilder.addParameter("year_from", String.valueOf(year));
+                uriBuilder.addParameter("year_to", String.valueOf(year));
+            }
+
+            Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+            String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
+
+            SAXBuilder saxBuilder = new SAXBuilder();
+            Document document = saxBuilder.build(new StringReader(response));
+            Element root = document.getRootElement();
+            List<Namespace> namespaces = Arrays
+                    .asList(Namespace.getNamespace("opensearch", "http://a9.com/-/spec/opensearch/1.1/"));
+            XPathExpression<Element> xpath = XPathFactory.instance().compile("//opensearch:totalResults",
+                    Filters.element(), null, namespaces);
+            List<Element> nodes = xpath.evaluate(root);
             if (nodes != null && !nodes.isEmpty()) {
-                return Integer.parseInt(((OMElement)nodes.get(0)).getText());
+                return Integer.parseInt(((Element) nodes.get(0)).getText());
             }
             return 0;
-        } catch (JaxenException e) {
-            System.err.println(query);
-            throw new RuntimeException(e);
+        } catch (JDOMException | IOException | URISyntaxException e) {
+            log.error(e.getMessage(), e);
+            throw new RuntimeException(e.getMessage(), e);
         }
+    }
 
+    private MetadatumDTO createIdentifier(String id) {
+        MetadatumDTO metadatumDTO = new MetadatumDTO();
+        metadatumDTO.setSchema("dc");
+        metadatumDTO.setElement("identifier");
+        metadatumDTO.setQualifier("other");
+        metadatumDTO.setValue(id);
+        return metadatumDTO;
     }
 
 }

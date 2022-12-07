@@ -7,77 +7,71 @@
  */
 package org.dspace.importer.external.scopus.service;
 
-import java.io.InputStream;
+import static org.dspace.importer.external.liveimportclient.service.LiveImportClientImpl.URI_PARAMETERS;
+
+import java.io.IOException;
 import java.io.StringReader;
-import java.net.URLEncoder;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.el.MethodNotFoundException;
 
-import org.apache.axiom.om.OMElement;
-import org.apache.axiom.om.OMXMLBuilderFactory;
-import org.apache.axiom.om.OMXMLParserWrapper;
-import org.apache.axiom.om.xpath.AXIOMXPath;
-import org.apache.commons.io.Charsets;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
-import org.apache.http.HttpStatus;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.client.config.RequestConfig.Builder;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.DefaultProxyRoutePlanner;
-import org.apache.log4j.Logger;
 import org.dspace.content.Item;
 import org.dspace.importer.external.datamodel.ImportRecord;
 import org.dspace.importer.external.datamodel.Query;
 import org.dspace.importer.external.exception.MetadataSourceException;
+import org.dspace.importer.external.liveimportclient.service.LiveImportClient;
 import org.dspace.importer.external.service.AbstractImportMetadataSourceService;
 import org.dspace.importer.external.service.DoiCheck;
 import org.dspace.importer.external.service.components.QuerySource;
-import org.dspace.services.ConfigurationService;
-import org.jaxen.JaxenException;
+import org.jdom2.Document;
+import org.jdom2.Element;
+import org.jdom2.JDOMException;
+import org.jdom2.Namespace;
+import org.jdom2.filter.Filters;
+import org.jdom2.input.SAXBuilder;
+import org.jdom2.xpath.XPathExpression;
+import org.jdom2.xpath.XPathFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Implements a data source for querying Scopus
  * 
- * @author Pasquale Cavallo (pasquale.cavallo at 4Science dot it)
- *
+ * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science dot com)
  */
-
-public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadataSourceService<OMElement>
-    implements QuerySource {
-
-    @Autowired
-    private ConfigurationService configurationService;
+public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadataSourceService<Element>
+        implements QuerySource {
 
     private int timeout = 1000;
 
-    private static final Logger log = Logger.getLogger(ScopusImportMetadataSourceServiceImpl.class);
-
     int itemPerPage = 25;
 
-    private static final String ENDPOINT_SEARCH_SCOPUS = "https://api.elsevier.com/content/search/scopus";
+    private String url;
     private String apiKey;
     private String instKey;
+    private String viewMode;
 
-    /**
-     * Initialize the class
-     *
-     * @throws Exception on generic exception
-     */
+    @Autowired
+    private LiveImportClient liveImportClient;
+
+    public LiveImportClient getLiveImportClient() {
+        return liveImportClient;
+    }
+
+    public void setLiveImportClient(LiveImportClient liveImportClient) {
+        this.liveImportClient = liveImportClient;
+    }
+
     @Override
-    public void init() throws Exception { }
+    public void init() throws Exception {}
 
     /**
      * The string that identifies this import implementation. Preferable a URI
@@ -183,20 +177,9 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
         return false;
     }
 
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
-    }
-
-    public void setInstKey(String instKey) {
-        this.instKey = instKey;
-    }
-
     /**
- * 
- * This class implements a callable to get the numbers of result
- * @author pasquale
- *
- */
+     * This class implements a callable to get the numbers of result
+     */
     private class SearchNBByQueryCallable implements Callable<Integer> {
 
         private String query;
@@ -209,134 +192,69 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
             this.query = query.getParameterAsClass("query", String.class);
         }
 
-
         @Override
         public Integer call() throws Exception {
-            String proxyHost = configurationService.getProperty("http.proxy.host");
-            String proxyPort = configurationService.getProperty("http.proxy.port");
             if (StringUtils.isNotBlank(apiKey)) {
-                HttpGet method = null;
+                // Execute the request.
+                Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+                Map<String, String> requestParams = getRequestParameters(query, null, null, null);
+                params.put(URI_PARAMETERS, requestParams);
+                String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+
+                SAXBuilder saxBuilder = new SAXBuilder();
+                Document document = saxBuilder.build(new StringReader(response));
+                Element root = document.getRootElement();
+
+                List<Namespace> namespaces = Arrays.asList(
+                     Namespace.getNamespace("opensearch", "http://a9.com/-/spec/opensearch/1.1/"));
+                XPathExpression<Element> xpath = XPathFactory.instance()
+                          .compile("opensearch:totalResults", Filters.element(), null, namespaces);
+
+                Element count = xpath.evaluateFirst(root);
                 try {
-                    HttpClientBuilder hcBuilder = HttpClients.custom();
-                    Builder requestConfigBuilder = RequestConfig.custom();
-                    requestConfigBuilder.setConnectionRequestTimeout(timeout);
-
-                    if (StringUtils.isNotBlank(proxyHost)
-                        && StringUtils.isNotBlank(proxyPort)) {
-                        HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), "http");
-                        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-                        hcBuilder.setRoutePlanner(routePlanner);
-                    }
-
-                    HttpClient client = hcBuilder.build();
-                    // open session
-                    method = new HttpGet(
-                        ENDPOINT_SEARCH_SCOPUS + "?httpAccept=application/xml&apiKey=" + apiKey +
-                        (instKey != null ? "&insttoken=" + instKey : "") +
-                            "&query=" + URLEncoder.encode(query, Charset.defaultCharset()));
-                    method.setConfig(requestConfigBuilder.build());
-                        // Execute the method.
-                    HttpResponse httpResponse = client.execute(method);
-                    int statusCode = httpResponse.getStatusLine().getStatusCode();
-                    if (statusCode != HttpStatus.SC_OK) {
-                        throw new RuntimeException("WS call failed: "
-                                                           + statusCode);
-                    }
-                    InputStream is = httpResponse.getEntity().getContent();
-                    String response = IOUtils.toString(is, Charsets.UTF_8);
-                    OMXMLParserWrapper records = OMXMLBuilderFactory.createOMBuilder(new StringReader(response));
-                    OMElement element = records.getDocumentElement();
-                    AXIOMXPath xpath = null;
-                    try {
-                        xpath = new AXIOMXPath("opensearch:totalResults");
-                        xpath.addNamespace("opensearch", "http://a9.com/-/spec/opensearch/1.1/");
-                        OMElement count = (OMElement) xpath.selectSingleNode(element);
-                        return Integer.parseInt(count.getText());
-                    } catch (JaxenException e) {
-                        return null;
-                    }
-                } catch (Exception e1) {
-                    log.error(e1.getMessage(), e1);
-                } finally {
-                    if (method != null) {
-                        method.releaseConnection();
-                    }
+                    return Integer.parseInt(count.getText());
+                } catch (NumberFormatException e) {
+                    return null;
                 }
             }
             return null;
         }
     }
 
-
+    /**
+     * This class is a Callable implementation to get a Scopus entry using EID
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
+     */
     private class FindByIdCallable implements Callable<List<ImportRecord>> {
 
         private String eid;
 
-        private FindByIdCallable(String doi) {
-            this.eid = doi;
+        private FindByIdCallable(String eid) {
+            this.eid = eid;
         }
-
 
         @Override
         public List<ImportRecord> call() throws Exception {
             List<ImportRecord> results = new ArrayList<>();
             String queryString = "EID(" + eid.replace("!", "/") + ")";
-            String proxyHost = configurationService.getProperty("http.proxy.host");
-            String proxyPort = configurationService.getProperty("http.proxy.port");
             if (StringUtils.isNotBlank(apiKey)) {
-                HttpGet method = null;
-                try {
-                    HttpClientBuilder hcBuilder = HttpClients.custom();
-                    Builder requestConfigBuilder = RequestConfig.custom();
-                    requestConfigBuilder.setConnectionRequestTimeout(timeout);
-
-                    if (StringUtils.isNotBlank(proxyHost)
-                        && StringUtils.isNotBlank(proxyPort)) {
-                        HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), "http");
-                        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-                        hcBuilder.setRoutePlanner(routePlanner);
-                    }
-
-                    HttpClient client = hcBuilder.build();
-                    // open session
-                    method = new HttpGet(
-                        ENDPOINT_SEARCH_SCOPUS + "?httpAccept=application/xml&apiKey=" + apiKey +
-                            (instKey != null ? "&insttoken=" + instKey : "") +
-                            "&view=COMPLETE&query=" + URLEncoder
-                            .encode(queryString));
-                    method.setConfig(requestConfigBuilder.build());
-                        // Execute the method.
-                    HttpResponse httpResponse = client.execute(method);
-                    int statusCode = httpResponse.getStatusLine().getStatusCode();
-                    if (statusCode != HttpStatus.SC_OK) {
-                        throw new RuntimeException("WS call failed: "
-                                                           + statusCode);
-                    }
-                    InputStream is = httpResponse.getEntity().getContent();
-                    String response = IOUtils.toString(is, Charsets.UTF_8);
-                    List<OMElement> omElements = splitToRecords(response);
-                    for (OMElement record : omElements) {
-                        results.add(transformSourceRecords(record));
-                    }
-                } catch (Exception e1) {
-                    log.error(e1.getMessage(), e1);
-                } finally {
-                    if (method != null) {
-                        method.releaseConnection();
-                    }
+                Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+                Map<String, String> requestParams = getRequestParameters(queryString, viewMode, null, null);
+                params.put(URI_PARAMETERS, requestParams);
+                String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                List<Element> elements = splitToRecords(response);
+                for (Element record : elements) {
+                    results.add(transformSourceRecords(record));
                 }
             }
             return results;
         }
     }
 
-
-/**
- * 
- * This class implements a callable to get the items based on query parameters
- * @author pasquale
- *
- */
+    /**
+     * This class implements a callable to get the items based on query parameters
+     */
     private class FindByQueryCallable implements Callable<List<ImportRecord>> {
 
         private String title;
@@ -354,7 +272,6 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
             this.count = query.getParameterAsClass("count", Integer.class) != null ?
                 query.getParameterAsClass("count", Integer.class) : 20;
         }
-
 
         @Override
         public List<ImportRecord> call() throws Exception {
@@ -380,49 +297,14 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
             }
             queryString = query.toString();
 
-            String proxyHost = configurationService.getProperty("http.proxy.host");
-            String proxyPort = configurationService.getProperty("http.proxy.port");
             if (apiKey != null && !apiKey.equals("")) {
-                HttpGet method = null;
-                try {
-                    HttpClientBuilder hcBuilder = HttpClients.custom();
-                    Builder requestConfigBuilder = RequestConfig.custom();
-                    requestConfigBuilder.setConnectionRequestTimeout(timeout);
-
-                    if (StringUtils.isNotBlank(proxyHost)
-                        && StringUtils.isNotBlank(proxyPort)) {
-                        HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), "http");
-                        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-                        hcBuilder.setRoutePlanner(routePlanner);
-                    }
-
-                    HttpClient client = hcBuilder.build();
-                    // open session
-                    method = new HttpGet(
-                        ENDPOINT_SEARCH_SCOPUS + "?httpAccept=application/xml&apiKey=" + apiKey +
-                            (instKey != null ? "&insttoken=" + instKey : "") +
-                            "&view=COMPLETE&start=" + start + "&count=" + count + "&query=" + URLEncoder
-                            .encode(queryString));
-                    method.setConfig(requestConfigBuilder.build());
-                        // Execute the method.
-                    HttpResponse httpResponse = client.execute(method);
-                    int statusCode = httpResponse.getStatusLine().getStatusCode();
-                    if (statusCode != HttpStatus.SC_OK) {
-                        throw new RuntimeException("WS call failed: "
-                                                           + statusCode);
-                    }
-                    InputStream is = httpResponse.getEntity().getContent();
-                    String response = IOUtils.toString(is, Charsets.UTF_8);
-                    List<OMElement> omElements = splitToRecords(response);
-                    for (OMElement record : omElements) {
-                        results.add(transformSourceRecords(record));
-                    }
-                } catch (Exception e1) {
-                    log.error(e1.getMessage(), e1);
-                } finally {
-                    if (method != null) {
-                        method.releaseConnection();
-                    }
+                Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+                Map<String, String> requestParams = getRequestParameters(queryString, viewMode, start, count);
+                params.put(URI_PARAMETERS, requestParams);
+                String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                List<Element> elements = splitToRecords(response);
+                for (Element record : elements) {
+                    results.add(transformSourceRecords(record));
                 }
             }
             return results;
@@ -430,9 +312,14 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
     }
 
     /**
-     * That's ok, just a separator
-     * @author pasquale
+     * Find records matching a string query.
      *
+     * @param query    A query string to base the search on.
+     * @param start    Offset to start at
+     * @param count    Number of records to retrieve.
+     * @return         A set of records. Fully transformed.
+     * 
+     * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.com)
      */
     private class SearchByQueryCallable implements Callable<List<ImportRecord>> {
         private Query query;
@@ -449,75 +336,86 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
             this.query = query;
         }
 
-
         @Override
         public List<ImportRecord> call() throws Exception {
             List<ImportRecord> results = new ArrayList<>();
             String queryString = query.getParameterAsClass("query", String.class);
             Integer start = query.getParameterAsClass("start", Integer.class);
             Integer count = query.getParameterAsClass("count", Integer.class);
-            String proxyHost = configurationService.getProperty("http.proxy.host");
-            String proxyPort = configurationService.getProperty("http.proxy.port");
-            if (apiKey != null && !apiKey.equals("")) {
-                HttpGet method = null;
-                try {
-                    HttpClientBuilder hcBuilder = HttpClients.custom();
-                    Builder requestConfigBuilder = RequestConfig.custom();
-                    requestConfigBuilder.setConnectionRequestTimeout(timeout);
-
-                    if (StringUtils.isNotBlank(proxyHost)
-                        && StringUtils.isNotBlank(proxyPort)) {
-                        HttpHost proxy = new HttpHost(proxyHost, Integer.parseInt(proxyPort), "http");
-                        DefaultProxyRoutePlanner routePlanner = new DefaultProxyRoutePlanner(proxy);
-                        hcBuilder.setRoutePlanner(routePlanner);
-                    }
-
-                    HttpClient client = hcBuilder.build();
-                    // open session
-                    method = new HttpGet(ENDPOINT_SEARCH_SCOPUS + "?httpAccept=application/xml&apiKey=" +
-                             apiKey + (instKey != null ? "&insttoken=" + instKey : "") +
-                            "&view=COMPLETE&start=" + (start != null ? start : 0) +
-                            "&count=" + (count != null ? count : 20) +
-                            "&query=" + URLEncoder.encode(queryString));
-                    method.setConfig(requestConfigBuilder.build());
-                        // Execute the method.
-                    HttpResponse httpResponse = client.execute(method);
-                    int statusCode = httpResponse.getStatusLine().getStatusCode();
-                    if (statusCode != HttpStatus.SC_OK) {
-                        throw new RuntimeException("WS call failed: "
-                                                           + statusCode);
-                    }
-                    InputStream is = httpResponse.getEntity().getContent();
-                    String response = IOUtils.toString(is, Charset.defaultCharset());
-                    List<OMElement> omElements = splitToRecords(response);
-                    for (OMElement record : omElements) {
-                        results.add(transformSourceRecords(record));
-                    }
-                } catch (Exception e1) {
-                    log.error(e1.getMessage(), e1);
-                } finally {
-                    if (method != null) {
-                        method.releaseConnection();
-                    }
+            if (StringUtils.isNotBlank(apiKey)) {
+                Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
+                Map<String, String> requestParams = getRequestParameters(queryString, viewMode, start, count);
+                params.put(URI_PARAMETERS, requestParams);
+                String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                List<Element> elements = splitToRecords(response);
+                for (Element record : elements) {
+                    results.add(transformSourceRecords(record));
                 }
             }
             return results;
         }
     }
 
+    private Map<String, String> getRequestParameters(String query, String viewMode, Integer start, Integer count) {
+        Map<String, String> params = new HashMap<String, String>();
+        params.put("httpAccept", "application/xml");
+        params.put("apiKey", apiKey);
+        params.put("query", query);
 
-    private List<OMElement> splitToRecords(String recordsSrc) {
-        OMXMLParserWrapper records = OMXMLBuilderFactory.createOMBuilder(new StringReader(recordsSrc));
-        OMElement element = records.getDocumentElement();
-        AXIOMXPath xpath = null;
-        try {
-            xpath = new AXIOMXPath("ns:entry");
-            xpath.addNamespace("ns", "http://www.w3.org/2005/Atom");
-            List<OMElement> recordsList = xpath.selectNodes(element);
-            return recordsList;
-        } catch (JaxenException e) {
-            return null;
+        if (StringUtils.isNotBlank(instKey)) {
+            params.put("insttoken", instKey);
         }
+        if (StringUtils.isNotBlank(viewMode)) {
+            params.put("view", viewMode);
+        }
+
+        params.put("start", (Objects.nonNull(start) ? start + "" : "0"));
+        params.put("count", (Objects.nonNull(count) ? count + "" : "20"));
+        return params;
+    }
+
+    private List<Element> splitToRecords(String recordsSrc) {
+        try {
+            SAXBuilder saxBuilder = new SAXBuilder();
+            Document document = saxBuilder.build(new StringReader(recordsSrc));
+            Element root = document.getRootElement();
+            List<Element> records = root.getChildren("entry",Namespace.getNamespace("http://www.w3.org/2005/Atom"));
+            return records;
+        } catch (JDOMException | IOException e) {
+            return new ArrayList<Element>();
+        }
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public String getViewMode() {
+        return viewMode;
+    }
+
+    public void setViewMode(String viewMode) {
+        this.viewMode = viewMode;
+    }
+
+    public String getApiKey() {
+        return apiKey;
+    }
+
+    public String getInstKey() {
+        return instKey;
+    }
+
+    public void setApiKey(String apiKey) {
+        this.apiKey = apiKey;
+    }
+
+    public void setInstKey(String instKey) {
+        this.instKey = instKey;
     }
 
 }

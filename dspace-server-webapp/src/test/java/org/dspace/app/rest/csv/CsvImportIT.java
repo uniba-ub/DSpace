@@ -13,8 +13,8 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.fileUpload;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dspace.app.rest.converter.DSpaceRunnableParameterConverter;
 import org.dspace.app.rest.matcher.ProcessMatcher;
 import org.dspace.app.rest.matcher.RelationshipMatcher;
@@ -299,9 +299,8 @@ public class CsvImportIT extends AbstractEntityIntegrationTest {
             String token = getAuthToken(admin.getEmail(), password);
 
             getClient(token)
-                .perform(fileUpload("/api/system/scripts/metadata-import/processes").file(bitstreamFile)
-                                                                                    .param("properties",
-                                                                                           new Gson().toJson(list)))
+                .perform(multipart("/api/system/scripts/metadata-import/processes").file(bitstreamFile)
+                                          .param("properties", new ObjectMapper().writeValueAsString(list)))
                 .andExpect(status().isAccepted())
                 .andDo(result -> idRef
                     .set(read(result.getResponse().getContentAsString(), "$.processId")));
@@ -359,9 +358,8 @@ public class CsvImportIT extends AbstractEntityIntegrationTest {
             String token = getAuthToken(admin.getEmail(), password);
 
             getClient(token)
-                .perform(fileUpload("/api/system/scripts/metadata-import/processes").file(bitstreamFile)
-                                                                                    .param("properties",
-                                                                                           new Gson().toJson(list)))
+                .perform(multipart("/api/system/scripts/metadata-import/processes").file(bitstreamFile)
+                                             .param("properties", new ObjectMapper().writeValueAsString(list)))
                 .andExpect(status().isAccepted())
                 .andExpect(jsonPath("$", is(
                     ProcessMatcher.matchProcess("metadata-import",
