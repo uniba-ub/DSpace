@@ -15,10 +15,13 @@ import static org.apache.commons.collections.CollectionUtils.isEmpty;
 import static org.apache.commons.lang3.EnumUtils.isValidEnum;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.dspace.content.Item.ANY;
-import static org.dspace.profile.OrcidEntitySyncPreference.DISABLED;
 
 import java.sql.SQLException;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -190,21 +193,31 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
         }
 
         if (OrcidEntityType.isValidEntityType(entityType)) {
-            Optional<OrcidEntitySyncPreference> option = getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType));
-            if(option.isPresent()){
-                if(option.get().equals(DISABLED)) return false;
-                if(option.get().equals(OrcidEntitySyncPreference.ALL)) return true;
-                if(option.get().equals(OrcidEntitySyncPreference.MINE) || option.get().equals(OrcidEntitySyncPreference.MY_SELECTED) ){
-                    String filterrelationname = configurationService.getProperty("orcid.relationpreference." + entityType + "." + option.get().name());
-                    if(Objects.isNull(filterrelationname)) return false;
-                    Iterator<Item> entities = checkRelation(context, profile, item, filterrelationname);
-                    if (entities.hasNext()) {
-                        return true;
-                    }else{
+            Optional<OrcidEntitySyncPreference> option;
+            option = getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType));
+            if (option.isPresent()) {
+                switch (option.get()) {
+                    case DISABLED:
                         return false;
-                    }
+                    case ALL:
+                        return true;
+                    case MINE:
+                    case MY_SELECTED:
+                        String filterproperty = "orcid.relationpreference." + entityType + "." + option.get().name();
+                        String filter = configurationService.getProperty(filterproperty);
+                        if (Objects.isNull(filter)) {
+                            return false;
+                        }
+                        Iterator<Item> entities = checkRelation(context, profile, item, filter);
+                        if (entities.hasNext()) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    default:
+                        return false;
                 }
-            }else{
+            } else {
                 return false;
             }
         }

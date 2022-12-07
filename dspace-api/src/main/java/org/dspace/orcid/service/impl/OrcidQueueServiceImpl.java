@@ -8,12 +8,19 @@
 package org.dspace.orcid.service.impl;
 
 import static org.apache.commons.lang3.ArrayUtils.contains;
-import static org.dspace.profile.OrcidEntitySyncPreference.*;
+import static org.dspace.profile.OrcidEntitySyncPreference.DISABLED;
+import static org.dspace.profile.OrcidEntitySyncPreference.MINE;
+import static org.dspace.profile.OrcidEntitySyncPreference.MY_SELECTED;
 import static org.springframework.util.StringUtils.capitalize;
 
 import java.sql.SQLException;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -217,13 +224,17 @@ public class OrcidQueueServiceImpl implements OrcidQueueService {
         String entityType = capitalize(orcidEntityType.name().toLowerCase());
         if (preference == DISABLED) {
             deleteByProfileItemAndRecordType(context, profileItem, entityType);
-        } else if(preference == MY_SELECTED || preference == MINE){
+        } else if (preference == MY_SELECTED || preference == MINE) {
             // delete existing queue
             deleteByProfileItemAndRecordType(context, profileItem, entityType);
             // add additional filterquery
-            String filterrelationname = configurationService.getProperty("orcid.relationpreference." + entityType + "." + preference.name());
-            if(Objects.isNull(filterrelationname)) return;
-            Iterator<Item> entities = findAllEntitiesWithRelationshipFilterLinkableWith(context, profileItem, entityType, filterrelationname);
+            String filterrelationname = configurationService.getProperty("orcid.relationpreference." +
+                entityType + "." + preference.name());
+            if (Objects.isNull(filterrelationname)) {
+                return;
+            }
+            Iterator<Item> entities;
+            entities = findAllRelationShipEntitiesLinkableWith(context, profileItem, entityType, filterrelationname);
             while (entities.hasNext()) {
                 create(context, profileItem, entities.next());
             }
@@ -259,7 +270,8 @@ public class OrcidQueueServiceImpl implements OrcidQueueService {
 
     }
 
-    private Iterator<Item> findAllEntitiesWithRelationshipFilterLinkableWith(Context context, Item owner, String entityType, String filterrelationname) {
+    private Iterator<Item> findAllRelationShipEntitiesLinkableWith(
+        Context context, Item owner, String entityType, String filterrelationname) {
 
         String ownerType = itemService.getEntityType(owner);
 
