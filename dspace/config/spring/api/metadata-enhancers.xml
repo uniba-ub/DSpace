@@ -70,6 +70,21 @@
         </property>
         <property name="defaultValue" value="N.N." />
     </bean>
+
+<!-- enhance values using some mapConverter -->
+    <bean class="org.dspace.content.enhancer.impl.MapConverterValueEnhancer" >
+        <property name="sourceEntityType" value="Publication" />
+        <property name="sourceItemMetadataField" value="dc.type" />
+        <property name="targetItemMetadataField" value="dc.type.test" />
+        <property name="converter" ref="mapConverterDSpaceToCoarTypes" />
+        <property name="useDefaultLanguage" value="true" />
+    </bean>
+<!-- bean from crosswalks.xml not found. if some error occurs rename it -->
+    <bean name="mapConverterDSpaceToCoarTypes" class="org.dspace.util.SimpleMapConverter" init-method="init">
+        <property name="converterNameFile" value="mapConverter-dspace-to-coarTypes.properties" />
+        <property name="configurationService" ref="org.dspace.services.ConfigurationService" />
+        <property name="defaultValue" value="http://purl.org/coar/resource_type/c_1843"/>
+    </bean>
     
 
 </beans>
