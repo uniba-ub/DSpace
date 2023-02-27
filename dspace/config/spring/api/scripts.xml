@@ -142,6 +142,11 @@
     <bean id="solr-database-resync" class="org.dspace.app.solrdatabaseresync.SolrDatabaseResyncCliScriptConfiguration">
         <property name="description" value="Update the database status of Items in solr"/>
         <property name="dspaceRunnableClass" value="org.dspace.app.solrdatabaseresync.SolrDatabaseResyncCli"/>
+
+    <bean id="uniba-relationship-check" class="org.dspace.scripts.uniba.UnibaRelationshipCheckScriptConfiguration">
+        <property name="description" value="relationships: print distribution of relationships among relationshiptypes and optionally fix missing leftward/rightward values"/>
+        <property name="dspaceRunnableClass" value="org.dspace.scripts.uniba.UnibaRelationshipCheckScript"/>
+
     </bean>
 
     <bean id="import" class="org.dspace.app.itemimport.ItemImportCLIScriptConfiguration" primary="true">
