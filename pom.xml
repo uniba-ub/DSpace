@@ -799,6 +799,21 @@
         </profile>
 
         <!--
+           Builds central WebApp boot for DSpace
+        -->
+        <profile>
+            <id>dspace-webapp-boot</id>
+            <activation>
+                <file>
+                    <exists>dspace-webapp-boot/pom.xml</exists>
+                </file>
+            </activation>
+            <modules>
+                <module>dspace-webapp-boot</module>
+            </modules>
+        </profile>
+
+        <!--
            Builds Services for DSpace
         -->
         <profile>
@@ -1133,6 +1148,11 @@
             <dependency>
                 <groupId>org.dspace</groupId>
                 <artifactId>dspace-server-webapp</artifactId>
+                <version>cris-2022.03.01-SNAPSHOT</version>
+            </dependency>
+            <dependency>
+                <groupId>org.dspace</groupId>
+                <artifactId>dspace-server-webapp</artifactId>
                 <type>test-jar</type>
                 <version>cris-2022.03.01-SNAPSHOT</version>
                 <scope>test</scope>
@@ -1146,19 +1166,6 @@
                 <groupId>org.dspace</groupId>
                 <artifactId>dspace-iiif</artifactId>
                 <version>cris-2022.03.01-SNAPSHOT</version>
-            </dependency>
-            <dependency>
-                <groupId>org.dspace</groupId>
-                <artifactId>dspace-server-webapp</artifactId>
-                <version>cris-2022.03.01-SNAPSHOT</version>
-                <type>jar</type>
-                <classifier>classes</classifier>
-            </dependency>
-            <dependency>
-                <groupId>org.dspace</groupId>
-                <artifactId>dspace-server-webapp</artifactId>
-                <version>cris-2022.03.01-SNAPSHOT</version>
-                <type>war</type>
             </dependency>
             <!-- DSpace API Localization Packages -->
             <dependency>
