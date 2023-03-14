@@ -104,6 +104,28 @@
                         </bean>
                     </list>
                 </entry>
+                <entry key="publication.modeC">
+                    <list>
+                        <bean class="org.dspace.content.edit.EditItemMode">
+                            <property name="name" value="MODE-A" />
+                            <property name="security">
+                              <value type="org.dspace.content.security.CrisSecurity">
+                                ADMIN
+                              </value>
+                            </property>
+                            <property name="submissionDefinition" value="traditional-with-custom-url" />
+                        </bean>
+                        <bean class="org.dspace.content.edit.EditItemMode">
+                            <property name="name" value="MODE-B" />
+                            <property name="security">
+                              <value type="org.dspace.content.security.CrisSecurity">
+                                OWNER
+                              </value>
+                            </property>
+                            <property name="submissionDefinition" value="traditional" />
+                        </bean>
+                    </list>
+                </entry>
             </map>
         </property> 
     </bean>

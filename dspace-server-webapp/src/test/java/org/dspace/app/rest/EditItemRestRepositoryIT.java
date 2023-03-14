@@ -1733,6 +1733,44 @@ public class EditItemRestRepositoryIT extends AbstractControllerIntegrationTest 
 
     }
 
+    @Test
+    public void testEditItemModeConfigurationWithEntityTypeAndSubmission() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
+            .withEntityType("Publication")
+            .withName("Collection 1")
+            .withSubmissionDefinition("modeC")
+            .build();
+
+        Item item = ItemBuilder.createItem(context, collection)
+            .withTitle("Title item A")
+            .withIssueDate("2015-06-25")
+            .withAuthor("Smith, Maria")
+            .withDspaceObjectOwner(admin)
+            .build();
+
+        EditItem editItem = new EditItem(context, item);
+
+        context.restoreAuthSystemState();
+
+        String tokenAdmin = getAuthToken(admin.getEmail(), password);
+
+        getClient(tokenAdmin).perform(get("/api/core/edititems/search/findModesById")
+            .param("uuid", editItem.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath("$.page.totalElements", is(2)))
+            .andExpect(jsonPath("$._embedded.edititemmodes[0].id", is("MODE-A")))
+            .andExpect(jsonPath("$._embedded.edititemmodes[1].id", is("MODE-B")));
+
+    }
+
     private Bitstream getBitstream(Item item, String name) throws SQLException {
         return bitstreamService.getBitstreamByName(item, "ORIGINAL", name);
     }
