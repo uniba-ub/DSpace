@@ -29,12 +29,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.UUID;
 import javax.ws.rs.core.MediaType;
 
 import org.dspace.app.rest.model.patch.AddOperation;
 import org.dspace.app.rest.model.patch.Operation;
 import org.dspace.app.rest.model.patch.RemoveOperation;
+import org.dspace.app.rest.model.patch.ReplaceOperation;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.authorize.ResourcePolicy;
 import org.dspace.authorize.service.AuthorizeService;
@@ -61,7 +63,7 @@ import org.springframework.mock.web.MockMultipartFile;
 
 /**
  * Test suite for the EditItem endpoint
- * 
+ *
  * @author Mykhaylo Boychuk (mykhaylo.boychuk at 4science.it)
  */
 public class EditItemRestRepositoryIT extends AbstractControllerIntegrationTest {
@@ -694,6 +696,65 @@ public class EditItemRestRepositoryIT extends AbstractControllerIntegrationTest 
     }
 
     @Test
+    public void testFindOneWithModeWithManySecurities() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        EPerson author = EPersonBuilder.createEPerson(context)
+            .withEmail("author@example.com")
+            .withPassword(password)
+            .build();
+
+        EPerson user = EPersonBuilder.createEPerson(context)
+            .withEmail("user@example.com")
+            .withPassword(password)
+            .build();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
+            .withEntityType("Publication")
+            .withName("Collection 1")
+            .build();
+
+        Item person = ItemBuilder.createItem(context, collection)
+            .withTitle("Author")
+            .withDspaceObjectOwner(author)
+            .build();
+
+        Item item = ItemBuilder.createItem(context, collection)
+            .withTitle("Title item")
+            .withIssueDate("2015-06-25")
+            .withAuthor("Author", person.getID().toString())
+            .withDspaceObjectOwner(eperson)
+            .build();
+
+        context.restoreAuthSystemState();
+
+        getClient().perform(get("/api/core/edititems/" + item.getID() + ":MODE-WITH-MANY-SECURITIES"))
+            .andExpect(status().isUnauthorized());
+
+        getClient(getAuthToken(user.getEmail(), password))
+            .perform(get("/api/core/edititems/" + item.getID() + ":MODE-WITH-MANY-SECURITIES"))
+            .andExpect(status().isForbidden());
+
+        getClient(getAuthToken(author.getEmail(), password))
+            .perform(get("/api/core/edititems/" + item.getID() + ":MODE-WITH-MANY-SECURITIES"))
+            .andExpect(status().isOk());
+
+        getClient(getAuthToken(eperson.getEmail(), password))
+            .perform(get("/api/core/edititems/" + item.getID() + ":MODE-WITH-MANY-SECURITIES"))
+            .andExpect(status().isOk());
+
+        getClient(getAuthToken(admin.getEmail(), password))
+            .perform(get("/api/core/edititems/" + item.getID() + ":MODE-WITH-MANY-SECURITIES"))
+            .andExpect(status().isOk());
+
+    }
+
+    @Test
     public void findOneOwnerOnlyTest() throws Exception {
         context.turnOffAuthorisationSystem();
 
@@ -1216,6 +1277,131 @@ public class EditItemRestRepositoryIT extends AbstractControllerIntegrationTest 
     }
 
     @Test
+    public void patchReplaceAllMetadataTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        final boolean virtualMetadataEnabled =
+            configurationService.getBooleanProperty("item.enable-virtual-metadata", false);
+
+        configurationService.setProperty("item.enable-virtual-metadata", false);
+
+        parentCommunity =
+            CommunityBuilder
+                .createCommunity(context)
+                .withName("Parent Community")
+                .build();
+
+        Collection col1 =
+            CollectionBuilder.createCollection(context, parentCommunity)
+                .withEntityType("Publication")
+                .withSubmissionDefinition("modeA")
+                .withName("Collection 1")
+                .build();
+
+        Item itemA =
+            ItemBuilder.createItem(context, col1)
+                .withTitle("My Title")
+                .withIssueDate("2023-03-23")
+                .withAuthor("Wayne, Bruce")
+                .build();
+
+        EditItem editItem = new EditItem(context, itemA);
+        context.restoreAuthSystemState();
+
+        try {
+            String tokenAdmin = getAuthToken(admin.getEmail(), password);
+
+            List<Operation> operations = new ArrayList<Operation>();
+
+            List<Map.Entry<String, String>> abstractValues = new ArrayList<>();
+
+            Entry<String, String> abstract1 = Map.entry("value", "Abstract 1");
+            Entry<String, String> abstract2 = Map.entry("value", "Abstract 2");
+            Entry<String, String> abstract3 = Map.entry("value", "Abstract 3");
+
+            abstractValues.add(abstract1);
+            abstractValues.add(abstract2);
+            abstractValues.add(abstract3);
+
+            List<Map.Entry<String, String>> titleValues = new ArrayList<>();
+
+            titleValues.add(Map.entry("value", "TITLE 1"));
+            titleValues.add(Map.entry("value", "TITLE 2"));
+
+            operations.add(new AddOperation("/sections/titleAndIssuedDate/dc.description.abstract", abstractValues));
+            operations.add(new AddOperation("/sections/titleAndIssuedDate/dc.title", titleValues));
+
+            String patchBody = getPatchContent(operations);
+            getClient(tokenAdmin).perform(
+                patch("/api/core/edititems/" + editItem.getID() + ":FIRST")
+                    .content(patchBody)
+                    .contentType(MediaType.APPLICATION_JSON_PATCH_JSON)
+            )
+                .andExpect(status().isOk())
+                .andExpect(
+                    jsonPath(
+                        "$.sections.titleAndIssuedDate", Matchers.allOf(
+                            hasJsonPath("$['dc.title'][0].value", is("TITLE 1")),
+                            hasJsonPath("$['dc.title'][1].value", is("TITLE 2")),
+                            hasJsonPath("$['dc.description.abstract'][0].value", is("Abstract 1")),
+                            hasJsonPath("$['dc.description.abstract'][1].value", is("Abstract 2")),
+                            hasJsonPath("$['dc.description.abstract'][2].value", is("Abstract 3"))
+                        )
+                    )
+                );
+
+            // verify that the patch changes have been persisted
+            getClient(tokenAdmin).perform(get("/api/core/edititems/" + editItem.getID() + ":FIRST"))
+                .andExpect(status().isOk())
+                .andExpect(
+                    jsonPath(
+                        "$.sections.titleAndIssuedDate", Matchers.allOf(
+                            hasJsonPath("$['dc.title'][0].value", is("TITLE 1")),
+                            hasJsonPath("$['dc.title'][1].value", is("TITLE 2")),
+                            hasJsonPath("$['dc.description.abstract'][0].value", is("Abstract 1")),
+                            hasJsonPath("$['dc.description.abstract'][1].value", is("Abstract 2")),
+                            hasJsonPath("$['dc.description.abstract'][2].value", is("Abstract 3"))
+                        )
+                    )
+                );
+
+            operations.clear();
+
+            operations.add(
+                new ReplaceOperation("/sections/titleAndIssuedDate/dc.description.abstract/0", abstract2)
+            );
+            operations.add(
+                new ReplaceOperation("/sections/titleAndIssuedDate/dc.description.abstract/1", abstract3)
+            );
+            operations.add(
+                new ReplaceOperation("/sections/titleAndIssuedDate/dc.description.abstract/2", abstract1)
+            );
+
+            patchBody = getPatchContent(operations);
+            getClient(tokenAdmin).perform(
+                patch("/api/core/edititems/" + editItem.getID() + ":FIRST")
+                    .content(patchBody)
+                    .contentType(MediaType.APPLICATION_JSON_PATCH_JSON)
+            )
+                .andExpect(status().isOk())
+                .andExpect(
+                    jsonPath(
+                        "$.sections.titleAndIssuedDate", Matchers.allOf(
+                            hasJsonPath("$['dc.description.abstract'][0].value", is("Abstract 2")),
+                            hasJsonPath("$['dc.description.abstract'][1].value", is("Abstract 3")),
+                            hasJsonPath("$['dc.description.abstract'][2].value", is("Abstract 1"))
+                        )
+                    )
+                );
+        } catch (Exception e) {
+            throw e;
+        } finally {
+            this.configurationService.setProperty("item.enable-virtual-metadata", virtualMetadataEnabled);
+        }
+
+    }
+
+    @Test
     public void testPatchWithValidationErrors() throws Exception {
         context.turnOffAuthorisationSystem();
 
@@ -1671,6 +1857,44 @@ public class EditItemRestRepositoryIT extends AbstractControllerIntegrationTest 
 
         assertThat(authorizeService.getPolicies(context, bitstream),
             contains(matches(Constants.READ, anonymousGroup, ResourcePolicy.TYPE_INHERITED)));
+
+    }
+
+    @Test
+    public void testEditItemModeConfigurationWithEntityTypeAndSubmission() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
+            .withEntityType("Publication")
+            .withName("Collection 1")
+            .withSubmissionDefinition("modeC")
+            .build();
+
+        Item item = ItemBuilder.createItem(context, collection)
+            .withTitle("Title item A")
+            .withIssueDate("2015-06-25")
+            .withAuthor("Smith, Maria")
+            .withDspaceObjectOwner(admin)
+            .build();
+
+        EditItem editItem = new EditItem(context, item);
+
+        context.restoreAuthSystemState();
+
+        String tokenAdmin = getAuthToken(admin.getEmail(), password);
+
+        getClient(tokenAdmin).perform(get("/api/core/edititems/search/findModesById")
+            .param("uuid", editItem.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$._embedded").exists())
+            .andExpect(jsonPath("$.page.totalElements", is(2)))
+            .andExpect(jsonPath("$._embedded.edititemmodes[0].id", is("MODE-A")))
+            .andExpect(jsonPath("$._embedded.edititemmodes[1].id", is("MODE-B")));
 
     }
 
