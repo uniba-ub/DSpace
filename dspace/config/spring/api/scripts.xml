@@ -153,4 +153,9 @@
         <property name="description" value="Batch Export to Simple Archive Format (SAF)"/>
         <property name="dspaceRunnableClass" value="org.dspace.app.itemexport.ItemExportCLI"/>
     </bean>
+
+    <bean id="migrate-orcid-preferences" class="org.dspace.scripts.uniba.OrcidMigratePreferencesScriptConfiguration">
+        <property name="description" value="Migrate old orcid preferences into new fields"/>
+        <property name="dspaceRunnableClass" value="org.dspace.scripts.uniba.OrcidMigratePreferencesScript"/>
+    </bean>
 </beans>
