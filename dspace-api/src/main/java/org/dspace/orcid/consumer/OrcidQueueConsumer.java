@@ -162,7 +162,7 @@ public class OrcidQueueConsumer implements Consumer {
                 continue;
             }
 
-            orcidQueueService.create(context, relatedItem, entity);
+            orcidQueueService.create(context, owner, entity);
 
         }
 
