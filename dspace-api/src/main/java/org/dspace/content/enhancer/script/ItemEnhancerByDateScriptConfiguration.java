@@ -44,9 +44,9 @@ public class ItemEnhancerByDateScriptConfiguration<T extends ItemEnhancerByDateS
 
             options.addOption("f", "force", false, "force the recalculation of all the virtual fields");
             options.addOption("c", "collection", true, "uuid of the collection. If the collection does not exist the script aborts.");
-            options.addOption("e", "entity", true, "Entity type of the items. Cannot be combined with limit/max option");
-            options.addOption("d", "dateupper", true, "iso date as upper range of  date query. e.g. 2022-10-27T12:12:17.369Z ");
-            options.addOption("s", "datelower", true, "iso date as lower range of  date query ");
+            options.addOption("e", "entity", true, "Entity type of the items");
+            options.addOption("d", "dateupper", true, "iso date as upper range of  date query for lastModified. e.g. 2022-10-27T12:12:17.369Z ");
+            options.addOption("s", "datelower", true, "iso date as lower range of  date query for lastModified ");
             options.addOption("m", "max", true, "--max results/rows from solr");
             options.addOption("l", "limit", true, "commit after --limit entities processed");
             options.addOption("q", "query", true, "additional filterquery for the entities. this can for example be the exclusion of some already enhanced metadata.");

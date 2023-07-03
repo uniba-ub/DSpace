@@ -44,7 +44,7 @@ public class ItemEnhancerEntityTypeScriptConfiguration<T extends ItemEnhancerEnt
 
             options.addOption("f", "force", false, "force the recalculation of all the virtual fields");
             options.addOption("c", "collection", true, "uuid of the collection. If the collection does not exist the script aborts.");
-            options.addOption("e", "entity", true, "Entity type of the items. Cannot be combined with limit/max option");
+            options.addOption("e", "entity", true, "Entity type of the items. Not recommended, because all items are loaded and then filtered by their entity types.");
             options.addOption("l", "limit", true, "size for iterator --limit items and commit after --limit items");
             options.addOption("m", "max", true, "process max --max items");
             options.addOption("o", "offset", true, "offset of items to start --offset items from the start");

@@ -2,7 +2,6 @@
  * The contents of this file are subject to the license and copyright
  * detailed in the LICENSE and NOTICE files at the root of the source
  * tree and available online at
- *
  * http://www.dspace.org/license/
  */
 package org.dspace.content.enhancer.impl;
@@ -18,7 +17,6 @@ import org.dspace.content.enhancer.ItemEnhancer;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.core.Context;
-import org.dspace.core.exception.SQLRuntimeException;
 import org.dspace.services.ConfigurationService;
 import org.dspace.util.SimpleMapConverter;
 import org.slf4j.Logger;
@@ -66,9 +64,9 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
     public void enhance(Context context, Item item) {
         try {
 		if (StringUtils.isBlank(sourceItemMetadataField) || Objects.isNull(converter) || StringUtils.isBlank(targetItemMetadataField)) return;
-			String sourceval, targetval, calculatedval;
-			sourceval = itemService.getMetadata(item, sourceItemMetadataField);
-			targetval = itemService.getMetadata(item, targetItemMetadataField);
+		String sourceval, targetval, calculatedval;
+		sourceval = itemService.getMetadata(item, sourceItemMetadataField);
+		targetval = itemService.getMetadata(item, targetItemMetadataField);
 			if (StringUtils.isNotBlank(sourceval)) {
 				calculatedval = converter.getValue(sourceval);
 				if (StringUtils.isNotBlank(targetval) && !targetval.contentEquals(calculatedval)) {
@@ -83,12 +81,12 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
 				// remove value
 				removeTargetMetadata(context, item);
 			}
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.error("An error occurs enhancing item with id {}: {}", item.getID(), e.getMessage(), e);
-            throw new SQLRuntimeException(e);
+            //throw new SQLRuntimeException(e);
         }
     }
-	private void addTargetMetadata(Context context, Item item, String value) throws SQLException {
+	private void addTargetMetadata(Context context, Item item, String value) throws Exception {
 		MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
 		if (targetmd != null) {
 			String lang  = (this.useDefaultLanguage) ? this.configurationService.getProperty("default.language") : null;

@@ -20,7 +20,6 @@ import org.dspace.content.enhancer.ItemEnhancer;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.core.Context;
-import org.dspace.core.exception.SQLRuntimeException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,15 +61,16 @@ public class NameEnhancer extends AbstractItemEnhancer {
         try {
             if (Objects.isNull(relatedItemMetadataFields) || relatedItemMetadataFields.isEmpty() || StringUtils.isBlank(targetItemMetadataField)) return;
         	checkNames(context, item);
-        } catch (SQLException e) {
+        } catch (Exception e) {
             LOGGER.error("An error occurs enhancing item with id {}: {}", item.getID(), e.getMessage(), e);
-            throw new SQLRuntimeException(e);
+			//Exception handling not supported by ItemEnhancerService. Thus just log to continue other enhancers
+            //throw new SQLRuntimeException(e);
         }
     }
 
-    private void checkNames(Context context, Item item) throws SQLException {
+    private void checkNames(Context context, Item item) throws Exception {
     	// ignore languages of Metadata here. Assume main title is not repeated
-    	// Could by more simplified
+    	// Could be more simplified
     	List<MetadataValue> currentnames = itemService.getMetadataByMetadataString(item, targetItemMetadataField);
 
     	if (!currentnames.isEmpty()) {
@@ -123,7 +123,7 @@ public class NameEnhancer extends AbstractItemEnhancer {
 
 	private void updateTargetMetadata(Context context, Item item, String value, boolean clear) throws SQLException {
 		MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
-		if (targetmd != null){
+		if (targetmd != null) {
 			if (clear) {
 				itemService.clearMetadata(context, item, targetmd.getMetadataSchema().getName(), targetmd.getElement(), targetmd.getQualifier(), Item.ANY);
 			}

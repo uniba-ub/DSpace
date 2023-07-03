@@ -2,8 +2,7 @@
  * The contents of this file are subject to the license and copyright
  * detailed in the LICENSE and NOTICE files at the root of the source
  * tree and available online at
- *
- * http://www.dspace.org/license/
+  * http://www.dspace.org/license/
  */
 package org.dspace.content.enhancer.script;
 
@@ -41,7 +40,7 @@ import java.util.*;
  * calculated metadata with the enhancement.
  *
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
- * 
+
  * Extended to solr search to discover not-enhanced entities.
  * Some Query can be delivered,
  * additional some daterange filterquery on the lastModified field
@@ -108,16 +107,16 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             this.datelower = commandLine.getOptionValue('s');
         }
         if (commandLine.hasOption('m')) {
-            try{
+            try {
                 this.max = Integer.parseInt(commandLine.getOptionValue('m'));
-            }catch (Exception e){
+            } catch (Exception e) {
                 //
             }
         }
         if (commandLine.hasOption('l')) {
-            try{
+            try {
                 this.limit = Integer.parseInt(commandLine.getOptionValue('l'));
-            }catch (Exception e){
+            } catch (Exception e) {
                 //
             }
         }
@@ -135,7 +134,7 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             throw new Exception("specified collection does not exist");
         }
         SolrPingResponse ping = solrSearchCore.getSolr().ping();
-        if(ping.getStatus() > 299) throw new Exception("Solr seems not to be available. Status" + ping.getStatus());
+        if (ping.getStatus() > 299) throw new Exception("Solr seems not to be available. Status" + ping.getStatus());
 
         context.turnOffAuthorisationSystem();
         try {
@@ -165,7 +164,7 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             log.error(e.getMessage());
         }
         int total = items.size();
-        if (total == 0){
+        if (total == 0) {
             handler.logInfo("No results in solr-Query");
             log.info("No results in solr-Query");
             return;
@@ -174,22 +173,19 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
         if (this.limit > 0) {
             // Split through every list
             int counter = 0, start, end;
-            while (counter < total){
+            while (counter < total) {
                 start = counter;
                 end = counter + limit;
-                if(end > (total -1)) end = total - 1;
+                if (end > (total -1)) end = total - 1;
                 try {
                     this.itemService.findByIds(context, items.subList(start, end)).forEachRemaining(this::enhanceItem);
                     context.commit();
                     counter += limit;
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     handler.logError(e.getMessage());
                     counter += limit;
                 }
-
             }
-            handler.logInfo("enhanced " + total + " items");
-            log.info("enhanced " + total + " items");
 
         } else {
             try {
@@ -197,9 +193,9 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             } catch (SQLException e) {
                 handler.logError(e.getMessage());
             }
-            handler.logInfo("enhanced " + total + " items");
-            log.info("enhanced " + total + " items");
         }
+        handler.logInfo("enhanced " + total + " items");
+        log.info("enhanced " + total + " items");
     }
 
     private SolrDocumentList searchItemsInSolr(String query, String datequeryupper, String datequerylower) throws SolrServerException, IOException {
@@ -209,11 +205,11 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
         } else {
             sQuery = new SolrQuery("*");
         }
-        if(Objects.nonNull(datequeryupper) && Objects.nonNull(datequerylower)){
+        if (Objects.nonNull(datequeryupper) && Objects.nonNull(datequerylower)) {
             sQuery.addFilterQuery("lastModified:["+datequerylower+" TO " + datequeryupper +"]");
-        } else if (Objects.nonNull(datequeryupper) ){
+        } else if (Objects.nonNull(datequeryupper)) {
             sQuery.addFilterQuery("lastModified:[* TO " + datequeryupper +"]");
-        } else if (Objects.nonNull(datequerylower) ){
+        } else if (Objects.nonNull(datequerylower)) {
             sQuery.addFilterQuery("lastModified:[" + datequerylower + " TO *]");
         }
         if (Objects.nonNull(entitytype)) {
@@ -261,7 +257,7 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
         }
     }
 
-    private void assignSpecialGroupsInContext() throws SQLException {
+    private void assignSpecialGroupsInContext() {
         for (UUID uuid : handler.getSpecialGroups()) {
             context.setSpecialGroup(uuid);
         }

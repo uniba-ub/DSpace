@@ -2,7 +2,6 @@
  * The contents of this file are subject to the license and copyright
  * detailed in the LICENSE and NOTICE files at the root of the source
  * tree and available online at
- *
  * http://www.dspace.org/license/
  */
 package org.dspace.content.enhancer.script;
@@ -35,7 +34,6 @@ import org.slf4j.LoggerFactory;
  * calculated metadata with the enhancement.
  *
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
- * 
  * Extended to limit the item set to collection/entity wide use to speed up process and recalculation of certain entities.
  * Extended to use some pagination option with some limit where some commit to the database is made
  * 
@@ -86,21 +84,21 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
         if (commandLine.hasOption('l')) {
             try{
                 this.limit = Integer.parseInt(commandLine.getOptionValue('l'));
-            }catch (Exception e){
+            } catch (Exception e) {
                 //
             }
         }
         if (commandLine.hasOption('m')) {
             try{
                 this.max = Integer.parseInt(commandLine.getOptionValue('m'));
-            }catch (Exception e){
+            } catch (Exception e) {
                 //
             }
         }
         if (commandLine.hasOption('o')) {
             try{
                 this.offset = Integer.parseInt(commandLine.getOptionValue('o'));
-            }catch (Exception e){
+            } catch (Exception e) {
                 //
             }
         }
@@ -145,7 +143,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
         }
     }
 
-    private void findItemsToEnhanceLimitMax(){
+    private void findItemsToEnhanceLimitMax() {
         Collection coll;
         int total, counter = 0;
         if (Objects.nonNull(collection)) {
@@ -153,7 +151,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
             try {
             coll = collectionService.find(context, collection);
             total = itemService.countItems(context, coll);
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 handler.logError(e.getMessage());
                 return;
             }
@@ -186,7 +184,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
             //loop through all!
             try {
                 total = itemService.countTotal(context);
-            } catch (SQLException e){
+            } catch (SQLException e) {
                 handler.logError(e.getMessage());
                 return;
             }
@@ -213,7 +211,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
                     context.commit();
                     handler.logInfo("processed " + counter + " out of total " + total + " items");
                     log.info("processed " + counter + " out of total " + total + " items");
-                } catch (SQLException e){
+                } catch (SQLException e) {
                     handler.logError(e.getMessage());
                     counter += limit;
                     handler.logInfo("processed " + counter + " out of total " + total + " items");
@@ -221,7 +219,6 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
                 }
             }
         }
-
     }
 
     private Iterator<Item> findItemsToEnhance() {
@@ -230,7 +227,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
          	if (Objects.nonNull(collection)) {
          		//Check, if uuid exist
         			Collection coll = collectionService.find(context, collection);
-        			if(coll != null) {
+        			if (coll != null) {
         				result = itemService.findAllByCollection(context, coll);
         			}
         	} else {
@@ -248,9 +245,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
         } else {
             itemEnhancerService.enhance(context, item);
         }
-
         uncacheItem(item);
-
     }
 
     /**
@@ -267,7 +262,6 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
             } else {
                 itemEnhancerService.enhance(context, item);
             }
-
             uncacheItem(item);
         }
     }
@@ -288,7 +282,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
         }
     }
 
-    private void assignSpecialGroupsInContext() throws SQLException {
+    private void assignSpecialGroupsInContext() {
         for (UUID uuid : handler.getSpecialGroups()) {
             context.setSpecialGroup(uuid);
         }
