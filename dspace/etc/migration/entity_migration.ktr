@@ -673,13 +673,8 @@
       <enabled>Y</enabled>
     </hop>
     <hop>
-      <from>add cris owner metadata field</from>
+      <from>add dspace object owner metadata field</from>
       <to>select metadata attributes 2</to>
-      <enabled>Y</enabled>
-    </hop>
-    <hop>
-      <from>Append legacy ids</from>
-      <to>Append cris owner</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
@@ -689,7 +684,7 @@
     </hop>
     <hop>
       <from>owner not null</from>
-      <to>add cris owner metadata field</to>
+      <to>add dspace object owner metadata field</to>
       <enabled>Y</enabled>
     </hop>
     <hop>
@@ -992,6 +987,41 @@
       <to>Filter rows</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>Get eperson 2</from>
+      <to>eperson values not null</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>eperson values not null</from>
+      <to>select metadata attributes 2 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>is eperson</from>
+      <to>Get eperson 2</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Append legacy ids</from>
+      <to>Append eperson metadata</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Append eperson metadata</from>
+      <to>Append cris owner</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>select metadata attributes 2 2</from>
+      <to>Append eperson metadata</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>is file</from>
+      <to>is eperson</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
   <step>
     <name>Add imp_bitstream_id</name>
@@ -1195,7 +1225,7 @@
       <method>none</method>
       <schema_name/>
     </partitioning>
-    <head_name>Append legacy ids</head_name>
+    <head_name>Append eperson metadata</head_name>
     <tail_name>select metadata attributes 2</tail_name>
     <attributes/>
     <cluster_schema/>
@@ -1340,14 +1370,18 @@
 var file_main_dir = 'do-files';
 if(entity_type_var == 'OrgUnit'){
    file_main_dir = 'ou-files';
-} else if(entity_type_var == 'Project'){
-   file_main_dir = 'pj-files';
+} else if(entity_type_var == 'Funding' || entity_type_var == 'Project' ){
+   file_main_dir = 'rg-files';
 } else if(entity_type_var == 'Person'){
    file_main_dir = 'rp-files';
 }
 
-var file_path = getVariable('file_root','') + '/' + file_main_dir + '/' + filefolder + '/' + filename + '.' + fileextension;
-var file_name = filename + '.' + fileextension;</jsScript_script>
+var file_path = getVariable('file_root','') + '/' + file_main_dir + '/' + filefolder + '/' + filename;
+var file_name = filename;
+if (fileextension != null &amp;&amp; fileextension != '') {
+   file_path = file_path + '.' + fileextension;
+   file_name = file_name + '.' + fileextension;
+}</jsScript_script>
       </jsScript>
     </jsScripts>
     <fields>
@@ -1893,10 +1927,14 @@ WHERE property_def.id = properties.typo_id
   AND values.id = properties.value_id
   AND properties.parent_id = entity.id  
   AND entity.crisid = ?
-  AND property_def.shortname = 'title';</sql>
+  AND (property_def.shortname = 'title' OR property_def.shortname = CONCAT(REGEXP_REPLACE(? ,'[[:digit:]]','','g'),'name'));</sql>
     <outer_join>N</outer_join>
     <replace_vars>Y</replace_vars>
     <parameter>
+      <field>
+        <name>pointer_crisid</name>
+        <type>String</type>
+      </field>
       <field>
         <name>pointer_crisid</name>
         <type>String</type>
@@ -2921,7 +2959,7 @@ WHERE property_def.id = properties.typo_id
     </GUI>
   </step>
   <step>
-    <name>add cris owner metadata field</name>
+    <name>add dspace object owner metadata field</name>
     <type>Constant</type>
     <description/>
     <distribute>Y</distribute>
@@ -2939,7 +2977,7 @@ WHERE property_def.id = properties.typo_id
         <currency/>
         <decimal/>
         <group/>
-        <nullif>cris</nullif>
+        <nullif>dspace</nullif>
         <length>-1</length>
         <precision>-1</precision>
         <set_empty_string>N</set_empty_string>
@@ -2951,7 +2989,7 @@ WHERE property_def.id = properties.typo_id
         <currency/>
         <decimal/>
         <group/>
-        <nullif>owner</nullif>
+        <nullif>object</nullif>
         <length>-1</length>
         <precision>-1</precision>
         <set_empty_string>N</set_empty_string>
@@ -2975,7 +3013,7 @@ WHERE property_def.id = properties.typo_id
         <currency/>
         <decimal/>
         <group/>
-        <nullif/>
+        <nullif>owner</nullif>
         <length>-1</length>
         <precision>-1</precision>
         <set_empty_string>N</set_empty_string>
@@ -5740,7 +5778,7 @@ WHERE property_def.id = properties.typo_id
       <schema_name/>
     </partitioning>
     <send_true_to>Get ENTITY_TYPE from variables 4</send_true_to>
-    <send_false_to/>
+    <send_false_to>is eperson</send_false_to>
     <compare>
       <condition>
         <negated>N</negated>
@@ -6505,7 +6543,7 @@ WHERE property_def.id = properties.typo_id
       <method>none</method>
       <schema_name/>
     </partitioning>
-    <send_true_to>add cris owner metadata field</send_true_to>
+    <send_true_to>add dspace object owner metadata field</send_true_to>
     <send_false_to/>
     <compare>
       <condition>
@@ -6984,6 +7022,220 @@ WHERE property_def.id = properties.typo_id
     <GUI>
       <xloc>976</xloc>
       <yloc>1840</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Get eperson 2</name>
+    <type>DBJoin</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>dspace</connection>
+    <rowlimit>1</rowlimit>
+    <sql>SELECT ep.uuid as metadata_authority, ep.email as metadata_value
+FROM eperson ep
+WHERE ep.eperson_id = ?</sql>
+    <outer_join>N</outer_join>
+    <replace_vars>Y</replace_vars>
+    <parameter>
+      <field>
+        <name>custompointer</name>
+        <type>Integer</type>
+      </field>
+    </parameter>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>912</xloc>
+      <yloc>1792</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>eperson values not null</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <send_true_to>select metadata attributes 2 2</send_true_to>
+    <send_false_to/>
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <conditions>
+          <condition>
+            <negated>N</negated>
+            <leftvalue>metadata_value</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue/>
+          </condition>
+          <condition>
+            <negated>N</negated>
+            <operator>AND</operator>
+            <leftvalue>metadata_authority</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue/>
+          </condition>
+        </conditions>
+      </condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>1120</xloc>
+      <yloc>1776</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>is eperson</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <send_true_to>Get eperson 2</send_true_to>
+    <send_false_to/>
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <leftvalue>dtype</leftvalue>
+        <function>=</function>
+        <rightvalue/>
+        <value>
+          <name>constant</name>
+          <type>String</type>
+          <text>eperson</text>
+          <length>-1</length>
+          <precision>-1</precision>
+          <isnull>N</isnull>
+          <mask/>
+        </value>
+      </condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>160</xloc>
+      <yloc>1792</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>select metadata attributes 2 2</name>
+    <type>SelectValues</type>
+    <description/>
+    <distribute>N</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <fields>
+      <field>
+        <name>schema</name>
+      </field>
+      <field>
+        <name>element</name>
+      </field>
+      <field>
+        <name>qualifier</name>
+      </field>
+      <field>
+        <name>imp_record_id</name>
+      </field>
+      <field>
+        <name>metadata_value</name>
+      </field>
+      <field>
+        <name>metadata_order</name>
+      </field>
+      <field>
+        <name>crisid</name>
+      </field>
+      <field>
+        <name>metadata_authority</name>
+      </field>
+      <field>
+        <name>metadata_visibility</name>
+      </field>
+      <field>
+        <name>language</name>
+      </field>
+      <select_unspecified>N</select_unspecified>
+    </fields>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>1120</xloc>
+      <yloc>1648</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Append eperson metadata</name>
+    <type>Append</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <head_name>Append legacy ids</head_name>
+    <tail_name>select metadata attributes 2 2</tail_name>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>1120</xloc>
+      <yloc>1536</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
