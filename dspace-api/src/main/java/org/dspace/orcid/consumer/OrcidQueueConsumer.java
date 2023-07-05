@@ -158,7 +158,8 @@ public class OrcidQueueConsumer implements Consumer {
                 continue;
             }
 
-            if (shouldNotBeSynchronized(context, relatedItem, entity) || isAlreadyQueued(context, relatedItem, entity)) {
+            if (shouldNotBeSynchronized(context, relatedItem, entity) ||
+                isAlreadyQueued(context, relatedItem, entity)) {
                 continue;
             }
 
