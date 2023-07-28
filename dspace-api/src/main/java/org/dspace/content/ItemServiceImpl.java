@@ -29,12 +29,16 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Supplier;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.dspace.app.metrics.service.CrisMetricsService;
+import org.dspace.app.requestitem.RequestItem;
+import org.dspace.app.requestitem.service.RequestItemService;
 import org.dspace.app.util.AuthorizeUtil;
 import org.dspace.authority.service.impl.ItemSearcherByMetadata;
 import org.dspace.authorize.AuthorizeConfiguration;
@@ -61,12 +65,16 @@ import org.dspace.core.Context;
 import org.dspace.core.LogHelper;
 import org.dspace.core.exception.SQLRuntimeException;
 import org.dspace.discovery.DiscoverQuery;
+import org.dspace.discovery.DiscoverResult;
 import org.dspace.discovery.DiscoverResultItemIterator;
+import org.dspace.discovery.SearchService;
+import org.dspace.discovery.SearchServiceException;
 import org.dspace.discovery.indexobject.IndexableItem;
 import org.dspace.discovery.indexobject.IndexableWorkflowItem;
 import org.dspace.discovery.indexobject.IndexableWorkspaceItem;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
+import org.dspace.eperson.service.GroupService;
 import org.dspace.eperson.service.SubscribeService;
 import org.dspace.event.Event;
 import org.dspace.harvest.HarvestedItem;
@@ -88,6 +96,9 @@ import org.dspace.orcid.service.OrcidSynchronizationService;
 import org.dspace.orcid.service.OrcidTokenService;
 import org.dspace.profile.service.ResearcherProfileService;
 import org.dspace.services.ConfigurationService;
+import org.dspace.versioning.Version;
+import org.dspace.versioning.VersionHistory;
+import org.dspace.versioning.service.VersionHistoryService;
 import org.dspace.versioning.service.VersioningService;
 import org.dspace.workflow.WorkflowItemService;
 import org.dspace.workflow.factory.WorkflowServiceFactory;
@@ -113,6 +124,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     @Autowired(required = true)
     protected CommunityService communityService;
     @Autowired(required = true)
+    protected GroupService groupService;
+    @Autowired(required = true)
     protected AuthorizeService authorizeService;
     @Autowired(required = true)
     protected BundleService bundleService;
@@ -124,6 +137,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     protected BitstreamService bitstreamService;
     @Autowired(required = true)
     protected InstallItemService installItemService;
+    @Autowired(required = true)
+    protected SearchService searchService;
     @Autowired(required = true)
     protected ResourcePolicyService resourcePolicyService;
     @Autowired(required = true)
@@ -177,6 +192,11 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
     @Autowired(required = true)
     private ResearcherProfileService researcherProfileService;
+    @Autowired(required = true)
+    private RequestItemService requestItemService;
+
+    @Autowired
+    private VersionHistoryService versionHistoryService;
 
     @Autowired
     private List<ItemSearcherByMetadata> itemSearcherByMetadata;
@@ -945,6 +965,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         // remove version attached to the item
         removeVersion(context, item);
 
+        removeRequest(context, item);
+
         removeOrcidSynchronizationStuff(context, item);
 
         // Also delete the item if it appears in a harvested collection.
@@ -1002,9 +1024,19 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     }
 
     private List<MetadataValue> getMetadataWithAuthority(Item item, String metadataField, String authority) {
-        return getMetadataByMetadataString(item, metadataField).stream()
-                      .filter(metadataValue -> StringUtils.equals(metadataValue.getAuthority(), authority))
-                      .collect(Collectors.toList());
+        if (isValidMetadata(metadataField)) {
+            return getMetadataByMetadataString(item, metadataField).stream()
+                .filter(metadataValue -> StringUtils.equals(metadataValue.getAuthority(), authority))
+                .collect(Collectors.toList());
+        }
+        return List.of();
+    }
+
+    public boolean isValidMetadata(String metadataField) {
+        if (metadataField.split(Pattern.quote(".")).length > 3) {
+            return false;
+        }
+        return true;
     }
 
     private void applyCleanUpMode(Context context, Item deletedItem, Item itemToProcess,
@@ -1044,6 +1076,7 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         String entityType = this.getEntityType(item);
         return choiceAuthorityService.getAuthorityControlledFieldsByEntityType(entityType)
                                      .stream()
+                                     .filter(field -> isValidMetadata(field))
                                      .map(field -> field.replaceAll("_", "."))
                                      .collect(Collectors.toList());
     }
@@ -1056,6 +1089,14 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
             }
         }
         return Optional.empty();
+    }
+
+    protected void removeRequest(Context context, Item item) throws SQLException {
+        Iterator<RequestItem> requestItems = requestItemService.findByItem(context, item);
+        while (requestItems.hasNext()) {
+            RequestItem requestItem = requestItems.next();
+            requestItemService.delete(context, requestItem);
+        }
     }
 
     @Override
@@ -1333,6 +1374,53 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
 
         return collectionService.canEditBoolean(context, item.getOwningCollection(), false);
+    }
+
+    /**
+     * Finds all Indexed Items where the current user has edit rights. If the user is an Admin,
+     * this is all Indexed Items. Otherwise, it includes those Items where
+     * an indexed "edit" policy lists either the eperson or one of the eperson's groups
+     *
+     * @param context                    DSpace context
+     * @param discoverQuery
+     * @return                           discovery search result objects
+     * @throws SQLException              if something goes wrong
+     * @throws SearchServiceException    if search error
+     */
+    private DiscoverResult retrieveItemsWithEdit(Context context, DiscoverQuery discoverQuery)
+        throws SQLException, SearchServiceException {
+        EPerson currentUser = context.getCurrentUser();
+        if (!authorizeService.isAdmin(context)) {
+            String userId = currentUser != null ? "e" + currentUser.getID().toString() : "e";
+            Stream<String> groupIds = groupService.allMemberGroupsSet(context, currentUser).stream()
+                .map(group -> "g" + group.getID());
+            String query = Stream.concat(Stream.of(userId), groupIds)
+                .collect(Collectors.joining(" OR ", "edit:(", ")"));
+            discoverQuery.addFilterQueries(query);
+        }
+        return searchService.search(context, discoverQuery);
+    }
+
+    @Override
+    public List<Item> findItemsWithEdit(Context context, int offset, int limit)
+        throws SQLException, SearchServiceException {
+        DiscoverQuery discoverQuery = new DiscoverQuery();
+        discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
+        discoverQuery.setStart(offset);
+        discoverQuery.setMaxResults(limit);
+        DiscoverResult resp = retrieveItemsWithEdit(context, discoverQuery);
+        return resp.getIndexableObjects().stream()
+            .map(solrItems -> ((IndexableItem) solrItems).getIndexedObject())
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public int countItemsWithEdit(Context context) throws SQLException, SearchServiceException {
+        DiscoverQuery discoverQuery = new DiscoverQuery();
+        discoverQuery.setMaxResults(0);
+        discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
+        DiscoverResult resp = retrieveItemsWithEdit(context, discoverQuery);
+        return (int) resp.getTotalSearchResults();
     }
 
     /**
@@ -2012,6 +2100,42 @@ prevent the generation of resource policy entry values with null dspace_object a
         return authorities.stream()
             .map(authority -> field.replaceAll("_", ".") + "_allauthority: \"" + authority + "\"")
             .collect(Collectors.joining(" OR "));
+    }
+
+    @Override
+    public boolean isLatestVersion(Context context, Item item) throws SQLException {
+
+        VersionHistory history = versionHistoryService.findByItem(context, item);
+        if (history == null) {
+            // not all items have a version history
+            // if an item does not have a version history, it is by definition the latest
+            // version
+            return true;
+        }
+
+        // start with the very latest version of the given item (may still be in
+        // workspace)
+        Version latestVersion = versionHistoryService.getLatestVersion(context, history);
+
+        // find the latest version of the given item that is archived
+        while (latestVersion != null && !latestVersion.getItem().isArchived()) {
+            latestVersion = versionHistoryService.getPrevious(context, history, latestVersion);
+        }
+
+        // could not find an archived version of the given item
+        if (latestVersion == null) {
+            // this scenario should never happen, but let's err on the side of showing too
+            // many items vs. to little
+            // (see discovery.xml, a lot of discovery configs filter out all items that are
+            // not the latest version)
+            return true;
+        }
+
+        // sanity check
+        assert latestVersion.getItem().isArchived();
+
+        return item.equals(latestVersion.getItem());
+
     }
 
 }
