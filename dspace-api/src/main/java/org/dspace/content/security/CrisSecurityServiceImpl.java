@@ -18,6 +18,7 @@ import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
+import org.dspace.content.logic.LogicalStatementException;
 import org.dspace.content.security.service.CrisSecurityService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
@@ -59,6 +60,9 @@ public class CrisSecurityServiceImpl implements CrisSecurityService {
         CrisSecurity crisSecurity) {
 
         try {
+            if (isItemConditionFulfilled(context, item, accessMode) == false) {
+                return false;
+            }
 
             switch (crisSecurity) {
                 case ADMIN:
@@ -95,6 +99,20 @@ public class CrisSecurityServiceImpl implements CrisSecurityService {
         return hasAccessByGroupMetadataFields(context, item, user, accessMode.getGroupMetadataFields())
             || hasAccessByUserMetadataFields(context, item, user, accessMode.getUserMetadataFields())
             || hasAccessByItemMetadataFields(context, item, user, accessMode.getItemMetadataFields());
+    }
+
+    private boolean isItemConditionFulfilled(Context context, Item item, AccessItemMode accessMode)
+        throws SQLException {
+        // default value is true, if no item exist
+        if (accessMode.getItemcondition() == null) {
+            return true;
+        }
+        try {
+            return accessMode.getItemcondition().getResult(context, item);
+        } catch (LogicalStatementException s) {
+            // do nothing
+            throw new SQLException();
+        }
     }
 
     private boolean hasAccessByGroupMetadataFields(Context context, Item item, EPerson user,

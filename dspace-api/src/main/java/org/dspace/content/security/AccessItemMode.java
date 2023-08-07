@@ -9,6 +9,8 @@ package org.dspace.content.security;
 
 import java.util.List;
 
+import org.dspace.content.logic.DefaultFilter;
+
 /**
  * Interface to be extended for the configuration related to access item modes.
  *
@@ -50,4 +52,11 @@ public interface AccessItemMode {
      * @return the group list
      */
     public List<String> getGroups();
+
+    /**
+     * Returns the condition to check
+     * @return the condition or null if no condition
+     */
+    public DefaultFilter getItemcondition();
+
 }

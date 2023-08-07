@@ -9,6 +9,7 @@ package org.dspace.content.edit;
 
 import java.util.List;
 
+import org.dspace.content.logic.DefaultFilter;
 import org.dspace.content.security.AccessItemMode;
 import org.dspace.content.security.CrisSecurity;
 
@@ -49,6 +50,11 @@ public class EditItemMode implements AccessItemMode {
      * Contains the list of items metadata for CUSTOM security
      */
     private List<String> items;
+
+    /**
+     * Contains the condition for the item to be fulfilled to edit the item
+     */
+    private DefaultFilter itemcondition = null;
 
     @Override
     public List<CrisSecurity> getSecurities() {
@@ -103,6 +109,15 @@ public class EditItemMode implements AccessItemMode {
     @Override
     public List<String> getGroups() {
         return groups;
+    }
+
+    public void setItemcondition(DefaultFilter itemcondition) {
+        this.itemcondition = itemcondition;
+    }
+
+    @Override
+    public DefaultFilter getItemcondition() {
+        return itemcondition;
     }
 
     @Override

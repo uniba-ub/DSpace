@@ -143,6 +143,49 @@
                             </property>
                             <property name="submissionDefinition" value="traditional" />
                         </bean>
+                        <!--
+                        <bean class="org.dspace.content.edit.EditItemMode">
+                            <property name="name" value="filter-test" />
+                            <property name="security">
+                                <value type="org.dspace.content.security.CrisSecurity">
+                                    CUSTOM
+                                </value>
+                            </property>
+                            <property name="condition" ref="demo_book_bookpart_type_filter"></property>
+                            <property name="users" ref="usersMetadata" />
+                            <property name="submissionDefinition" value="traditional-cris" />
+                        </bean>
+                        <bean id="demo_book_bookpart_type_filter" class="org.dspace.content.logic.DefaultFilter">
+                            <property name="statement">
+                                 <bean class="org.dspace.content.logic.operator.Or">
+                                     <property name="statements">
+                                         <list>
+                                             <ref bean="type-equals-book_condition"/>
+                                             <ref bean="type-equals-bookchapter_condition"/>
+                                         </list>
+                                     </property>
+                                 </bean>
+                             </property>
+                        </bean>
+                            <bean id="type-equals-book_condition"
+                              class="org.dspace.content.logic.condition.MetadataValueMatchCondition">
+                            <property name="parameters">
+                                <map>
+                                    <entry key="field" value="dc.type" />
+                                    <entry key="pattern" value="^Book$" />
+                                </map>
+                            </property>
+                        </bean>
+                        <bean id="type-equals-bookchapter_condition"
+                              class="org.dspace.content.logic.condition.MetadataValueMatchCondition">
+                            <property name="parameters">
+                                <map>
+                                    <entry key="field" value="dc.type" />
+                                    <entry key="pattern" value="^Book Chapter$" />
+                                </map>
+                            </property>
+                        </bean>
+                        -->
                     </list>
                 </entry>
             </map>

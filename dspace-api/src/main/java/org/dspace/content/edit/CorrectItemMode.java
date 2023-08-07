@@ -10,6 +10,7 @@ package org.dspace.content.edit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.dspace.content.logic.DefaultFilter;
 import org.dspace.content.security.AccessItemMode;
 import org.dspace.content.security.CrisSecurity;
 
@@ -42,6 +43,11 @@ public class CorrectItemMode implements AccessItemMode {
      * Contains the list of users metadata for CUSTOM security
      */
     private List<String> items = new ArrayList<String>();
+
+    /**
+     * Contains the condition for the item to be fulfilled to correct the item
+     */
+    private DefaultFilter itemcondition = null;
 
     @Override
     public List<CrisSecurity> getSecurities() {
@@ -86,5 +92,10 @@ public class CorrectItemMode implements AccessItemMode {
     @Override
     public List<String> getGroups() {
         return groups;
+    }
+
+    @Override
+    public DefaultFilter getItemcondition() {
+        return itemcondition;
     }
 }
