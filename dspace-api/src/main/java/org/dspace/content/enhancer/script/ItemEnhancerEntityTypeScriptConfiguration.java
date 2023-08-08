@@ -21,7 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
  * @author Florian Gantner (florian.gantner@uni-bamberg.de)
  */
-public class ItemEnhancerEntityTypeScriptConfiguration<T extends ItemEnhancerEntityTypeScript> extends ScriptConfiguration<T> {
+public class ItemEnhancerEntityTypeScriptConfiguration<T extends ItemEnhancerEntityTypeScript>
+    extends ScriptConfiguration<T> {
 
     @Autowired
     private AuthorizeService authorizeService;
@@ -43,8 +44,10 @@ public class ItemEnhancerEntityTypeScriptConfiguration<T extends ItemEnhancerEnt
             Options options = new Options();
 
             options.addOption("f", "force", false, "force the recalculation of all the virtual fields");
-            options.addOption("c", "collection", true, "uuid of the collection. If the collection does not exist the script aborts.");
-            options.addOption("e", "entity", true, "Entity type of the items. Not recommended, because all items are loaded and then filtered by their entity types.");
+            options.addOption("c", "collection", true,
+                "uuid of the collection. If the collection does not exist the script aborts.");
+            options.addOption("e", "entity", true,
+                "Entity type of the items. Not recommended, because all items are loaded and then filtered.");
             options.addOption("l", "limit", true, "size for iterator --limit items and commit after --limit items");
             options.addOption("m", "max", true, "process max --max items");
             options.addOption("o", "offset", true, "offset of items to start --offset items from the start");

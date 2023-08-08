@@ -7,13 +7,13 @@
  */
 package org.dspace.content.enhancer.script;
 
+import java.sql.SQLException;
+
 import org.apache.commons.cli.Options;
 import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.core.Context;
 import org.dspace.scripts.configuration.ScriptConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.sql.SQLException;
 
 /**
  * Script configuration of {@link ItemEnhancerEntityTypeScript}.
@@ -43,13 +43,16 @@ public class ItemEnhancerByDateScriptConfiguration<T extends ItemEnhancerByDateS
             Options options = new Options();
 
             options.addOption("f", "force", false, "force the recalculation of all the virtual fields");
-            options.addOption("c", "collection", true, "uuid of the collection. If the collection does not exist the script aborts.");
+            options.addOption("c", "collection", true,
+                "uuid of the collection. If the collection does not exist the script aborts.");
             options.addOption("e", "entity", true, "Entity type of the items");
-            options.addOption("d", "dateupper", true, "iso date as upper range of  date query for lastModified. e.g. 2022-10-27T12:12:17.369Z ");
+            options.addOption("d", "dateupper", true,
+                "iso date as upper range of  date query for lastModified. e.g. 2022-10-27T12:12:17.369Z ");
             options.addOption("s", "datelower", true, "iso date as lower range of  date query for lastModified ");
             options.addOption("m", "max", true, "--max results/rows from solr");
             options.addOption("l", "limit", true, "commit after --limit entities processed");
-            options.addOption("q", "query", true, "additional filterquery for the entities. this can for example be the exclusion of some already enhanced metadata.");
+            options.addOption("q", "query", true,
+                "additional filterquery for the entities. this can f.e. be the exclusion of already enhanced metadata");
 
             super.options = options;
         }

@@ -40,21 +40,20 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
     @Autowired
     private ItemService itemService;
 
-	@Autowired
-	private MetadataFieldService metadatafieldService;
+    @Autowired
+    private MetadataFieldService metadatafieldService;
 
-	@Autowired
-	private ConfigurationService configurationService;
+    @Autowired
+    private ConfigurationService configurationService;
 
     private String sourceEntityType;
 
     private String sourceItemMetadataField;
-    
     private String targetItemMetadataField;
 
-	private boolean useDefaultLanguage;
+    private boolean useDefaultLanguage;
 
-	private SimpleMapConverter converter;
+    private SimpleMapConverter converter;
 
     @Override
     public boolean canEnhance(Context context, Item item) {
@@ -64,47 +63,53 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
     @Override
     public void enhance(Context context, Item item) {
         try {
-		if (StringUtils.isBlank(sourceItemMetadataField) || Objects.isNull(converter) || StringUtils.isBlank(targetItemMetadataField)) return;
-		String sourceval, targetval, calculatedval;
-		sourceval = itemService.getMetadata(item, sourceItemMetadataField);
-		targetval = itemService.getMetadata(item, targetItemMetadataField);
-			if (StringUtils.isNotBlank(sourceval)) {
-				calculatedval = converter.getValue(sourceval);
-				if (StringUtils.isNotBlank(targetval) && !targetval.contentEquals(calculatedval)) {
-					// replace mdv if it's different
-					removeTargetMetadata(context, item);
-					addTargetMetadata(context, item, calculatedval);
-				} else if (StringUtils.isBlank(targetval)) {
-					// set new value
-					addTargetMetadata(context, item, calculatedval);
-				}
-			} else if (StringUtils.isBlank(sourceval) && StringUtils.isNotBlank(targetval)) {
-				// remove value
-				removeTargetMetadata(context, item);
-			}
+            if (StringUtils.isBlank(sourceItemMetadataField) || Objects.isNull(converter) ||
+                StringUtils.isBlank(targetItemMetadataField)) {
+                return;
+            }
+            String sourceval;
+            String targetval;
+            String calculatedval;
+            sourceval = itemService.getMetadata(item, sourceItemMetadataField);
+            targetval = itemService.getMetadata(item, targetItemMetadataField);
+            if (StringUtils.isNotBlank(sourceval)) {
+                calculatedval = converter.getValue(sourceval);
+                if (StringUtils.isNotBlank(targetval) && !targetval.contentEquals(calculatedval)) {
+                    // replace mdv if it's different
+                    removeTargetMetadata(context, item);
+                    addTargetMetadata(context, item, calculatedval);
+                } else if (StringUtils.isBlank(targetval)) {
+                    // set new value
+                    addTargetMetadata(context, item, calculatedval);
+                }
+            } else if (StringUtils.isBlank(sourceval) && StringUtils.isNotBlank(targetval)) {
+                // remove value
+                removeTargetMetadata(context, item);
+            }
         } catch (Exception e) {
             LOGGER.error("An error occurs enhancing item with id {}: {}", item.getID(), e.getMessage(), e);
             //throw new SQLRuntimeException(e);
         }
     }
-	private void addTargetMetadata(Context context, Item item, String value) throws Exception {
-		MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
-		if (targetmd != null) {
-			String lang  = (this.useDefaultLanguage) ? this.configurationService.getProperty("default.language") : null;
-			itemService.addMetadata(context, item, targetmd, lang, value);
-		} else {
-			LOGGER.error("No valid metadatavalue to enhance specified");
-		}
-	}
-	
-	private void removeTargetMetadata(Context context, Item item) throws SQLException {
-		MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
-		if (targetmd != null) {
-				itemService.clearMetadata(context, item, targetmd.getMetadataSchema().getName(), targetmd.getElement(), targetmd.getQualifier(), Item.ANY);
-		} else {
-			LOGGER.error("No valid metadatavalue to enhance specified");
-		}
-	}
+    private void addTargetMetadata(Context context, Item item, String value) throws Exception {
+        MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
+        if (targetmd != null) {
+            String lang  = (this.useDefaultLanguage) ? this.configurationService.getProperty("default.language") : null;
+            itemService.addMetadata(context, item, targetmd, lang, value);
+        } else {
+            LOGGER.error("No valid metadatavalue to enhance specified");
+        }
+    }
+
+    private void removeTargetMetadata(Context context, Item item) throws SQLException {
+        MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
+        if (targetmd != null) {
+            itemService.clearMetadata(context, item, targetmd.getMetadataSchema().getName(),
+                    targetmd.getElement(), targetmd.getQualifier(), Item.ANY);
+        } else {
+            LOGGER.error("No valid metadatavalue to enhance specified");
+        }
+    }
 
     public void setSourceEntityType(String sourceEntityType) {
         this.sourceEntityType = sourceEntityType;
@@ -118,11 +123,11 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
         this.sourceItemMetadataField = sourceItemMetadataField;
     }
 
-	public void setConverter(SimpleMapConverter converter) {
-		this.converter = converter;
-	}
+    public void setConverter(SimpleMapConverter converter) {
+        this.converter = converter;
+    }
 
-	public void setUseDefaultLanguage(boolean useDefaultLanguage) {
-		this.useDefaultLanguage = useDefaultLanguage;
-	}
+    public void setUseDefaultLanguage(boolean useDefaultLanguage) {
+        this.useDefaultLanguage = useDefaultLanguage;
+    }
 }

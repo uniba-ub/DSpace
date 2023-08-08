@@ -7,6 +7,13 @@
  */
 package org.dspace.content.enhancer.script;
 
+import java.io.IOException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+
 import org.apache.commons.cli.ParseException;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -32,10 +39,6 @@ import org.dspace.utils.DSpace;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.IOException;
-import java.sql.SQLException;
-import java.util.*;
-
 /**
  * Script that allows to enhance items, also forcing the updating of the
  * calculated metadata with the enhancement.
@@ -50,10 +53,10 @@ import java.util.*;
  * @author florian.gantner@uni-bamberg.de
  *
  */
-public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateScriptConfiguration<ItemEnhancerByDateScript>> {
+public class ItemEnhancerByDateScript
+    extends DSpaceRunnable<ItemEnhancerByDateScriptConfiguration<ItemEnhancerByDateScript>> {
 
     private ItemService itemService;
-    
     private CollectionService collectionService;
 
     private ItemEnhancerService itemEnhancerService;
@@ -61,9 +64,7 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
     protected SolrSearchCore solrSearchCore;
 
     private boolean force;
-    
     private UUID collection;
-    
     private String entitytype;
 
     private String query;
@@ -131,11 +132,14 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
         if (commandLine.hasOption('e') && Objects.isNull(entityTypeService.findByEntityType(context, entitytype))) {
             throw new Exception("unknown entity " + entitytype);
         }
-        if (commandLine.hasOption('c') && (Objects.isNull(collection) || Objects.isNull(this.collectionService.find(context, collection)))) {
+        if (commandLine.hasOption('c') && (Objects.isNull(collection)
+            || Objects.isNull(this.collectionService.find(context, collection)))) {
             throw new Exception("specified collection does not exist");
         }
         SolrPingResponse ping = solrSearchCore.getSolr().ping();
-        if (ping.getStatus() > 299) throw new Exception("Solr seems not to be available. Status" + ping.getStatus());
+        if (ping.getStatus() > 299) {
+            throw new Exception("Solr seems not to be available. Status" + ping.getStatus());
+        }
 
         context.turnOffAuthorisationSystem();
         try {
@@ -158,7 +162,9 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             SolrDocumentList results = searchItemsInSolr(this.query, this.dateupper, this.datelower);
             for (SolrDocument doc : results) {
                 String resourceid = (String) doc.getFieldValue(SearchUtils.RESOURCE_ID_FIELD);
-                if (Objects.nonNull(resourceid) && Objects.nonNull(UUIDUtils.fromString(resourceid))) items.add(resourceid);
+                if (Objects.nonNull(resourceid) && Objects.nonNull(UUIDUtils.fromString(resourceid))) {
+                    items.add(resourceid);
+                }
             }
         } catch (SolrServerException | IOException e) {
             handler.logError(e.getMessage(), e);
@@ -173,11 +179,15 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
 
         if (this.limit > 0) {
             // Split through every list
-            int counter = 0, start, end;
+            int counter = 0;
+            int start = 0;
+            int end = 0;
             while (counter < total) {
                 start = counter;
                 end = counter + limit;
-                if (end > (total -1)) end = total - 1;
+                if (end > (total - 1)) {
+                    end = total - 1;
+                }
                 try {
                     this.itemService.findByIds(context, items.subList(start, end)).forEachRemaining(this::enhanceItem);
                     context.commit();
@@ -199,7 +209,8 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
         log.info("enhanced " + total + " items");
     }
 
-    private SolrDocumentList searchItemsInSolr(String query, String datequeryupper, String datequerylower) throws SolrServerException, IOException {
+    private SolrDocumentList searchItemsInSolr(String query, String datequeryupper, String datequerylower)
+        throws SolrServerException, IOException {
         SolrQuery sQuery;
         if (Objects.nonNull(query)) {
             sQuery = new SolrQuery(query);
@@ -207,18 +218,18 @@ public class ItemEnhancerByDateScript extends DSpaceRunnable<ItemEnhancerByDateS
             sQuery = new SolrQuery("*");
         }
         if (Objects.nonNull(datequeryupper) && Objects.nonNull(datequerylower)) {
-            sQuery.addFilterQuery("lastModified:["+datequerylower+" TO " + datequeryupper +"]");
+            sQuery.addFilterQuery("lastModified:[" + datequerylower + " TO " + datequeryupper + "]");
         } else if (Objects.nonNull(datequeryupper)) {
-            sQuery.addFilterQuery("lastModified:[* TO " + datequeryupper +"]");
+            sQuery.addFilterQuery("lastModified:[* TO " + datequeryupper + "]");
         } else if (Objects.nonNull(datequerylower)) {
             sQuery.addFilterQuery("lastModified:[" + datequerylower + " TO *]");
         }
         if (Objects.nonNull(entitytype)) {
-            sQuery.addFilterQuery("search.entitytype:"+entitytype);
+            sQuery.addFilterQuery("search.entitytype:" + entitytype);
         }
-        sQuery.addFilterQuery(SearchUtils.RESOURCE_TYPE_FIELD+":Item");
+        sQuery.addFilterQuery(SearchUtils.RESOURCE_TYPE_FIELD + ":Item");
         if (Objects.nonNull(collection)) {
-            sQuery.addFilterQuery("location.coll:"+UUIDUtils.toString(collection));
+            sQuery.addFilterQuery("location.coll:" + UUIDUtils.toString(collection));
         }
         sQuery.addField(SearchUtils.RESOURCE_ID_FIELD);
         if (max > 0) {

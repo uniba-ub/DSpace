@@ -35,24 +35,21 @@ import org.slf4j.LoggerFactory;
  * calculated metadata with the enhancement.
  *
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
- * Extended to limit the item set to collection/entity wide use to speed up process and recalculation of certain entities.
+ * Extended to limit the item set to collection/entity wide use to speed up process
+ * and recalculation of certain entities.
  * Extended to use some pagination option with some limit where some commit to the database is made
  * 
  * @author florian.gantner@uni-bamberg.de
  *
  */
-public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEntityTypeScriptConfiguration<ItemEnhancerEntityTypeScript>> {
+public class ItemEnhancerEntityTypeScript
+    extends DSpaceRunnable<ItemEnhancerEntityTypeScriptConfiguration<ItemEnhancerEntityTypeScript>> {
 
     private ItemService itemService;
-    
     private CollectionService collectionService;
-
     private ItemEnhancerService itemEnhancerService;
-
     private boolean force;
-    
     private UUID collection;
-    
     private String entitytype;
 
     private Context context;
@@ -83,21 +80,21 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
             this.entitytype = commandLine.getOptionValue('e');
         }
         if (commandLine.hasOption('l')) {
-            try{
+            try {
                 this.limit = Integer.parseInt(commandLine.getOptionValue('l'));
             } catch (Exception e) {
                 //
             }
         }
         if (commandLine.hasOption('m')) {
-            try{
+            try {
                 this.max = Integer.parseInt(commandLine.getOptionValue('m'));
             } catch (Exception e) {
                 //
             }
         }
         if (commandLine.hasOption('o')) {
-            try{
+            try {
                 this.offset = Integer.parseInt(commandLine.getOptionValue('o'));
             } catch (Exception e) {
                 //
@@ -113,7 +110,8 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
         if (commandLine.hasOption('e') && Objects.isNull(entityTypeService.findByEntityType(context, entitytype))) {
             throw new Exception("unknown entity " + entitytype);
         }
-        if (commandLine.hasOption('c') && (Objects.isNull(collection) || Objects.isNull(this.collectionService.find(context, collection)))) {
+        if (commandLine.hasOption('c') && (Objects.isNull(collection)
+            || Objects.isNull(this.collectionService.find(context, collection)))) {
             throw new Exception("specified collection does not exist");
         }
         context.turnOffAuthorisationSystem();
@@ -146,25 +144,31 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
 
     private void findItemsToEnhanceLimitMax() {
         Collection coll;
-        int total, counter = 0;
+        int total = 0;
+        int counter = 0;
         if (Objects.nonNull(collection)) {
             //Paginate through items in one collection
             try {
-            coll = collectionService.find(context, collection);
-            total = itemService.countItems(context, coll);
+                coll = collectionService.find(context, collection);
+                total = itemService.countItems(context, coll);
             } catch (SQLException e) {
                 handler.logError(e.getMessage());
                 return;
             }
-            if ( this.max > 0) total = this.max;
+            if ( this.max > 0) {
+                total = this.max;
+            }
             if (this.offset > 0) {
                 //offset is being added to counter and offset
                 total += offset;
                 counter += offset;
-                handler.logInfo("offset " + offset + " added. Range: [" + counter + " to " + total + "] in " + limit + " steps");
-                log.info("offset " + offset + " added. Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                handler.logInfo("offset " + offset + " added. Range: ["
+                    + counter + " to " + total + "] in " + limit + " steps");
+                log.info("offset " + offset + " added. Range: ["
+                    + counter + " to " + total + "] in " + limit + " steps");
             } else {
-                handler.logInfo("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                handler.logInfo("Range: [" + counter + " to "
+                    + total + "] in " + limit + " steps");
                 log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
             }
             while (counter < total) {
@@ -174,7 +178,7 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
                     context.commit();
                     handler.logInfo("processed " + counter + " out of total " + total + " items");
                     log.info("processed " + counter + " out of total " + total + " items");
-                } catch (SQLException e){
+                } catch (SQLException e) {
                     handler.logError(e.getMessage());
                     counter += limit;
                     handler.logInfo("processed " + counter + " out of total " + total + " items");
@@ -189,13 +193,17 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
                 handler.logError(e.getMessage());
                 return;
             }
-            if (this.max > 0) total = this.max;
+            if (this.max > 0) {
+                total = this.max;
+            }
             if (this.offset > 0) {
                 //offset is being added to counter and offset
                 total += offset;
                 counter += offset;
-                handler.logInfo("offset" + offset + " added. Range: [" + counter + " to " + total + "] in " + limit + " steps");
-                log.info("offset" + offset + " added. Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                handler.logInfo("offset" + offset + " added. Range: ["
+                    + counter + " to " + total + "] in " + limit + " steps");
+                log.info("offset" + offset + " added. Range: ["
+                    + counter + " to " + total + "] in " + limit + " steps");
             } else {
                 handler.logInfo("Range: [" + counter + " to " + total + "] in " + limit + " steps");
                 log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
@@ -224,17 +232,17 @@ public class ItemEnhancerEntityTypeScript extends DSpaceRunnable<ItemEnhancerEnt
 
     private Iterator<Item> findItemsToEnhance() {
         try {
-        	Iterator<Item> result = null;
-         	if (Objects.nonNull(collection)) {
-         		//Check, if uuid exist
-        			Collection coll = collectionService.find(context, collection);
-        			if (coll != null) {
-        				result = itemService.findAllByCollection(context, coll);
-        			}
-        	} else {
-        		result = itemService.findAll(context);
-        	}
-        	return result;
+            Iterator<Item> result = null;
+            if (Objects.nonNull(collection)) {
+            //Check, if uuid exist
+                Collection coll = collectionService.find(context, collection);
+                if (coll != null) {
+                    result = itemService.findAllByCollection(context, coll);
+                }
+            } else {
+                result = itemService.findAll(context);
+            }
+            return result;
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }
