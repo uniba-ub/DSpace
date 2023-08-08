@@ -301,7 +301,7 @@ public class ItemEnhancerEntityTypeScript
     @SuppressWarnings("unchecked")
     public ItemEnhancerEntityTypeScriptConfiguration<ItemEnhancerEntityTypeScript> getScriptConfiguration() {
         return new DSpace().getServiceManager().getServiceByName("item-enhancer-type",
-        		ItemEnhancerEntityTypeScriptConfiguration.class);
+                ItemEnhancerEntityTypeScriptConfiguration.class);
     }
 
 }
