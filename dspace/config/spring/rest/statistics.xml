@@ -417,6 +417,182 @@
         </property>
     </bean>
 
+    <bean id="topContinentsGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopContinentsGenerator">
+        <property name="viewMode" value="table" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topCountriesGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopCountriesGenerator">
+        <property name="viewMode" value="map" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topCitiesGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopCitiesGenerator">
+        <property name="viewMode" value="table" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topItemsGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopItemsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="20"/>
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topCategoriesGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopCategoriesGenerator" >
+        <property name="viewMode" value="chart.pie"/>
+        <property name="maxResults" value="10"/>
+        <property name="relation" value="RELATION.Collection.items"/>
+        <property name="categoryQueries">
+            <map>
+                <entry key="article" value="itemtype_keyword: ( 'research article' OR 'journal article' )"/>
+                <entry key="book" value="itemtype_keyword: 'book'"/>
+                <entry key="bookChapter" value="itemtype_keyword: 'book part'"/>
+                <entry key="dataset" value="itemtype_keyword: ( 'dataset' OR 'interview' ) "/>
+                <entry key="thesis" value="itemtype_keyword: ( 'thesis' OR 'bachelor thesis' OR 'doctoral thesis' OR 'master thesis' )"/>
+                <entry key="other" value="OTHER"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="totalVisitPerPeriodRelationCollection" class="org.dspace.app.rest.statistics.TotalVisitPerPeriodGenerator">
+        <property name="viewMode" value="chart.line"/>
+        <property name="periodType" value="month"/>
+        <property name="increment" value="1"/>
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topContinentsGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopContinentsGenerator">
+        <property name="viewMode" value="table" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topCountriesGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopCountriesGenerator">
+        <property name="viewMode" value="map" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topCitiesGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopCitiesGenerator">
+        <property name="viewMode" value="table" />
+        <property name="maxResults" value="10" />
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topItemsGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopItemsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="20"/>
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topCategoriesGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopCategoriesGenerator" >
+        <property name="viewMode" value="chart.pie"/>
+        <property name="maxResults" value="10"/>
+        <property name="relation" value="RELATION.Community.items"/>
+        <property name="categoryQueries">
+            <map>
+                <entry key="article" value="itemtype_keyword: ( 'research article' OR 'journal article' )"/>
+                <entry key="book" value="itemtype_keyword: 'book'"/>
+                <entry key="bookChapter" value="itemtype_keyword: 'book part'"/>
+                <entry key="dataset" value="itemtype_keyword: ( 'dataset' OR 'interview' ) "/>
+                <entry key="thesis" value="itemtype_keyword: ( 'thesis' OR 'bachelor thesis' OR 'doctoral thesis' OR 'master thesis' )"/>
+                <entry key="other" value="OTHER"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="totalVisitPerPeriodRelationCommunity" class="org.dspace.app.rest.statistics.TotalVisitPerPeriodGenerator">
+        <property name="viewMode" value="chart.line"/>
+        <property name="periodType" value="month"/>
+        <property name="increment" value="1"/>
+        <property name="dsoType" value="2" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topDownloadContinentsGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopContinentsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topDownloadCountriesGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopCountriesGenerator">
+        <property name="viewMode" value="map"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topDownloadCitiesGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopCitiesGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topItemsDownloadGeneratorRelationCollection" class="org.dspace.app.rest.statistics.TopItemsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="20"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="totalDownloadPerPeriodRelationCollection" class="org.dspace.app.rest.statistics.TotalVisitPerPeriodGenerator">
+        <property name="viewMode" value="chart.line"/>
+        <property name="periodType" value="month"/>
+        <property name="increment" value="1"/>
+        <property name="dsoType" value="0" />
+        <property name="relation" value="RELATION.Collection.items"/>
+    </bean>
+
+    <bean id="topDownloadContinentsGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopContinentsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topDownloadCountriesGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopCountriesGenerator">
+        <property name="viewMode" value="map"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topDownloadCitiesGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopCitiesGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="10"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="topItemsDownloadGeneratorRelationCommunity" class="org.dspace.app.rest.statistics.TopItemsGenerator">
+        <property name="viewMode" value="table"/>
+        <property name="maxResults" value="20"/>
+        <property name="dsoType" value="0"/>
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
+    <bean id="totalDownloadPerPeriodRelationCommunity" class="org.dspace.app.rest.statistics.TotalVisitPerPeriodGenerator">
+        <property name="viewMode" value="chart.line"/>
+        <property name="periodType" value="month"/>
+        <property name="increment" value="1"/>
+        <property name="dsoType" value="0" />
+        <property name="relation" value="RELATION.Community.items"/>
+    </bean>
+
     <bean id="person-mainReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
         <property name="categoryType" value="mainReports"/>
         <property name="reports">
@@ -598,6 +774,33 @@
         </property>
     </bean>
 
+    <bean id="collection-itemReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
+        <property name="categoryType" value="itemReports"/>
+        <property name="reports">
+            <map>
+                <entry key="TopItemsContinents" value-ref="topContinentsGeneratorRelationCollection"/>
+                <entry key="TopItemsCountries" value-ref="topCountriesGeneratorRelationCollection"/>
+                <entry key="TopItemsCities" value-ref="topCitiesGeneratorRelationCollection"/>
+                <entry key="TotalItemsVisits" value-ref="topItemsGeneratorRelationCollection"/>
+                <entry key="TopItemsCategories" value-ref="topCategoriesGeneratorRelationCollection"/>
+                <entry key="TotalItemsVisitsPerMonth" value-ref="totalVisitPerPeriodRelationCollection"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="collection-downloadReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
+        <property name="categoryType" value="downloadReports"/>
+        <property name="reports">
+            <map>
+                <entry key="TopDownloadsContinents" value-ref="topDownloadContinentsGeneratorRelationCollection"/>
+                <entry key="TopDownloadsCountries" value-ref="topDownloadCountriesGeneratorRelationCollection"/>
+                <entry key="TopDownloadsCities" value-ref="topDownloadCitiesGeneratorRelationCollection"/>
+                <entry key="TotalDownloads" value-ref="topItemsDownloadGeneratorRelationCollection"/>
+                <entry key="TotalDownloadsPerMonth" value-ref="totalDownloadPerPeriodRelationCollection"/>
+            </map>
+        </property>
+    </bean>
+
     <bean id="community-mainReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
         <property name="categoryType" value="mainReports"/>
         <property name="reports">
@@ -606,6 +809,33 @@
                 <entry key="TotalVisitsPerMonth" value-ref="totalVisitPerPeriodGenerator"/>
                 <entry key="TopCountries" value-ref="topCountriesGenerator"/>
                 <entry key="TopCities" value-ref="topCitiesGenerator"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="community-itemReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
+        <property name="categoryType" value="itemReports"/>
+        <property name="reports">
+            <map>
+                <entry key="TopItemsContinents" value-ref="topContinentsGeneratorRelationCommunity"/>
+                <entry key="TopItemsCountries" value-ref="topCountriesGeneratorRelationCommunity"/>
+                <entry key="TopItemsCities" value-ref="topCitiesGeneratorRelationCommunity"/>
+                <entry key="TotalItemsVisits" value-ref="topItemsGeneratorRelationCommunity"/>
+                <entry key="TopItemsCategories" value-ref="topCategoriesGeneratorRelationCommunity"/>
+                <entry key="TotalItemsVisitsPerMonth" value-ref="totalVisitPerPeriodRelationCommunity"/>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="community-downloadReports" class="org.dspace.app.rest.model.UsageReportCategoryRest">
+        <property name="categoryType" value="downloadReports"/>
+        <property name="reports">
+            <map>
+                <entry key="TopDownloadsContinents" value-ref="topDownloadContinentsGeneratorRelationCommunity"/>
+                <entry key="TopDownloadsCountries" value-ref="topDownloadCountriesGeneratorRelationCommunity"/>
+                <entry key="TopDownloadsCities" value-ref="topDownloadCitiesGeneratorRelationCommunity"/>
+                <entry key="TotalDownloads" value-ref="topItemsDownloadGeneratorRelationCommunity"/>
+                <entry key="TotalDownloadsPerMonth" value-ref="totalDownloadPerPeriodRelationCommunity"/>
             </map>
         </property>
     </bean>
@@ -649,11 +879,15 @@
                 <entry key="community">
                     <list>
                         <ref bean="community-mainReports"/>
+                        <ref bean="community-itemReports"/>
+                        <ref bean="community-downloadReports"/>
                     </list>
                 </entry>
                 <entry key="collection">
                     <list>
                         <ref bean="collection-mainReports"/>
+                        <ref bean="collection-itemReports"/>
+                        <ref bean="collection-downloadReports"/>
                     </list>
                 </entry>
                 <entry key="item">
