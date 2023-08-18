@@ -17,6 +17,7 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.dspace.content.Item.ANY;
 
 import java.sql.SQLException;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -49,6 +50,7 @@ import org.dspace.profile.OrcidProfileSyncPreference;
 import org.dspace.profile.OrcidSynchronizationMode;
 import org.dspace.profile.service.ResearcherProfileService;
 import org.dspace.services.ConfigurationService;
+import org.dspace.util.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -233,7 +235,7 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
         DiscoverQuery discoverQuery = new DiscoverQuery();
         discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
         discoverQuery.addFilterQueries("search.resourceid:" + item.getID());
-        filterrelationname = filterrelationname.replace("{0}", profile.getID().toString());
+        filterrelationname = MessageFormat.format(filterrelationname, UUIDUtils.toString(profile.getID()));
         discoverQuery.addFilterQueries(filterrelationname);
         discoverQuery.setMaxResults(1);
         return new DiscoverResultItemIterator(context, discoverQuery);
