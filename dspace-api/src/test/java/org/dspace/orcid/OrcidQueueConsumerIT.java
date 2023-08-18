@@ -16,6 +16,8 @@ import static org.dspace.orcid.OrcidOperation.UPDATE;
 import static org.dspace.orcid.model.OrcidProfileSectionType.KEYWORDS;
 import static org.dspace.profile.OrcidEntitySyncPreference.ALL;
 import static org.dspace.profile.OrcidEntitySyncPreference.DISABLED;
+import static org.dspace.profile.OrcidEntitySyncPreference.MINE;
+import static org.dspace.profile.OrcidEntitySyncPreference.MY_SELECTED;
 import static org.dspace.profile.OrcidProfileSyncPreference.AFFILIATION;
 import static org.dspace.profile.OrcidProfileSyncPreference.BIOGRAPHICAL;
 import static org.dspace.profile.OrcidProfileSyncPreference.EDUCATION;
@@ -37,16 +39,24 @@ import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
+import org.dspace.builder.EntityTypeBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.builder.OrcidHistoryBuilder;
+import org.dspace.builder.RelationshipBuilder;
+import org.dspace.builder.RelationshipTypeBuilder;
 import org.dspace.content.Collection;
+import org.dspace.content.EntityType;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
+import org.dspace.content.Relationship;
+import org.dspace.content.RelationshipType;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.orcid.consumer.OrcidQueueConsumer;
 import org.dspace.orcid.factory.OrcidServiceFactory;
+import org.dspace.orcid.model.OrcidEntityType;
 import org.dspace.orcid.service.OrcidQueueService;
+import org.dspace.profile.OrcidEntitySyncPreference;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.junit.After;
@@ -472,6 +482,416 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
         assertThat(newOrcidQueueRecords, hasSize(1));
 
         assertThat(orcidQueueRecords.get(0), equalTo(newOrcidQueueRecords.get(0)));
+    }
+    @Test
+    public void testOrcidQueueRecordCreationForPublicationRelationMySELECTED() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        configurationService.addPropertyValue("orcid.relationpreference.Publication.MY_SELECTED",
+                "relation.isResearchoutputsSelectedFor:{0}");
+
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+            .withTitle("Test User")
+            .withOrcidIdentifier("0000-1111-2222-3333")
+            .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+            .withOrcidSynchronizationPublicationsPreference(MY_SELECTED)
+            .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication 2")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        Item thirdpublication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication 3")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType SelectedType = RelationshipTypeBuilder
+            .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsSelectedFor",
+                "hasSelectedResearchoutputs", 0, null, 0,
+                null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(1));
+        assertThat(orcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(thirdpublication, "dc", "contributor", "editor", "Editor", null);
+        context.commit();
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(1));
+
+        assertThat(orcidQueueRecords.get(0), equalTo(newOrcidQueueRecords.get(0)));
+
+        context.turnOffAuthorisationSystem();
+        Relationship secondrelselected =
+                RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType)
+                        .build();
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> newaftercreationOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newaftercreationOrcidQueueRecords, hasSize(2));
+        assertThat(newaftercreationOrcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+        assertThat(newaftercreationOrcidQueueRecords.get(1), matches(profile, secondpublication,
+                "Publication", INSERT));
+
+        context.turnOffAuthorisationSystem();
+        RelationshipBuilder.deleteRelationship(secondrelselected.getID());
+        itemService.update(context, secondpublication);
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> newafterdeletionOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newafterdeletionOrcidQueueRecords, hasSize(1));
+        assertThat(newafterdeletionOrcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+    }
+
+    @Test
+    public void testNoOrcidQueueRecordCreationForPublicationIfRelationMYSELECTEDIsNotConfigured() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        configurationService.setProperty("orcid.relationpreference.Publication.MY_SELECTED", null);
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+                .withTitle("Test User")
+                .withOrcidIdentifier("0000-1111-2222-3333")
+                .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+                .withOrcidSynchronizationPublicationsPreference(MY_SELECTED)
+                .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 2")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType SelectedType = RelationshipTypeBuilder
+                .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsSelectedFor",
+                        "hasSelectedResearchoutputs", 0, null, 0,
+                        null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(0));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+        context.commit();
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(0));
+
+    }
+    @Test
+    public void testNoOrcidQueueRecordCreationForPublicationIfRelationMYSELECTEDQueryHasNoProfile() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        configurationService.setProperty("orcid.relationpreference.Publication.MY_SELECTED",
+                "isResearchoutputsSelectedFor");
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+                .withTitle("Test User")
+                .withOrcidIdentifier("0000-1111-2222-3333")
+                .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+                .withOrcidSynchronizationPublicationsPreference(MY_SELECTED)
+                .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 2")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType SelectedType = RelationshipTypeBuilder
+                .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsSelectedFor",
+                        "hasSelectedResearchoutputs", 0, null, 0,
+                        null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(0));
+    }
+
+    @Test
+    public void testOrcidQueueRecordCreationForPublicationRelationMINE() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+            .withTitle("Test User")
+            .withOrcidIdentifier("0000-1111-2222-3333")
+            .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+            .withOrcidSynchronizationPublicationsPreference(MINE)
+            .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication 2")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        Item thirdpublication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication 3")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+        itemService.update(context, thirdpublication);
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType SelectedType = RelationshipTypeBuilder
+            .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsSelectedFor",
+                "hasSelectedResearchoutputs", 0, null, 0,
+                null).build();
+        RelationshipType HiddenType = RelationshipTypeBuilder
+            .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsHiddenFor",
+                "notDisplayingResearchoutputs", 0, null, 0,
+                null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(2));
+        assertThat(orcidQueueRecords.get(0), matches(profile, thirdpublication, "Publication", INSERT));
+        assertThat(orcidQueueRecords.get(1), matches(profile, publication, "Publication", INSERT));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(thirdpublication, "dc", "contributor", "editor", "Editor", null);
+        context.commit();
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(2));
+
+        assertThat(orcidQueueRecords.get(0), equalTo(newOrcidQueueRecords.get(0)));
+        assertThat(orcidQueueRecords.get(1), equalTo(newOrcidQueueRecords.get(1)));
+
+        context.turnOffAuthorisationSystem();
+        Relationship relbeingdeleted =
+                RelationshipBuilder.createRelationshipBuilder(context, thirdpublication, profile, HiddenType).build();
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> newcreationQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newcreationQueueRecords, hasSize(1));
+        assertThat(newcreationQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+        context.turnOffAuthorisationSystem();
+
+        context.turnOffAuthorisationSystem();
+        RelationshipBuilder.deleteRelationship(relbeingdeleted.getID());
+        itemService.update(context, thirdpublication);
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> newafterdeletionQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newafterdeletionQueueRecords, hasSize(2));
+        assertThat(newafterdeletionQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+        assertThat(newafterdeletionQueueRecords.get(1), matches(profile, thirdpublication, "Publication", INSERT));
+    }
+
+    @Test
+    public void testNoOrcidQueueRecordCreationForPublicationRelationMineIfAllAreHidden() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+                .withTitle("Test User")
+                .withOrcidIdentifier("0000-1111-2222-3333")
+                .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+                .withOrcidSynchronizationPublicationsPreference(MINE)
+                .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 2")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType HiddenType = RelationshipTypeBuilder
+                .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsHiddenFor",
+                        "notDisplayingResearchoutputs", 0, null, 0,
+                        null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(0));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+        context.commit();
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(0));
+    }
+
+    @Test
+    public void testNoOrcidQueueRecordCreationOccursIfPublicationRelationMYSELECTEDNoneExist() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+                .withTitle("Test User")
+                .withOrcidIdentifier("0000-1111-2222-3333")
+                .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+                .withOrcidSynchronizationPublicationsPreference(MY_SELECTED)
+                .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 2")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(0));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+        context.commit();
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(0));
+    }
+
+    @Test
+    public void testOrcidQueueRecalculationForChangedPublicationRelationSettings() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+                .withTitle("Test User")
+                .withOrcidIdentifier("0000-1111-2222-3333")
+                .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+                .withOrcidSynchronizationPublicationsPreference(ALL)
+                .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 2")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        Item thirdpublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test publication 3")
+                .withAuthor("Test User", profile.getID().toString())
+                .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType HiddenType = RelationshipTypeBuilder
+                .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsHiddenFor",
+                        "notDisplayingResearchoutputs", 0, null, 0,
+                        null).build();
+
+        RelationshipType SelectedType = RelationshipTypeBuilder
+                .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsSelectedFor",
+                        "hasSelectedResearchoutputs", 0, null, 0,
+                        null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(3));
+        assertThat(orcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
+        assertThat(orcidQueueRecords.get(1), matches(profile, secondpublication, "Publication", INSERT));
+        assertThat(orcidQueueRecords.get(2), matches(profile, thirdpublication, "Publication", INSERT));
+
+        changeProfilePublicationSyncPreference(profile, MY_SELECTED);
+
+        List<OrcidQueue> selectedOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(selectedOrcidQueueRecords, hasSize(1));
+        assertThat(selectedOrcidQueueRecords.get(0), matches(profile, secondpublication, "Publication", INSERT));
+
+        changeProfilePublicationSyncPreference(profile, MINE);
+
+        List<OrcidQueue> mineOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(mineOrcidQueueRecords, hasSize(2));
+        assertThat(mineOrcidQueueRecords.get(0), matches(profile, thirdpublication, "Publication", INSERT));
+        assertThat(mineOrcidQueueRecords.get(1), matches(profile, secondpublication, "Publication", INSERT));
+
+        changeProfilePublicationSyncPreference(profile, DISABLED);
+
+        List<OrcidQueue> disabledOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(disabledOrcidQueueRecords, hasSize(0));
     }
 
     @Test
@@ -991,4 +1411,11 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
             .build();
     }
 
+    private void changeProfilePublicationSyncPreference(Item profile, OrcidEntitySyncPreference preference)
+            throws SQLException {
+        context.turnOffAuthorisationSystem();
+        orcidQueueService.recalculateOrcidQueue(context, profile, OrcidEntityType.PUBLICATION, preference);
+        context.restoreAuthSystemState();
+        context.commit();
+    }
 }
