@@ -13,7 +13,9 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.authorize.AuthorizeException;
@@ -24,6 +26,10 @@ import org.dspace.builder.GroupBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
+import org.dspace.content.factory.ContentServiceFactory;
+import org.dspace.content.logic.DefaultFilter;
+import org.dspace.content.logic.condition.Condition;
+import org.dspace.content.logic.condition.MetadataValueMatchCondition;
 import org.dspace.content.security.service.CrisSecurityService;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
@@ -239,6 +245,165 @@ public class CrisSecurityServiceIT extends AbstractIntegrationTestWithDatabase {
     }
 
     @Test
+    public void testHasAccessWithCustomConfigAndItemCondition() throws SQLException {
+
+        context.turnOffAuthorisationSystem();
+
+        EPerson firstUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user@mail.it")
+                .build();
+
+        EPerson secondUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user2@mail.it")
+                .build();
+
+        EPerson thirdUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user3@mail.it")
+                .build();
+
+        EPerson fourthUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user4@mail.it")
+                .build();
+
+        Item author = ItemBuilder.createItem(context, collection)
+                .withTitle("Author")
+                .withDspaceObjectOwner(thirdUser)
+                .build();
+
+        Item editor = ItemBuilder.createItem(context, collection)
+                .withTitle("Editor")
+                .withDspaceObjectOwner(fourthUser)
+                .build();
+
+        Group group = GroupBuilder.createGroup(context)
+                .withName("Group")
+                .addMember(secondUser)
+                .build();
+
+        Item item = ItemBuilder.createItem(context, collection)
+                .withTitle("Test item")
+                .withDspaceObjectOwner("Owner", owner.getID().toString())
+                .withAuthor("Author", author.getID().toString())
+                .withEditor("Editor", editor.getID().toString())
+                .withEditor("Another editor", "5260f7f1-f583-4a7a-86e5-25db93a29240")
+                .withCrisPolicyEPerson("First User", firstUser.getID().toString())
+                .withCrisPolicyGroup("Second User", group.getID().toString())
+                .build();
+
+        context.restoreAuthSystemState();
+        DefaultFilter filter = new DefaultFilter();
+
+        Condition condition = new MetadataValueMatchCondition();
+        condition.setItemService(ContentServiceFactory.getInstance().getItemService());
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("field", "dc.title");
+        parameters.put("pattern", "^Test");
+        condition.setParameters(parameters);
+        filter.setStatement(condition);
+
+        AccessItemMode accessMode = buildAccessItemModeWithDefaultFilter(filter, CrisSecurity.CUSTOM);
+        when(accessMode.getUserMetadataFields()).thenReturn(List.of("cris.policy.eperson"));
+        when(accessMode.getGroupMetadataFields()).thenReturn(List.of("cris.policy.group"));
+        when(accessMode.getItemMetadataFields()).thenReturn(List.of("dc.contributor.author"));
+
+        assertThat(crisSecurityService.hasAccess(context, item, eperson, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, admin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, owner, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, collectionAdmin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, communityAdmin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, submitter, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, anotherSubmitter, accessMode), is(false));
+
+        assertThat(crisSecurityService.hasAccess(context, item, firstUser, accessMode), is(true));
+        assertThat(crisSecurityService.hasAccess(context, item, secondUser, accessMode), is(true));
+        assertThat(crisSecurityService.hasAccess(context, item, thirdUser, accessMode), is(true));
+        assertThat(crisSecurityService.hasAccess(context, item, fourthUser, accessMode), is(false));
+
+        when(accessMode.getItemMetadataFields()).thenReturn(List.of("dc.contributor.author", "dc.contributor.editor"));
+        assertThat(crisSecurityService.hasAccess(context, item, thirdUser, accessMode), is(true));
+        assertThat(crisSecurityService.hasAccess(context, item, fourthUser, accessMode), is(true));
+    }
+    @Test
+    public void testHasNoAccessWithCustomConfigAndItemCondition() throws SQLException {
+
+        context.turnOffAuthorisationSystem();
+
+        EPerson firstUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user@mail.it")
+                .build();
+
+        EPerson secondUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user2@mail.it")
+                .build();
+
+        EPerson thirdUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user3@mail.it")
+                .build();
+
+        EPerson fourthUser = EPersonBuilder.createEPerson(context)
+                .withEmail("user4@mail.it")
+                .build();
+
+        Item author = ItemBuilder.createItem(context, collection)
+                .withTitle("Author")
+                .withDspaceObjectOwner(thirdUser)
+                .build();
+
+        Item editor = ItemBuilder.createItem(context, collection)
+                .withTitle("Editor")
+                .withDspaceObjectOwner(fourthUser)
+                .build();
+
+        Group group = GroupBuilder.createGroup(context)
+                .withName("Group")
+                .addMember(secondUser)
+                .build();
+
+        Item item = ItemBuilder.createItem(context, collection)
+                .withTitle("Test item")
+                .withDspaceObjectOwner("Owner", owner.getID().toString())
+                .withAuthor("Author", author.getID().toString())
+                .withEditor("Editor", editor.getID().toString())
+                .withEditor("Another editor", "5260f7f1-f583-4a7a-86e5-25db93a29240")
+                .withCrisPolicyEPerson("First User", firstUser.getID().toString())
+                .withCrisPolicyGroup("Second User", group.getID().toString())
+                .build();
+
+        context.restoreAuthSystemState();
+        DefaultFilter filter = new DefaultFilter();
+
+        Condition condition = new MetadataValueMatchCondition();
+        condition.setItemService(ContentServiceFactory.getInstance().getItemService());
+        Map<String, Object> parameters = new HashMap<>();
+        parameters.put("field", "dc.title");
+        parameters.put("pattern", "^NoMatch");
+        condition.setParameters(parameters);
+        filter.setStatement(condition);
+
+        AccessItemMode accessMode = buildAccessItemModeWithDefaultFilter(filter, CrisSecurity.CUSTOM);
+        when(accessMode.getUserMetadataFields()).thenReturn(List.of("cris.policy.eperson"));
+        when(accessMode.getGroupMetadataFields()).thenReturn(List.of("cris.policy.group"));
+        when(accessMode.getItemMetadataFields()).thenReturn(List.of("dc.contributor.author"));
+
+        assertThat(crisSecurityService.hasAccess(context, item, eperson, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, admin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, owner, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, collectionAdmin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, communityAdmin, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, submitter, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, anotherSubmitter, accessMode), is(false));
+
+        assertThat(crisSecurityService.hasAccess(context, item, firstUser, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, secondUser, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, thirdUser, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, fourthUser, accessMode), is(false));
+
+        when(accessMode.getItemMetadataFields()).thenReturn(List.of("dc.contributor.author", "dc.contributor.editor"));
+        assertThat(crisSecurityService.hasAccess(context, item, thirdUser, accessMode), is(false));
+        assertThat(crisSecurityService.hasAccess(context, item, fourthUser, accessMode), is(false));
+    }
+
+    @Test
     public void testHasAccessWithItemAdminConfig() throws SQLException, AuthorizeException {
 
         context.turnOffAuthorisationSystem();
@@ -371,6 +536,14 @@ public class CrisSecurityServiceIT extends AbstractIntegrationTestWithDatabase {
     private AccessItemMode buildAccessItemMode(CrisSecurity... securities) {
         AccessItemMode mode = mock(AccessItemMode.class);
         when(mode.getSecurities()).thenReturn(List.of(securities));
+
+        return mode;
+    }
+
+    private AccessItemMode buildAccessItemModeWithDefaultFilter(DefaultFilter condition, CrisSecurity... securities) {
+        AccessItemMode mode = mock(AccessItemMode.class);
+        when(mode.getSecurities()).thenReturn(List.of(securities));
+        when(mode.getItemcondition()).thenReturn(condition);
         return mode;
     }
 
