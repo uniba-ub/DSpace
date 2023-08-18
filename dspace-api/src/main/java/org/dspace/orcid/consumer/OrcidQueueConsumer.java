@@ -34,6 +34,7 @@ import org.dspace.event.Consumer;
 import org.dspace.event.Event;
 import org.dspace.orcid.OrcidHistory;
 import org.dspace.orcid.OrcidOperation;
+import org.dspace.orcid.OrcidQueue;
 import org.dspace.orcid.factory.OrcidServiceFactory;
 import org.dspace.orcid.model.OrcidEntityType;
 import org.dspace.orcid.model.factory.OrcidProfileSectionFactory;
@@ -160,6 +161,15 @@ public class OrcidQueueConsumer implements Consumer {
 
             if (shouldNotBeSynchronized(context, relatedItem, entity) ||
                 isAlreadyQueued(context, relatedItem, entity)) {
+                // delete queue entries which are queued but which should not be synchronized anymore
+                if (isAlreadyQueued(context, relatedItem, entity) &&
+                        shouldNotBeSynchronized(context, relatedItem, entity)) {
+                    List<OrcidQueue> queueentries =
+                            orcidQueueService.findByProfileItemAndEntity(context, relatedItem, entity);
+                    for (OrcidQueue queueentry : queueentries) {
+                        orcidQueueService.delete(context, queueentry);
+                    }
+                }
                 continue;
             }
 
