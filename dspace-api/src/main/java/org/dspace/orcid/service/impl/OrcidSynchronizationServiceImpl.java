@@ -20,7 +20,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -205,7 +204,7 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
                     case MY_SELECTED:
                         String filterproperty = "orcid.relationpreference." + entityType + "." + option.get().name();
                         String filter = configurationService.getProperty(filterproperty);
-                        if (Objects.isNull(filter)) {
+                        if (isBlank(filter) || !filter.contains("{0}")) {
                             return false;
                         }
                         Iterator<Item> entities = checkRelation(context, profile, item, filter);
@@ -230,7 +229,7 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
 
     }
 
-    public Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname) {
+    private Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname) {
         DiscoverQuery discoverQuery = new DiscoverQuery();
         discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
         discoverQuery.addFilterQueries("search.resourceid:" + item.getID());

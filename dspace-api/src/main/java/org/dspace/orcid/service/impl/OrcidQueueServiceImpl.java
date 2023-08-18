@@ -11,14 +11,12 @@ import static org.apache.commons.lang3.ArrayUtils.contains;
 import static org.dspace.profile.OrcidEntitySyncPreference.DISABLED;
 import static org.dspace.profile.OrcidEntitySyncPreference.MINE;
 import static org.dspace.profile.OrcidEntitySyncPreference.MY_SELECTED;
-import static org.springframework.util.StringUtils.capitalize;
 
 import java.sql.SQLException;
 import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -221,7 +219,7 @@ public class OrcidQueueServiceImpl implements OrcidQueueService {
     public void recalculateOrcidQueue(Context context, Item profileItem, OrcidEntityType orcidEntityType,
         OrcidEntitySyncPreference preference) throws SQLException {
 
-        String entityType = capitalize(orcidEntityType.name().toLowerCase());
+        String entityType = orcidEntityType.getEntityType();
         if (preference == DISABLED) {
             deleteByProfileItemAndRecordType(context, profileItem, entityType);
         } else if (preference == MY_SELECTED || preference == MINE) {
@@ -230,7 +228,7 @@ public class OrcidQueueServiceImpl implements OrcidQueueService {
             // add additional filterquery
             String filterrelationname = configurationService.getProperty("orcid.relationpreference." +
                 entityType + "." + preference.name());
-            if (Objects.isNull(filterrelationname)) {
+            if (StringUtils.isBlank(filterrelationname)) {
                 return;
             }
             Iterator<Item> entities;
