@@ -86,7 +86,6 @@ import org.dspace.identifier.service.IdentifierService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.util.ItemUtils;
-import org.dspace.util.UUIDUtils;
 import org.dspace.utils.DSpace;
 import org.dspace.workflow.WorkflowException;
 import org.dspace.xmlworkflow.WorkflowConfigurationException;
@@ -549,15 +548,14 @@ public class ItemImportOA {
         Item myitem = null;
         WorkspaceItem wsi = null;
         c.setCurrentUser(myEPerson);
-        UUID predefineduuid = UUIDUtils.fromString(handle);
-        if (Objects.nonNull(predefineduuid)) {
-            wsi = workspaceItemService.create(c, mycollections[0], predefineduuid,false);
+        if (Objects.nonNull(impRecord.getUUID())) {
+            wsi = workspaceItemService.create(c, mycollections[0], impRecord.getUUID(),false);
         } else {
             wsi = workspaceItemService.create(c, mycollections[0], false);
         }
         myitem = wsi.getItem();
 
-        if (Objects.isNull(predefineduuid) && StringUtils.isNotEmpty(handle)) {
+        if (StringUtils.isNotEmpty(impRecord.getHandle())) {
             identifierService.register(c, myitem, handle);
         }
 

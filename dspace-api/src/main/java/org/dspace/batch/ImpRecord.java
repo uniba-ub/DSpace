@@ -66,6 +66,10 @@ public class ImpRecord {
     @Column(name = "handle", length = 64)
     private String handle;
 
+    @Id
+    @Column(name = "uuid", unique = true)
+    protected java.util.UUID uuid;
+
     @Column(name = "imp_sourceref", length = 256)
     private String impSourceref;
 
@@ -127,6 +131,14 @@ public class ImpRecord {
 
     public String getHandle() {
         return handle;
+    }
+
+    public UUID getUUID() {
+        return uuid;
+    }
+
+    public void setUUID(UUID uuid) {
+        this.uuid = uuid;
     }
 
     public void setHandle(String handle) {
