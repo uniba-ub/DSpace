@@ -24,12 +24,12 @@ import org.springframework.beans.factory.annotation.Autowired;
  * Abstract class for conditions, to implement the basic getter and setter parameters
  *
  * @author Kim Shepherd
- * @version $Revision$
  */
 public abstract class AbstractCondition implements Condition {
 
     private Map<String, Object> parameters = new HashMap<>();
 
+    // Declare and instantiate spring services
     @Autowired(required = true)
     protected ItemService itemService;
     @Autowired(required = true)

@@ -13,6 +13,7 @@ import static org.dspace.app.rest.authorization.TrueForUsersInGroupTestFeature.G
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -24,7 +25,9 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -63,6 +66,7 @@ import org.dspace.app.rest.model.patch.ReplaceOperation;
 import org.dspace.app.rest.projection.DefaultProjection;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.app.rest.utils.Utils;
+import org.dspace.authorize.AuthorizeException;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
 import org.dspace.builder.EPersonBuilder;
@@ -80,8 +84,13 @@ import org.dspace.content.service.SiteService;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
 import org.dspace.services.ConfigurationService;
+import org.dspace.xmlworkflow.storedcomponents.PoolTask;
+import org.dspace.xmlworkflow.storedcomponents.XmlWorkflowItem;
+import org.dspace.xmlworkflow.storedcomponents.service.PoolTaskService;
+import org.dspace.xmlworkflow.storedcomponents.service.XmlWorkflowItemService;
 import org.hamcrest.Matcher;
 import org.hamcrest.Matchers;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,6 +124,12 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
     private ConfigurationService configurationService;
     @Autowired
     private ItemConverter itemConverter;
+
+    @Autowired
+    private PoolTaskService poolTaskService;
+
+    @Autowired
+    private XmlWorkflowItemService xmlWorkflowItemService;
 
     @Autowired
     private Utils utils;
@@ -172,6 +187,14 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
         trueForUsersInGroupTest = authorizationFeatureService.find(TrueForUsersInGroupTestFeature.NAME);
 
         configurationService.setProperty("webui.user.assumelogin", true);
+    }
+
+    @After
+    public void cleanUp() throws Exception {
+        context.turnOffAuthorisationSystem();
+        poolTaskService.findAll(context).forEach(this::deletePoolTask);
+        xmlWorkflowItemService.findAll(context).forEach(this::deleteWorkflowItem);
+        context.restoreAuthSystemState();
     }
 
     @Test
@@ -919,25 +942,25 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
         configurationService.setProperty("org.dspace.app.rest.authorization.AlwaysThrowExceptionFeature.turnoff", true);
         String anotherToken = getAuthToken(anotherEperson.getEmail(), password);
 
-        // verify that he cannot search the admin authorizations - by using the eperson parameter
+        // verify that admin cannot search the admin authorizations - by using the eperson parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("eperson", admin.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the admin authorizations - by assuming login
+        // verify that admin cannot search the admin authorizations - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .header("X-On-Behalf-Of", admin.getID()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by using the eperson parameter
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by using the parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("eperson", eperson.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by assuming login
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .header("X-On-Behalf-Of", eperson.getID()))
@@ -1476,28 +1499,28 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
         configurationService.setProperty("org.dspace.app.rest.authorization.AlwaysThrowExceptionFeature.turnoff", true);
         String anotherToken = getAuthToken(anotherEperson.getEmail(), password);
 
-        // verify that he cannot search the admin authorizations - by using the eperson parameter
+        // verify that admin cannot search the admin authorizations - by using the eperson parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("feature", alwaysTrue.getName())
                 .param("eperson", admin.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the admin authorizations - by assuming login
+        // verify that admin cannot search the admin authorizations - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("feature", alwaysTrue.getName())
                 .header("X-On-Behalf-Of", admin.getID()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by using the eperson parameter
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by using the parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("feature", alwaysTrue.getName())
                 .param("eperson", eperson.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by assuming login
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/object")
                 .param("uri", siteUri)
                 .param("feature", alwaysTrue.getName())
@@ -1925,6 +1948,205 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
 
     @Test
     /**
+     * Verify that the paginated search by multiple objects and features works properly in allowed scenarios:
+     * - for an administrator
+     * - for an administrator that want to inspect permission of the anonymous users or another user
+     * - for a logged-in "normal" user
+     * - for anonymous
+     *
+     * @throws Exception
+     */
+    public void findByMultipleObjectsAndFeaturesPaginationTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        Community com = CommunityBuilder.createCommunity(context).withName("A test community").build();
+        String comId = com.getID().toString();
+        CommunityRest comRest = communityConverter.convert(com, DefaultProjection.DEFAULT);
+        Community secondCom = CommunityBuilder.createCommunity(context).withName("Another test community").build();
+        String secondComId = secondCom.getID().toString();
+        CommunityRest secondComRest = communityConverter.convert(secondCom, DefaultProjection.DEFAULT);
+
+        context.restoreAuthSystemState();
+
+        String adminToken = getAuthToken(admin.getEmail(), password);
+
+        // verify that it works for administrators - with eperson parameter
+
+        Supplier<MockHttpServletRequestBuilder> baseFeatureRequest = () ->
+            get("/api/authz/authorizations/search/objects")
+                .param("type", "core.community")
+                .param("uuid", comId)
+                .param("uuid", secondComId)
+                .param("projection", "level")
+                .param("page", "1")
+                .param("size", "1")
+                .param("embedLevelDepth", "1")
+                .param("feature", alwaysTrue.getName())
+                .param("feature", alwaysFalse.getName())
+                .param("feature", trueForLoggedUsers.getName())
+                .param("feature", trueForAdmins.getName());
+
+        getClient(adminToken).perform(baseFeatureRequest.get()
+                                                        .param("eperson", admin.getID().toString()))
+                             .andExpect(status().isOk())
+                             .andExpect(jsonPath("$.page.size", is(1)))
+                             .andExpect(jsonPath("$.page.totalElements", is(6)))
+                             .andExpect(jsonPath("$.page.totalPages", is(6)))
+                             .andExpect(jsonPath("$.page.number", is(1)))
+                             .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                             .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                             .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                 allOf(
+                                     hasJsonPath("$.id",
+                                                 is(admin.getID().toString() +
+                                                        "_" + trueForLoggedUsers.getName() + "_"
+                                                        + comRest.getUniqueType() + "_" + comRest.getId())),
+                                     hasJsonPath("$.type", is("authorization")),
+                                     hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                     hasJsonPath("$._embedded.eperson.id", is(admin.getID().toString()))
+                                 )
+                             )));
+
+        // verify that it works for administrators - without eperson parameter
+        getClient(adminToken).perform(baseFeatureRequest.get())
+                             .andExpect(status().isOk())
+                             .andExpect(jsonPath("$.page.size", is(1)))
+                             .andExpect(jsonPath("$.page.totalElements", is(6)))
+                             .andExpect(jsonPath("$.page.totalPages", is(6)))
+                             .andExpect(jsonPath("$.page.number", is(1)))
+                             .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                             .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                             .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                 allOf(
+                                     hasJsonPath("$.id", is(
+                                         admin.getID().toString() + "_"
+                                             + trueForLoggedUsers.getName() + "_"
+                                             + comRest.getUniqueType() + "_" + comRest.getId()
+                                     )),
+                                     hasJsonPath("$.type", is("authorization")),
+                                     hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                     hasJsonPath("$._embedded.eperson.id", is(admin.getID().toString()))
+                                 )
+                             )));
+
+        String epersonToken = getAuthToken(eperson.getEmail(), password);
+
+        // verify that it works for normal loggedin users - with eperson parameter
+        getClient(epersonToken).perform(baseFeatureRequest.get()
+                                                          .param("eperson", eperson.getID().toString()))
+                               .andExpect(status().isOk())
+                               .andExpect(jsonPath("$.page.size", is(1)))
+                               .andExpect(jsonPath("$.page.totalElements", is(4)))
+                               .andExpect(jsonPath("$.page.totalPages", is(4)))
+                               .andExpect(jsonPath("$.page.number", is(1)))
+                               .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                               .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                               .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                   allOf(
+                                       hasJsonPath("$.id", is(
+                                           eperson.getID().toString() + "_"
+                                               + trueForLoggedUsers.getName() + "_"
+                                               + comRest.getUniqueType() + "_" + comRest.getId()
+                                       )),
+                                       hasJsonPath("$.type", is("authorization")),
+                                       hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                       hasJsonPath("$._embedded.eperson.id", is(eperson.getID().toString()))
+                                   )
+                               )));
+
+        // verify that it works for normal loggedin users - without eperson parameter
+        getClient(epersonToken).perform(baseFeatureRequest.get())
+                               .andExpect(status().isOk())
+                               .andExpect(jsonPath("$.page.size", is(1)))
+                               .andExpect(jsonPath("$.page.totalElements", is(4)))
+                               .andExpect(jsonPath("$.page.totalPages", is(4)))
+                               .andExpect(jsonPath("$.page.number", is(1)))
+                               .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                               .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                               .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                   allOf(
+                                       hasJsonPath("$.id", is(
+                                           eperson.getID().toString() + "_"
+                                               + trueForLoggedUsers.getName() + "_"
+                                               + comRest.getUniqueType() + "_" + comRest.getId()
+                                       )),
+                                       hasJsonPath("$.type", is("authorization")),
+                                       hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                       hasJsonPath("$._embedded.eperson.id", is(eperson.getID().toString()))
+                                   )
+                               )));
+
+        // verify that it works for administators inspecting other users - by using the eperson parameter
+        getClient(adminToken).perform(baseFeatureRequest.get()
+                                                        .param("eperson", eperson.getID().toString()))
+                             .andExpect(status().isOk())
+                             .andExpect(jsonPath("$.page.size", is(1)))
+                             .andExpect(jsonPath("$.page.totalElements", is(4)))
+                             .andExpect(jsonPath("$.page.totalPages", is(4)))
+                             .andExpect(jsonPath("$.page.number", is(1)))
+                             .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                             .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                             .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                 allOf(
+                                     hasJsonPath("$.id", is(
+                                         eperson.getID().toString() + "_"
+                                             + trueForLoggedUsers.getName() + "_"
+                                             + comRest.getUniqueType() + "_" + comRest.getId()
+                                     )),
+                                     hasJsonPath("$.type", is("authorization")),
+                                     hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                     hasJsonPath("$._embedded.eperson.id", is(eperson.getID().toString()))
+                                 )
+                             )));
+
+        // verify that it works for administators inspecting other users - by assuming login
+        getClient(adminToken).perform(baseFeatureRequest.get()
+                                                        .header("X-On-Behalf-Of", eperson.getID()))
+                             .andExpect(status().isOk())
+                             .andExpect(jsonPath("$.page.size", is(1)))
+                             .andExpect(jsonPath("$.page.totalElements", is(4)))
+                             .andExpect(jsonPath("$.page.totalPages", is(4)))
+                             .andExpect(jsonPath("$.page.number", is(1)))
+                             .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                             .andExpect(jsonPath("$._links.next.href", containsString("page=2")))
+                             .andExpect(jsonPath("$._embedded.authorizations", contains(
+                                 allOf(
+                                     hasJsonPath("$.id", is(
+                                         eperson.getID().toString() + "_"
+                                             + trueForLoggedUsers.getName() + "_"
+                                             + comRest.getUniqueType() + "_" + comRest.getId()
+                                     )),
+                                     hasJsonPath("$.type", is("authorization")),
+                                     hasJsonPath("$._embedded.feature.id", is(trueForLoggedUsers.getName())),
+                                     hasJsonPath("$._embedded.eperson.id", is(eperson.getID().toString()))
+                                 )
+                             )));
+
+        // verify that it works for anonymous users
+        getClient().perform(baseFeatureRequest.get())
+                   .andExpect(status().isOk())
+                   .andExpect(jsonPath("$.page.size", is(1)))
+                   .andExpect(jsonPath("$.page.totalElements", is(2)))
+                   .andExpect(jsonPath("$.page.totalPages", is(2)))
+                   .andExpect(jsonPath("$._links.prev.href", containsString("page=0")))
+                   .andExpect(jsonPath("$._links.next.href").doesNotExist())
+                   .andExpect(jsonPath("$.page.number", is(1)))
+                   .andExpect(jsonPath("$._embedded.authorizations",
+                                       contains(
+                                           allOf(
+                                               hasJsonPath("$.id", is(
+                                                   alwaysTrue.getName() + "_"
+                                                       + secondComRest.getUniqueType() + "_" + secondComRest.getId()
+                                               )),
+                                               hasJsonPath("$.type", is("authorization")),
+                                               hasJsonPath("$._embedded.feature.id", is(alwaysTrue.getName())),
+                                               hasJsonPath("$._embedded.eperson", nullValue())
+                                           )
+                                       )));
+    }
+
+    @Test
+    /**
      * Verify that the search by many objects and features works return 204 No Content when no feature is granted.
      *
      * @throws Exception
@@ -2333,7 +2555,7 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
         configurationService.setProperty("org.dspace.app.rest.authorization.AlwaysThrowExceptionFeature.turnoff", true);
         String anotherToken = getAuthToken(anotherEperson.getEmail(), password);
 
-        // verify that he cannot search the admin authorizations - by using the eperson parameter
+        // verify that admin cannot search the admin authorizations - by using the eperson parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/objects")
             .param("type", "core.site")
             .param("uuid", siteId)
@@ -2342,7 +2564,7 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
             .param("eperson", admin.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the admin authorizations - by assuming login
+        // verify that admin cannot search the admin authorizations - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/objects")
             .param("type", "core.site")
             .param("uuid", siteId)
@@ -2351,7 +2573,7 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
             .header("X-On-Behalf-Of", admin.getID()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by using the eperson parameter
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by using the parameter
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/objects")
             .param("type", "core.site")
             .param("uuid", siteId)
@@ -2360,7 +2582,7 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
             .param("eperson", eperson.getID().toString()))
             .andExpect(status().isForbidden());
 
-        // verify that he cannot search the authorizations of another "normal" eperson - by assuming login
+        // verify that eperson cannot search the authorizations of another "normal" eperson - by assuming login
         getClient(anotherToken).perform(get("/api/authz/authorizations/search/objects")
             .param("type", "core.site")
             .param("uuid", siteId)
@@ -2516,7 +2738,7 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
                 .param("feature", trueForUsersInGroupTest.getName())
                 .param("eperson", normalUser.getID().toString()))
             .andExpect(jsonPath("$.page.totalElements", is(0)));
-        // but he should have the authorization if loggedin directly
+        // but user should have the authorization if loggedin directly
         getClient(normalUserToken).perform(get("/api/authz/authorizations/" + authNormalUserSite.getID()))
             .andExpect(status().isOk());
         getClient(normalUserToken).perform(get("/api/authz/authorizations/search/object")
@@ -2624,7 +2846,17 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
                                .andExpect(status().isOk())
                                .andExpect(jsonPath("$.errors").doesNotExist());
 
-        getClient(epersonToken).perform(get("/api/submission/workspaceitems/" + workspaceItemIdRef.get()))
+        AtomicReference<Integer> workflowItemIdRef = new AtomicReference<Integer>();
+
+        getClient(epersonToken).perform(post("/api/workflow/workflowitems")
+            .content("/api/submission/workspaceitems/" + workspaceItemIdRef.get())
+            .contentType(textUriContentType))
+            .andExpect(status().isCreated())
+            .andDo(result -> workflowItemIdRef.set(read(result.getResponse().getContentAsString(), "$.id")));
+
+        String tokenAdmin = getAuthToken(admin.getEmail(), password);
+
+        getClient(tokenAdmin).perform(get("/api/workflow/workflowitems/" + workflowItemIdRef.get()))
                                .andExpect(status().isOk())
                                .andExpect(jsonPath("$.sections.correction.metadata", hasSize(equalTo(3))))
                                .andExpect(jsonPath("$.sections.correction.empty", is(false)))
@@ -2731,5 +2963,20 @@ public class AuthorizationRestRepositoryIT extends AbstractControllerIntegration
                 + id.toString();
     }
 
+    private void deletePoolTask(PoolTask poolTask) {
+        try {
+            poolTaskService.delete(context, poolTask);
+        } catch (SQLException | AuthorizeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void deleteWorkflowItem(XmlWorkflowItem workflowItem) {
+        try {
+            xmlWorkflowItemService.delete(context, workflowItem);
+        } catch (SQLException | AuthorizeException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

@@ -8,33 +8,33 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Enter the name of the file</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter a title for the file.</required>
           <hint />
+          <required>You must enter a title for the file.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
+          <repeatable>false</repeatable>
           <label>Enter a description for the file</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>File type</label>
           <input-type value-pairs-name="bitstream_types">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Personal picture, logo, main article, etc.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -44,11 +44,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Author</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the author.</required>
           <hint>Enter the names of the authors of this item in the form Lastname, Firstname [i.e. Smith, Josh or Smith, J].</hint>
+          <required>You must enter at least the author.</required>
         </field>
       </row>
       <row>
@@ -56,11 +56,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>author</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Affiliation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the affiliation of the author as stated on the publication.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -70,11 +70,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>editor</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Editor</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the author.</required>
           <hint>The editors of this publication.</hint>
+          <required>You must enter at least the author.</required>
         </field>
       </row>
       <row>
@@ -82,11 +82,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>editor</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Affiliation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the affiliation of the editor as stated on the publication.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -96,11 +96,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Funding</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the funding name.</required>
           <hint>Enter the name of funding, if any, that has supported this publication</hint>
+          <required>You must enter at least the funding name.</required>
         </field>
       </row>
       <row>
@@ -108,11 +108,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>grantno</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Grant Number / Funding identifier</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If the funding is not found in the system please enter the funding identifier / grant no</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -122,11 +122,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Funding</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the funding name.</required>
           <hint>Enter the name of funding, if any, that has supported this product</hint>
+          <required>You must enter at least the funding name.</required>
         </field>
       </row>
       <row>
@@ -134,11 +134,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>grantno</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Grant Number / Funding identifier</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If the funding is not found in the system please enter the funding identifier / grant no</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -148,11 +148,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Funding</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the funding name.</required>
           <hint>Enter the name of funding, if any, that has supported this patent</hint>
+          <required>You must enter at least the funding name.</required>
         </field>
       </row>
       <row>
@@ -160,11 +160,59 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>grantno</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Grant Number / Funding identifier</label>
+          <input-type>onebox</input-type>
+          <hint>If the funding is not found in the system please enter the funding identifier / grant no</hint>
+          <required />
+        </field>
+      </row>
+    </form>
+    <form name="patent-crispatent-document-kind">
+      <row>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>document</dc-element>
+          <dc-qualifier>kind</dc-qualifier>
+          <label>Kind Code</label>
+          <input-type>onebox</input-type>
+          <repeatable>false</repeatable>
+          <required>You must enter the kind code.</required>
+          <style>col-xs-12 col-md-6</style>
+          <hint />
+        </field>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>document</dc-element>
+          <dc-qualifier>issueDate</dc-qualifier>
+          <label>Publication Date</label>
+          <input-type>onebox</input-type>
+          <repeatable>false</repeatable>
+          <required>You must enter the publication date.</required>
+          <style>col-xs-12 col-md-6</style>
+          <hint />
+        </field>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>document</dc-element>
+          <dc-qualifier>title</dc-qualifier>
+          <label>Title</label>
           <input-type>onebox</input-type>
           <repeatable>false</repeatable>
           <required />
-          <hint>If the funding is not found in the system please enter the funding identifier / grant no</hint>
+          <style>col-12</style>
+          <hint />
+        </field>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>document</dc-element>
+          <dc-qualifier>description</dc-qualifier>
+          <label>Abstract</label>
+          <input-type>textarea</input-type>
+          <repeatable>false</repeatable>
+          <required />
+          <style>col-12</style>
+          <hint />
         </field>
       </row>
     </form>
@@ -174,45 +222,45 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>affiliation</dc-element>
           <dc-qualifier>role</dc-qualifier>
-          <label>Role</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>Role</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>person</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
-          <label>Organisation name</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required>You must enter at least the organisation of your affiliation.</required>
+          <label>Organisation name</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required>You must enter at least the organisation of your affiliation.</required>
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>affiliation</dc-element>
           <dc-qualifier>startDate</dc-qualifier>
-          <label>Start Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>Start Date</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>affiliation</dc-element>
           <dc-qualifier>endDate</dc-qualifier>
-          <label>End Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>End Date</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -221,45 +269,45 @@
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>qualification</dc-element>
-          <label>Organisation name</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required>You must enter the organisation</required>
+          <label>Organisation name</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required>You must enter the organisation</required>
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>qualification</dc-element>
           <dc-qualifier>role</dc-qualifier>
-          <label>Qualification Title</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required>You must enter the qualification title.</required>
+          <label>Qualification Title</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required>You must enter the qualification title.</required>
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>qualification</dc-element>
           <dc-qualifier>start</dc-qualifier>
-          <label>Start Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>Start Date</label>
           <style>col-xs-12 col-md-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>qualification</dc-element>
           <dc-qualifier>end</dc-qualifier>
-          <label>End Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>End Date</label>
           <style>col-xs-12 col-md-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -269,44 +317,44 @@
           <dc-schema>crisrp</dc-schema>
           <dc-element>education</dc-element>
           <dc-qualifier>role</dc-qualifier>
-          <label>Degree/Title</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required>You must enter the degree/title</required>
+          <label>Degree/Title</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required>You must enter the degree/title</required>
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>education</dc-element>
-          <label>Organisation name</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required>You must enter the organisation</required>
+          <label>Organisation name</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>onebox</input-type>
           <hint />
+          <required>You must enter the organisation</required>
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>education</dc-element>
           <dc-qualifier>start</dc-qualifier>
-          <label>Start Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>Start Date</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>education</dc-element>
           <dc-qualifier>end</dc-qualifier>
-          <label>End Date</label>
-          <input-type>date</input-type>
           <repeatable>false</repeatable>
-          <required />
+          <label>End Date</label>
           <style>col-xs-12 col-md-6 col-lg-3</style>
+          <input-type>date</input-type>
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -316,11 +364,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Author</label>
           <input-type>name</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the author.</required>
           <hint>Enter the names of the authors of this item in the form Lastname, Firstname [i.e. Smith, Josh or Smith, J].</hint>
+          <required>You must enter at least the author.</required>
         </field>
       </row>
       <row>
@@ -328,11 +376,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>author</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Affiliation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the affiliation of the author as stated on the publication.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -342,11 +390,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Author</label>
           <input-type>name</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the inventor.</required>
           <hint>Enter the names of the authors of this item in the form Lastname, Firstname [i.e. Smith, Josh or Smith, J].</hint>
+          <required>You must enter at least the inventor.</required>
         </field>
       </row>
       <row>
@@ -354,11 +402,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>author</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Affiliation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the affiliation of the author as stated on the publication.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -368,11 +416,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Site URL</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the site url.</required>
           <hint />
+          <required>You must enter at least the site url.</required>
         </field>
       </row>
       <row>
@@ -380,11 +428,11 @@
           <dc-schema>crisrp</dc-schema>
           <dc-element>site</dc-element>
           <dc-qualifier>title</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Site Title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -394,55 +442,55 @@
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>issn</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>ISSN</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter a main title for this item.</required>
           <hint />
+          <required>You must enter a main title for this item.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>publisher</dc-element>
+          <repeatable>false</repeatable>
           <label>Publisher</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Subject Classifications</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
+          <repeatable>false</repeatable>
           <label>Description</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -451,23 +499,23 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
+          <repeatable>true</repeatable>
           <label>Identifiers</label>
           <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>If the item has any identification numbers or codes associated with
             it, please enter the types and the actual numbers or codes.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter a main title for this item.</required>
           <hint>Enter the main title of the item.</hint>
+          <required>You must enter a main title for this item.</required>
         </field>
       </row>
       <row>
@@ -475,11 +523,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
           <dc-qualifier>alternative</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Other Titles</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>If the item has any alternative titles, please enter them here.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -487,13 +535,13 @@
           <dc-schema>dc</dc-schema>
           <dc-element>date</dc-element>
           <dc-qualifier>issued</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Date of Issue</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the year.</required>
           <hint>Please give the date of previous publication or public distribution.
             You can leave out the day and/or month if they aren't
             applicable.</hint>
+          <required>You must enter at least the year.</required>
         </field>
       </row>
       <row>
@@ -501,11 +549,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Authors</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the names of the authors of this item.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -513,48 +561,327 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>editor</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Editors</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The editors of this publication.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Type</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must select a publication type</required>
           <hint>Select the type(s) of content of the item.</hint>
+          <required>You must select a publication type</required>
           <vocabulary>publication-coar-types</vocabulary>
         </field>
       </row>
     </form>
+    <form name="green">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>identifier</dc-element>
+          <repeatable>true</repeatable>
+          <label>Identifiers</label>
+          <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
+          <hint>If the item has any identification numbers or codes associated with
+            it, please enter the types and the actual numbers or codes.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
+          <label>Title</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the main title of the item.</hint>
+          <required>You must enter a main title for this item.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>title</dc-element>
+          <dc-qualifier>alternative</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Other Titles</label>
+          <input-type>onebox</input-type>
+          <hint>If the item has any alternative titles, please enter them here.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>date</dc-element>
+          <dc-qualifier>issued</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Date of Issue</label>
+          <input-type>date</input-type>
+          <hint>Please give the date of previous publication or public distribution.
+            You can leave out the day and/or month if they aren't
+            applicable.</hint>
+          <required>You must enter at least the year.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>author</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Authors</label>
+          <input-type>group</input-type>
+          <hint>Enter the names of the authors of this item.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>group</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Editors</label>
+          <input-type>onebox</input-type>
+          <hint>The editors of this publication.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
+          <label>Type</label>
+          <input-type>onebox</input-type>
+          <hint>Select the type(s) of content of the item.</hint>
+          <required>You must select a publication type</required>
+          <vocabulary>publication-coar-types</vocabulary>
+        </field>
+      </row>
+    </form>
+    <form name="green-dc-contributor-author">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>author</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Author</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the names of the authors of this item in the form Lastname, Firstname [i.e. Smith, Josh or Smith, J].</hint>
+          <required>You must enter at least the author.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>oairecerif</dc-schema>
+          <dc-element>author</dc-element>
+          <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Affiliation</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the affiliation of the author as stated on the publication.</hint>
+          <required />
+        </field>
+      </row>
+    </form>
+    <form name="green-dc-contributor-editor">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>editor</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Editor</label>
+          <input-type>onebox</input-type>
+          <hint>The editors of this publication.</hint>
+          <required>You must enter at least the author.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>oairecerif</dc-schema>
+          <dc-element>editor</dc-element>
+          <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Affiliation</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the affiliation of the editor as stated on the publication.</hint>
+          <required />
+        </field>
+      </row>
+    </form>
+    <form name="orange">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>identifier</dc-element>
+          <repeatable>true</repeatable>
+          <label>Identifiers</label>
+          <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
+          <hint>If the item has any identification numbers or codes associated with
+            it, please enter the types and the actual numbers or codes.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
+          <label>Title</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the main title of the item.</hint>
+          <required>You must enter a main title for this item.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>title</dc-element>
+          <dc-qualifier>alternative</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Other Titles</label>
+          <input-type>onebox</input-type>
+          <hint>If the item has any alternative titles, please enter them here.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>date</dc-element>
+          <dc-qualifier>issued</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Date of Issue</label>
+          <input-type>date</input-type>
+          <hint>Please give the date of previous publication or public distribution.
+            You can leave out the day and/or month if they aren't
+            applicable.</hint>
+          <required>You must enter at least the year.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>author</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Authors</label>
+          <input-type>group</input-type>
+          <hint>Enter the names of the authors of this item.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>group</dc-qualifier>
+          <repeatable>true</repeatable>
+          <label>Editors</label>
+          <input-type>onebox</input-type>
+          <hint>The editors of this publication.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
+          <label>Type</label>
+          <input-type>onebox</input-type>
+          <hint>Select the type(s) of content of the item.</hint>
+          <required>You must select a publication type</required>
+          <vocabulary>publication-coar-types</vocabulary>
+        </field>
+      </row>
+    </form>
+    <form name="orange-dc-contributor-author">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>author</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Author</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the names of the authors of this item in the form Lastname, Firstname [i.e. Smith, Josh or Smith, J].</hint>
+          <required>You must enter at least the author.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>oairecerif</dc-schema>
+          <dc-element>author</dc-element>
+          <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Affiliation</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the affiliation of the author as stated on the publication.</hint>
+          <required />
+        </field>
+      </row>
+    </form>
+    <form name="orange-dc-contributor-editor">
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>contributor</dc-element>
+          <dc-qualifier>editor</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Editor</label>
+          <input-type>onebox</input-type>
+          <hint>The editors of this publication.</hint>
+          <required>You must enter at least the author.</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>oairecerif</dc-schema>
+          <dc-element>editor</dc-element>
+          <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>false</repeatable>
+          <label>Affiliation</label>
+          <input-type>onebox</input-type>
+          <hint>Enter the affiliation of the editor as stated on the publication.</hint>
+          <required />
+        </field>
+      </row>
+    </form>
+
     <form name="publication_indexing">
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>language</dc-element>
           <dc-qualifier>iso</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Language</label>
           <input-type value-pairs-name="common_iso_languages">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Select the language of the main content of the item.  If the language does not appear in the list, please select 'Other'.  If the content does not really have a language (for example, if it is a dataset or an image) please select 'N/A'.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Subject Keywords</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter appropriate subject keywords or phrases.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -562,11 +889,11 @@
           <dc-schema>datacite</dc-schema>
           <dc-element>subject</dc-element>
           <dc-qualifier>fos</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Fields of Science and Technology (OECD)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
           <vocabulary closed="true">oecd</vocabulary>
         </field>
       </row>
@@ -575,11 +902,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Abstract</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the abstract of the item.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -589,12 +916,12 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>publication</dc-qualifier>
-          <label>Part Of</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The publication where this publication is included. E.g. a book chapter lists here the book, a contribution to a conference lists here the conference proceeding.</hint>
+          <label>Part Of</label>
           <type-bind>publication-coar-types:c_3248,publication-coar-types:c_5794,publication-coar-types:c_6670</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The publication where this publication is included. E.g. a book chapter lists here the book, a contribution to a conference lists here the conference proceeding.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -602,12 +929,12 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>isbn</dc-qualifier>
-          <label>ISBN (of the container)</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The ISBN of the book/report if it was not found in the system</hint>
+          <label>ISBN (of the container)</label>
           <type-bind>publication-coar-types:c_3248,publication-coar-types:c_5794,publication-coar-types:c_6670</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The ISBN of the book/report if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -615,24 +942,24 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>doi</dc-qualifier>
-          <label>DOI (of the container)</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The DOI of the book/report if it was not found in the system</hint>
+          <label>DOI (of the container)</label>
           <type-bind>publication-coar-types:c_3248,publication-coar-types:c_5794,publication-coar-types:c_6670</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The DOI of the book/report if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
-          <dc-qualifier>ispartof</dc-qualifier>
+          <dc-qualifier>journal</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Journal or Serie</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The journal or Serie where this publication has been published</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -640,11 +967,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>ispartofseries</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Series/Report No.</label>
           <input-type>series</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the series and number assigned to this item by your community.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -652,11 +979,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>issn</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>ISSN</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The journal or Serie ISSN if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -664,12 +991,12 @@
           <dc-schema>dc</dc-schema>
           <dc-element>coverage</dc-element>
           <dc-qualifier>publication</dc-qualifier>
-          <label>Review of</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The publication object of the review</hint>
+          <label>Review of</label>
           <type-bind>publication-coar-types:c_efa0,publication-coar-types:c_ba08</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The publication object of the review</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -677,12 +1004,12 @@
           <dc-schema>dc</dc-schema>
           <dc-element>coverage</dc-element>
           <dc-qualifier>isbn</dc-qualifier>
-          <label>ISBN (of the reviewed item)</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The ISBN of the reviewed item if it was not found in the system</hint>
+          <label>ISBN (of the reviewed item)</label>
           <type-bind>publication-coar-types:c_efa0,publication-coar-types:c_ba08</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The ISBN of the reviewed item if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -690,12 +1017,12 @@
           <dc-schema>dc</dc-schema>
           <dc-element>coverage</dc-element>
           <dc-qualifier>doi</dc-qualifier>
-          <label>DOI (of the reviewed item)</label>
-          <input-type>onebox</input-type>
           <repeatable>false</repeatable>
-          <required />
-          <hint>The DOI of the reviewed item if it was not found in the system</hint>
+          <label>DOI (of the reviewed item)</label>
           <type-bind>publication-coar-types:c_efa0,publication-coar-types:c_ba08</type-bind>
+          <input-type>onebox</input-type>
+          <hint>The DOI of the reviewed item if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -703,11 +1030,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>sponsorship</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Sponsors</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of any sponsors.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -715,11 +1042,11 @@
           <dc-schema>oaire</dc-schema>
           <dc-element>citation</dc-element>
           <dc-qualifier>volume</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Volume</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If applicable, the volume of the publishing channel where this publication appeared</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -727,11 +1054,11 @@
           <dc-schema>oaire</dc-schema>
           <dc-element>citation</dc-element>
           <dc-qualifier>issue</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Issue</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If applicable, the issue of the publishing channel where this publication appeared</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -739,11 +1066,11 @@
           <dc-schema>oaire</dc-schema>
           <dc-element>citation</dc-element>
           <dc-qualifier>startPage</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Start Page</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If applicable, the page where this publication starts</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -751,11 +1078,11 @@
           <dc-schema>oaire</dc-schema>
           <dc-element>citation</dc-element>
           <dc-qualifier>endPage</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>End Page</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If applicable, the page where this publication ends</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -765,11 +1092,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Funding</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Acknowledge the funding received for this publication.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -777,11 +1104,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>project</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Projects</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of project, if any, that has produced this publication. It is NOT necessary to list the projects connected with an acknowledge funding.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -789,11 +1116,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>conference</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Conference</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of the conference where the item has been presented, if any.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -801,11 +1128,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>product</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Dataset or product</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Link the item to one or more existent dataset in the repository used or described by the publication or, put here the dataset citation</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -813,22 +1140,22 @@
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>citation</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Citation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the standard citation for the previously issued instance of this item.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
+          <repeatable>false</repeatable>
           <label>Description</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter any other description or comments in this box.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -836,11 +1163,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>sponsorship</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Sponsors</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of any sponsors.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -849,23 +1176,23 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
+          <repeatable>true</repeatable>
           <label>Identifiers</label>
           <input-type value-pairs-name="common_identifiers">qualdrop_value</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>If the item has any identification numbers or codes associated with
             it, please enter the types and the actual numbers or codes.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter a main title for this item.</required>
           <hint>Enter the main title of the item.</hint>
+          <required>You must enter a main title for this item.</required>
         </field>
       </row>
       <row>
@@ -873,11 +1200,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
           <dc-qualifier>alternative</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Other Titles</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>If the item has any alternative titles, please enter them here.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -885,11 +1212,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>date</dc-element>
           <dc-qualifier>issued</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Date of Issue</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter at least the year.</required>
           <hint>Please give the date of previous publication or public distribution. You can leave out the day and/or month if they aren't applicable.</hint>
+          <required>You must enter at least the year.</required>
         </field>
       </row>
       <row>
@@ -897,11 +1224,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>version</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Version</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>If applicable, the version of the product</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -909,22 +1236,22 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Authors</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the names of the authors of this item.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Type</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Nothing to do here. Note for administrators, this metadata could be completely hide using template item</hint>
+          <required />
           <vocabulary>product-coar-types</vocabulary>
         </field>
       </row>
@@ -935,22 +1262,22 @@
           <dc-schema>dc</dc-schema>
           <dc-element>language</dc-element>
           <dc-qualifier>iso</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Language</label>
           <input-type value-pairs-name="common_iso_languages">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Select, if applicable, the language of the main content of the item.  If the language does not appear in the list, please select 'Other'.  If the content does not really have a language (for example, if it is a dataset or an image) please select 'N/A'.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Subject Keywords</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter appropriate subject keywords or phrases.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -958,11 +1285,11 @@
           <dc-schema>datacite</dc-schema>
           <dc-element>subject</dc-element>
           <dc-qualifier>fos</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Fields of Science and Technology (OECD)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
           <vocabulary closed="true">oecd</vocabulary>
         </field>
       </row>
@@ -971,11 +1298,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Abstract</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the abstract of the item.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -984,11 +1311,11 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>publisher</dc-element>
+          <repeatable>true</repeatable>
           <label>Publisher</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The publisher or publishers of this product</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -996,11 +1323,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>ispartofseries</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Series/Report No.</label>
           <input-type>series</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Link to the research output of which this product is a part (e.g. a data set collection that contains it).</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1008,11 +1335,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>issn</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>ISSN</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The journal or Serie ISSN if it was not found in the system</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1020,11 +1347,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Funding</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Acknowledge the funding received for this product.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1032,11 +1359,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>project</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Projects</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of project, if any, that has produced this product. It is NOT necessary to list the projects connected with an acknowledge funding.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1044,11 +1371,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>conference</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Conference</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The event where this product was presented or that is recorded in the product.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1056,11 +1383,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>equipment</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Generated by</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The equipment that generated this product</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1068,11 +1395,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>references</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>References</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Result outputs that are referenced by this product</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1080,11 +1407,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>publication</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>References</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Result outputs that use this product</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -1094,66 +1421,73 @@
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>patentno</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Patent Number</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The patent number</hint>
+          <required />
         </field>
       </row>
       <row>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>kind</dc-element>
+          <label>Kind Code</label>
+          <input-type>onebox</input-type>
+          <repeatable>false</repeatable>
+          <required />
+          <hint>The kind code</hint>
+        </field>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>applicationnumber</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Application Number</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>The application number</hint>
-        </field>
-        <field>
-          <dc-schema>dcterms</dc-schema>
-          <dc-element>dateSubmitted</dc-element>
-          <label>Registration Date</label>
-          <input-type>date</input-type>
-          <repeatable>false</repeatable>
           <required />
-          <hint>Date on which the application was physically received at the Patent Authority. Also named Filling Date</hint>
         </field>
-      </row>
-      <row>
-        <field>
-          <dc-schema>dc</dc-schema>
-          <dc-element>title</dc-element>
-          <label>Title</label>
-          <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must specify a title for the patent</required>
-          <hint>The title of the patent</hint>
-        </field>
-      </row>
-      <row>
-        <field>
-          <dc-schema>dcterms</dc-schema>
-          <dc-element>dateAccepted</dc-element>
-          <label>Approval Date</label>
-          <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
-          <hint>Date on which the application has been granted by the Patent Office.</hint>
-        </field>
-      </row>
-      <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>date</dc-element>
           <dc-qualifier>issued</dc-qualifier>
           <label>Publication Date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
+          <hint>Date on which the application was physically received at the Patent Authority. Also named Filling Date</hint>
           <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dc</dc-schema>
+          <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
+          <label>Title</label>
+          <input-type>onebox</input-type>
+          <hint>The title of the patent</hint>
+          <required>You must specify a title for the patent</required>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dcterms</dc-schema>
+          <dc-element>dateAccepted</dc-element>
+          <repeatable>false</repeatable>
+          <label>Approval Date</label>
+          <input-type>date</input-type>
+          <hint>Date on which the application has been granted by the Patent Office.</hint>
+          <required />
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>dcterms</dc-schema>
+          <dc-element>dateSubmitted</dc-element>
+          <label>Registration Date</label>
+          <input-type>date</input-type>
           <hint>Date of making available to the public by printing or similar process of a patent document on which grant has taken place on or before the said date</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1161,45 +1495,57 @@
           <dc-schema>dc</dc-schema>
           <dc-element>contributor</dc-element>
           <dc-qualifier>author</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Inventor(s)</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The inventor: The actual devisor of an invention that is the subject of a patent.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dcterms</dc-schema>
           <dc-element>rightsHolder</dc-element>
+          <repeatable>true</repeatable>
           <label>Holder</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The holders of this patent</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>publisher</dc-element>
+          <repeatable>true</repeatable>
           <label>Issuer</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>The issuer of the patent: the patent office</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Type</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must select a patent type</required>
           <hint>Select the type of content of the patent.</hint>
+          <required>You must select a patent type</required>
           <vocabulary>patent-coar-types</vocabulary>
+        </field>
+      </row>
+      <row>
+        <field>
+          <dc-schema>crispatent</dc-schema>
+          <dc-element>document</dc-element>
+          <dc-qualifier>kind</dc-qualifier>
+          <label>Patent History</label>
+          <input-type>inline-group</input-type>
+          <repeatable>true</repeatable>
+          <required />
+          <hint />
         </field>
       </row>
     </form>
@@ -1209,22 +1555,22 @@
           <dc-schema>dc</dc-schema>
           <dc-element>language</dc-element>
           <dc-qualifier>iso</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Language</label>
           <input-type value-pairs-name="common_iso_languages">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Select the country and its language.</hint>
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Subject Keyword(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter appropriate subject keywords or phrases.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1232,11 +1578,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Abstract</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Enter the description of the patent.</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -1246,11 +1592,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>funding</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Funding</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Acknowledge the funding received for this patent.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1258,11 +1604,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>project</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Projects</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Enter the name of project, if any, that has produced this patent. It is NOT necessary to list the projects connected with an acknowledge funding.</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1270,11 +1616,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>patent</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Predecessor</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Patents that precede (i.e., have priority over) this patent</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -1282,11 +1628,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>references</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>References</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint>Result outputs that are referenced by this patent</hint>
+          <required />
         </field>
       </row>
     </form>
@@ -1295,22 +1641,22 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Preferred Name</label>
           <input-type>name</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter least at the Surname.</required>
           <hint />
+          <required>You must enter least at the Surname.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>name</dc-element>
+          <repeatable>false</repeatable>
           <label>Fullname</label>
           <input-type>name</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1318,11 +1664,11 @@
           <dc-schema>crisrp</dc-schema>
           <dc-element>name</dc-element>
           <dc-qualifier>translated</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Vernacular Name</label>
           <input-type>name</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1330,84 +1676,84 @@
           <dc-schema>crisrp</dc-schema>
           <dc-element>name</dc-element>
           <dc-qualifier>variant</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Variants</label>
           <input-type>name</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>givenName</dc-element>
+          <repeatable>false</repeatable>
           <label>First name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>familyName</dc-element>
+          <repeatable>false</repeatable>
           <label>Family name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>birthDate</dc-element>
+          <repeatable>false</repeatable>
           <label>Birth Date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>person</dc-element>
           <dc-qualifier>gender</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Gender</label>
           <input-type value-pairs-name="gender">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>jobTitle</dc-element>
+          <repeatable>false</repeatable>
           <label>Job Title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>affiliation</dc-element>
           <dc-qualifier>name</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Main Affiliation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>workgroup</dc-element>
+          <repeatable>true</repeatable>
           <label>Working group(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1415,33 +1761,33 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Personal Site(s)</label>
           <input-type>group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>email</dc-element>
+          <repeatable>false</repeatable>
           <label>Email</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Interest(s)</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1449,11 +1795,11 @@
           <dc-schema>datacite</dc-schema>
           <dc-element>subject</dc-element>
           <dc-qualifier>fos</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Fields of Science and Technology (OECD)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
           <vocabulary closed="true">oecd</vocabulary>
         </field>
       </row>
@@ -1462,11 +1808,11 @@
           <dc-schema>person</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>orcid</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>ORCID</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Settable by connecting the entity with ORCID</hint>
+          <required />
           <readonly>all</readonly>
         </field>
       </row>
@@ -1475,11 +1821,11 @@
           <dc-schema>person</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>scopus-author-id</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Scopus Author ID</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1487,11 +1833,11 @@
           <dc-schema>person</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>rid</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Researcher ID</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1499,11 +1845,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>person</dc-element>
           <dc-qualifier>affiliation</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Affiliation(s)</label>
           <input-type>inline-group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1511,55 +1857,55 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Biography</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>education</dc-element>
+          <repeatable>true</repeatable>
           <label>Education(s)</label>
           <input-type>inline-group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>country</dc-element>
+          <repeatable>false</repeatable>
           <label>Country</label>
           <input-type value-pairs-name="common_iso_countries">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisrp</dc-schema>
           <dc-element>qualification</dc-element>
+          <repeatable>true</repeatable>
           <label>Qualification(s)</label>
           <input-type>inline-group</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>person</dc-schema>
           <dc-element>knowsLanguage</dc-element>
+          <repeatable>true</repeatable>
           <label>Written Language(s)</label>
           <input-type value-pairs-name="common_iso_languages">dropdown</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1567,11 +1913,11 @@
           <dc-schema>cris</dc-schema>
           <dc-element>policy</dc-element>
           <dc-qualifier>eperson</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Eperson Policy</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1579,11 +1925,11 @@
           <dc-schema>cris</dc-schema>
           <dc-element>policy</dc-element>
           <dc-qualifier>group</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Group Policy</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -1592,77 +1938,77 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Organization name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter the oganization name.</required>
           <hint />
+          <required>You must enter the oganization name.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>acronym</dc-element>
+          <repeatable>false</repeatable>
           <label>Acronym or short form of title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>organization</dc-schema>
           <dc-element>parentOrganization</dc-element>
+          <repeatable>false</repeatable>
           <label>Parent Organisation</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisou</dc-schema>
           <dc-element>director</dc-element>
+          <repeatable>false</repeatable>
           <label>Director</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>organization</dc-schema>
           <dc-element>foundingDate</dc-element>
+          <repeatable>false</repeatable>
           <label>Established</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisou</dc-schema>
           <dc-element>boards</dc-element>
+          <repeatable>true</repeatable>
           <label>Scientifics Board</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>organization</dc-schema>
           <dc-element>identifier</dc-element>
+          <repeatable>true</repeatable>
           <label>Identifiers</label>
           <input-type value-pairs-name="orgunit_identifiers">qualdrop_value</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1670,11 +2016,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Website(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1682,11 +2028,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Description for OrgUnit</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1694,32 +2040,32 @@
           <dc-schema>organization</dc-schema>
           <dc-element>address</dc-element>
           <dc-qualifier>addressLocality</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>City</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>organization</dc-schema>
           <dc-element>address</dc-element>
           <dc-qualifier>addressCountry</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Country</label>
           <input-type value-pairs-name="common_iso_countries">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Type</label>
           <input-type value-pairs-name="orgunit_types">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required>You must specify the organisation type</required>
           <hint />
+          <required>You must specify the organisation type</required>
         </field>
       </row>
     </form>
@@ -1728,88 +2074,88 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Project title</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter the project name.</required>
           <hint />
+          <required>You must enter the project name.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>acronym</dc-element>
+          <repeatable>false</repeatable>
           <label>Project Acronym</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>coordinator</dc-element>
+          <repeatable>true</repeatable>
           <label>Consortium Coordinator(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>internalid</dc-element>
+          <repeatable>false</repeatable>
           <label>Internal project ID</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>partnerou</dc-element>
+          <repeatable>true</repeatable>
           <label>Partner Organization(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>investigator</dc-element>
+          <repeatable>false</repeatable>
           <label>Project Coordinator</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter the project coordinator.</required>
           <hint />
+          <required>You must enter the project coordinator.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>openaireid</dc-element>
+          <repeatable>false</repeatable>
           <label>OpenAIRE ID</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>organization</dc-element>
+          <repeatable>true</repeatable>
           <label>Participant Organization(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1817,32 +2163,32 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>identifier</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Project URL</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>oamandate</dc-element>
+          <repeatable>false</repeatable>
           <label>OA Mandate</label>
           <input-type value-pairs-name="truefalse">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>oamandate</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>OA Policy URL</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1850,21 +2196,21 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>project</dc-element>
           <dc-qualifier>startDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Start date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>project</dc-element>
           <dc-qualifier>endDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Expected Completion</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1872,22 +2218,22 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>project</dc-element>
           <dc-qualifier>status</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Status</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Project type</label>
           <input-type value-pairs-name="project_types">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1895,33 +2241,33 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Abstract</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crispj</dc-schema>
           <dc-element>coinvestigators</dc-element>
+          <repeatable>true</repeatable>
           <label>Co-Investigator(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Keyword(s)</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1929,11 +2275,11 @@
           <dc-schema>datacite</dc-schema>
           <dc-element>subject</dc-element>
           <dc-qualifier>fos</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Fields of Science and Technology (OECD)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
           <vocabulary closed="true">oecd</vocabulary>
         </field>
       </row>
@@ -1942,11 +2288,11 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>equipment</dc-qualifier>
+          <repeatable>true</repeatable>
           <label>Uses equipment(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -1955,31 +2301,31 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter the equipment name.</required>
           <hint />
+          <required>You must enter the equipment name.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>acronym</dc-element>
+          <repeatable>false</repeatable>
           <label>Acronym</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>internalid</dc-element>
+          <repeatable>false</repeatable>
           <label>Internal Funding code</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -1987,31 +2333,31 @@
           <dc-schema>dc</dc-schema>
           <dc-element>relation</dc-element>
           <dc-qualifier>project</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Funded project</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>funder</dc-element>
+          <repeatable>false</repeatable>
           <label>Funder</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>fundingParent</dc-element>
+          <repeatable>false</repeatable>
           <label>Program</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint>Link this funding with its upper level if applicable</hint>
+          <required />
         </field>
       </row>
       <row>
@@ -2019,53 +2365,53 @@
           <dc-schema>crisfund</dc-schema>
           <dc-element>award</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Award Url</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>The url preferably on the funder website of the award notice</required>
           <hint />
+          <required>The url preferably on the funder website of the award notice</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>oamandate</dc-element>
+          <repeatable>false</repeatable>
           <label>OA Mandate</label>
           <input-type value-pairs-name="truefalse">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>oamandate</dc-element>
           <dc-qualifier>url</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>OA Policy URL</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>amount</dc-element>
+          <repeatable>false</repeatable>
           <label>Amount</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>amount</dc-element>
           <dc-qualifier>currency</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Currency</label>
           <input-type value-pairs-name="currency">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -2073,97 +2419,97 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>funding</dc-element>
           <dc-qualifier>identifier</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Grant number</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>funding</dc-element>
           <dc-qualifier>startDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Start date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>funding</dc-element>
           <dc-qualifier>endDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>End date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Type</label>
           <input-type value-pairs-name="funding_types">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
+          <repeatable>false</repeatable>
           <label>Funding Description</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisfund</dc-schema>
           <dc-element>investigators</dc-element>
+          <repeatable>true</repeatable>
           <label>Investigator(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisfund</dc-schema>
           <dc-element>coinvestigators</dc-element>
+          <repeatable>true</repeatable>
           <label>Co-Investigator(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisfund</dc-schema>
           <dc-element>leadorganizations</dc-element>
+          <repeatable>true</repeatable>
           <label>Lead Organization(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisfund</dc-schema>
           <dc-element>leadcoorganizations</dc-element>
+          <repeatable>true</repeatable>
           <label>Lead Co-Organization(s)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -2172,66 +2518,66 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required>You must enter the equipment name.</required>
           <hint />
+          <required>You must enter the equipment name.</required>
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>acronym</dc-element>
+          <repeatable>false</repeatable>
           <label>Acronym</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>internalid</dc-element>
+          <repeatable>false</repeatable>
           <label>Institution Unique Identifier</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisequipment</dc-schema>
           <dc-element>ownerou</dc-element>
+          <repeatable>false</repeatable>
           <label>Owner (Organisations)</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisequipment</dc-schema>
           <dc-element>ownerrp</dc-element>
+          <repeatable>false</repeatable>
           <label>Owner (Persons)</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
+          <repeatable>false</repeatable>
           <label>Equipment Description</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -2240,33 +2586,33 @@
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>title</dc-element>
+          <repeatable>false</repeatable>
           <label>Event name</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>acronym</dc-element>
+          <repeatable>false</repeatable>
           <label>Acronym</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>type</dc-element>
+          <repeatable>false</repeatable>
           <label>Event type</label>
           <input-type value-pairs-name="event_types">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -2274,21 +2620,21 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>event</dc-element>
           <dc-qualifier>startDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Start date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
         <field>
           <dc-schema>oairecerif</dc-schema>
           <dc-element>event</dc-element>
           <dc-qualifier>endDate</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>End date</label>
           <input-type>date</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -2296,11 +2642,11 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>event</dc-element>
           <dc-qualifier>place</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Location</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -2308,77 +2654,77 @@
           <dc-schema>oairecerif</dc-schema>
           <dc-element>event</dc-element>
           <dc-qualifier>country</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Country</label>
           <input-type value-pairs-name="common_iso_countries">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>organizerou</dc-element>
+          <repeatable>true</repeatable>
           <label>Organizer(s) of the Event</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>organizerpj</dc-element>
+          <repeatable>true</repeatable>
           <label>Organizer(s) of the Event (project)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>sponsorou</dc-element>
+          <repeatable>true</repeatable>
           <label>Sponsor(s) of the Event</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>sponsorpj</dc-element>
+          <repeatable>true</repeatable>
           <label>Sponsor(s) of the Event (project)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>partnerou</dc-element>
+          <repeatable>true</repeatable>
           <label>Partner(s) of the Event</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>crisevent</dc-schema>
           <dc-element>partnerpj</dc-element>
+          <repeatable>true</repeatable>
           <label>Partner(s) of the Event (project)</label>
           <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
@@ -2386,22 +2732,22 @@
           <dc-schema>dc</dc-schema>
           <dc-element>description</dc-element>
           <dc-qualifier>abstract</dc-qualifier>
+          <repeatable>false</repeatable>
           <label>Event Description</label>
           <input-type>textarea</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
           <dc-element>subject</dc-element>
+          <repeatable>true</repeatable>
           <label>Keyword(s)</label>
           <input-type>tag</input-type>
-          <repeatable>true</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -2410,11 +2756,11 @@
         <field>
           <dc-schema>cris</dc-schema>
           <dc-element>owner</dc-element>
+          <repeatable>false</repeatable>
           <label>Owner</label>
           <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
-          <required />
           <hint />
+          <required />
         </field>
       </row>
     </form>
@@ -2575,10 +2921,6 @@
       </pair>
     </value-pairs>
     <value-pairs value-pairs-name="common_iso_languages" dc-term="common_iso_languages">
-      <pair>
-        <displayed-value>N/A</displayed-value>
-        <stored-value />
-      </pair>
       <pair>
         <displayed-value>English (United States)</displayed-value>
         <stored-value>en_US</stored-value>
@@ -2928,10 +3270,6 @@
     </value-pairs>
     <value-pairs value-pairs-name="gender" dc-term="gender">
       <pair>
-        <displayed-value>Unknown</displayed-value>
-        <stored-value />
-      </pair>
-      <pair>
         <displayed-value>Male</displayed-value>
         <stored-value>m</stored-value>
       </pair>
@@ -2940,7 +3278,7 @@
         <stored-value>f</stored-value>
       </pair>
       <pair>
-        <displayed-value>Unspecifiied</displayed-value>
+        <displayed-value>Unspecified</displayed-value>
         <stored-value>n/a</stored-value>
       </pair>
     </value-pairs>
@@ -2981,10 +3319,6 @@
       </pair>
     </value-pairs>
     <value-pairs value-pairs-name="orgunit_types" dc-term="orgunit_types">
-      <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
       <pair>
         <displayed-value>Academic Institute</displayed-value>
         <stored-value>Academic Institute</stored-value>
@@ -3040,10 +3374,6 @@
     </value-pairs>
     <value-pairs value-pairs-name="project_types" dc-term="project_types">
       <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
-      <pair>
         <displayed-value>basic research</displayed-value>
         <stored-value>basic research</stored-value>
       </pair>
@@ -3057,10 +3387,6 @@
       </pair>
     </value-pairs>
     <value-pairs value-pairs-name="funding_types" dc-term="funding_types">
-      <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
       <pair>
         <displayed-value>Gift</displayed-value>
         <stored-value>Gift</stored-value>
@@ -3084,10 +3410,6 @@
     </value-pairs>
     <value-pairs value-pairs-name="event_types" dc-term="event_types">
       <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
-      <pair>
         <displayed-value>Conference</displayed-value>
         <stored-value>Conference</stored-value>
       </pair>
@@ -3097,10 +3419,6 @@
       </pair>
     </value-pairs>
     <value-pairs value-pairs-name="common_iso_countries" dc-term="common_iso_countries">
-      <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
       <pair>
         <displayed-value>Afghanistan</displayed-value>
         <stored-value>AF</stored-value>
@@ -4100,10 +4418,6 @@
     </value-pairs>
     <value-pairs value-pairs-name="bitstream_types" dc-term="bitstream_types">
       <pair>
-        <displayed-value>Unspecified</displayed-value>
-        <stored-value />
-      </pair>
-      <pair>
         <displayed-value>Logo</displayed-value>
         <stored-value>logo</stored-value>
       </pair>
@@ -4118,4 +4432,3 @@
     </value-pairs>
   </form-value-pairs>
 </input-forms>
-

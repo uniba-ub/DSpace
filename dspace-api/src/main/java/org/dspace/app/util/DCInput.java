@@ -152,8 +152,8 @@ public class DCInput {
     private boolean isMetadataField = false;
     private String relationshipType = null;
     private String searchConfiguration = null;
-    private String filter;
-    private List<String> externalSources;
+    private final String filter;
+    private final List<String> externalSources;
 
     /**
      * The scope of the input sets, this restricts hidden metadata fields from
@@ -611,12 +611,12 @@ public class DCInput {
         if (StringUtils.isNotBlank(value)) {
             try {
                 if (this.pattern != null) {
-                    if (!this.pattern.matcher(value).matches()) {
+                    if (!pattern.matcher(value).matches()) {
                         return false;
                     }
                 }
             } catch (PatternSyntaxException ex) {
-                log.error("Regex validation failed!", ex.getMessage());
+                log.error("Regex validation failed!  {}", ex.getMessage());
             }
 
         }
@@ -633,18 +633,22 @@ public class DCInput {
     }
 
     /**
-     * Verify whether the current field contains an entity relationship
-     * This also implies a relationship type is defined for this field
-     * The field can contain both an entity relationship and a metadata field simultaneously
+     * Verify whether the current field contains an entity relationship.
+     * This also implies a relationship type is defined for this field.
+     * The field can contain both an entity relationship and a metadata field
+     * simultaneously.
+     * @return true if the field contains a relationship.
      */
     public boolean isRelationshipField() {
         return isRelationshipField;
     }
 
     /**
-     * Verify whether the current field contains a metadata field
-     * This also implies a field type is defined for this field
-     * The field can contain both an entity relationship and a metadata field simultaneously
+     * Verify whether the current field contains a metadata field.
+     * This also implies a field type is defined for this field.
+     * The field can contain both an entity relationship and a metadata field
+     * simultaneously.
+     * @return true if the field contains a metadata field.
      */
     public boolean isMetadataField() {
         return isMetadataField;

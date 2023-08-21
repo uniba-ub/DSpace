@@ -93,7 +93,8 @@ public class TopCategoriesGenerator extends AbstractUsageReportGenerator {
     private String composeCategoryQuery(DSpaceObject dso, DiscoveryConfiguration configuration, String categoryQuery) {
 
         List<String> defaultFilterQueries = configuration.getDefaultFilterQueries();
-        String query = new StatisticsDatasetDisplay().composeQueryWithInverseRelation(dso, defaultFilterQueries);
+        String query = new StatisticsDatasetDisplay().composeQueryWithInverseRelation(dso,
+            defaultFilterQueries, dso.getType());
 
         if (categoryQuery.equals(OTHER_CATEGORY)) {
             return query + " AND " + getAllCategoryQueriesReverted();

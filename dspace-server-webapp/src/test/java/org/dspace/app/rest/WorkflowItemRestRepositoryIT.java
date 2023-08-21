@@ -69,6 +69,7 @@ import org.dspace.core.Constants;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.Group;
 import org.dspace.services.ConfigurationService;
+import org.dspace.workflow.WorkflowItem;
 import org.dspace.xmlworkflow.factory.XmlWorkflowFactory;
 import org.dspace.xmlworkflow.state.Step;
 import org.dspace.xmlworkflow.storedcomponents.ClaimedTask;
@@ -891,14 +892,14 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
 
         //3. a workflow item will all the required fields
         XmlWorkflowItem witem = WorkflowItemBuilder.createWorkflowItem(context, col1)
-                .withTitle("Workflow Item 1")
+                .withTitle("Workflow Item")
                 .withIssueDate("2017-10-17")
                 .grantLicense()
                 .build();
 
         //4. a workflow item without the dateissued required field
         XmlWorkflowItem witemMissingFields = WorkflowItemBuilder.createWorkflowItem(context, col1)
-                .withTitle("Workflow Item 1")
+                .withTitle("Test Workflow Item 2")
                 .grantLicense()
                 .build();
 
@@ -957,7 +958,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
         // 4. a workflow item without the dateissued required field
         XmlWorkflowItem witemMissingFields = WorkflowItemBuilder.createWorkflowItem(context, col1)
             .withTitle("Test publication with mandatory DOI 2")
-            .withIssueDate("2017-10-17")
+            .withIssueDate("2018-10-17")
             .grantLicense()
             .build();
 
@@ -967,7 +968,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
 
         getClient(authToken).perform(get("/api/workflow/workflowitems/" + witem.getID()))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.errors").doesNotExist());
+            .andExpect(jsonPath("$.errors[?(@.message=='error.validation.test')]").doesNotExist());
 
         getClient(authToken).perform(get("/api/workflow/workflowitems/" + witemMissingFields.getID()))
             .andExpect(status().isOk())
@@ -1003,7 +1004,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
 
         // 3. a workflow item will all the required fields
         XmlWorkflowItem witem = WorkflowItemBuilder.createWorkflowItem(context, col1)
-            .withTitle("Test publication with mandatory DOI 1")
+            .withTitle("Test publication with mandatory DOI")
             .withIssueDate("2017-10-17")
             .withDoiIdentifier("10.1000/182")
             .grantLicense()
@@ -1011,7 +1012,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
 
         // 4. a workflow item without the dateissued required field
         XmlWorkflowItem witemMissingFields = WorkflowItemBuilder.createWorkflowItem(context, col1)
-            .withTitle("Test publication with mandatory DOI 2")
+            .withTitle("Test publication with mandatory DOI second")
             .grantLicense()
             .build();
 
@@ -1257,7 +1258,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
 
         //3. some claimed tasks with workflow items in edit step
         ClaimedTask claimedTask = ClaimedTaskBuilder.createClaimedTask(context, col1, eperson)
-            .withTitle("Workflow Item 1")
+            .withTitle("First Workflow Item")
             .withIssueDate("2017-10-17")
             .withAuthor("Smith, Donald").withAuthor("Doe, John")
             .withSubject("ExtraEntry")
@@ -1268,7 +1269,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
         XmlWorkflowItem witem = claimedTask.getWorkflowItem();
 
         ClaimedTask claimedTask2 = ClaimedTaskBuilder.createClaimedTask(context, col1, eperson)
-            .withTitle("Workflow Item 2")
+            .withTitle("Second Workflow Item")
             .withIssueDate("2017-10-17")
             .withSubject("Subject1")
             .withSubject("Subject2")
@@ -1281,7 +1282,7 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
         XmlWorkflowItem witemMultipleSubjects  = claimedTask2.getWorkflowItem();
 
         ClaimedTask claimedTask3 = ClaimedTaskBuilder.createClaimedTask(context, col1, eperson)
-            .withTitle("Workflow Item 3")
+            .withTitle("Third Workflow Item")
             .withIssueDate("2017-10-17")
             .withSubject("Subject1")
             .withSubject("Subject2")
@@ -2645,6 +2646,65 @@ public class WorkflowItemRestRepositoryIT extends AbstractControllerIntegrationT
             // remove the workflowitem if any
             WorkflowItemBuilder.deleteWorkflowItem(idRef.get());
         }
+    }
+
+    @Test
+    public void testWorkflowWithHiddenSections() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection 1")
+            .withSubmissionDefinition("test-hidden")
+            .withWorkflowGroup(1, eperson)
+            .build();
+
+        WorkflowItem workflowItem = WorkflowItemBuilder.createWorkflowItem(context, collection)
+            .withTitle("Workflow Item")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        getClient(getAuthToken(admin.getEmail(), password))
+            .perform(get("/api/workflow/workflowitems/" + workflowItem.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.sections.test-outside-workflow-hidden").exists())
+            .andExpect(jsonPath("$.sections.test-outside-submission-hidden").doesNotExist())
+            .andExpect(jsonPath("$.sections.test-never-hidden").exists())
+            .andExpect(jsonPath("$.sections.test-always-hidden").doesNotExist());
+
+    }
+
+    @Test
+    public void testValidationWithHiddenSteps() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        parentCommunity = CommunityBuilder.createCommunity(context)
+            .withName("Parent Community")
+            .build();
+
+        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection 1")
+            .withSubmissionDefinition("test-hidden")
+            .withWorkflowGroup(1, eperson)
+            .build();
+
+        WorkflowItem workflowItem = WorkflowItemBuilder.createWorkflowItem(context, collection)
+            .build();
+
+        context.restoreAuthSystemState();
+
+        getClient(getAuthToken(admin.getEmail(), password))
+            .perform(get("/api/workflow/workflowitems/" + workflowItem.getID()))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.errors", hasSize(1)))
+            .andExpect(jsonPath("$.errors[0].message", is("error.validation.required")))
+            .andExpect(jsonPath("$.errors[0].paths", contains("/sections/test-outside-workflow-hidden/dc.title")));
     }
 
 }

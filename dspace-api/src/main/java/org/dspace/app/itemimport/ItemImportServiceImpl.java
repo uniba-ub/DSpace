@@ -62,6 +62,7 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dspace.app.itemimport.service.ItemImportService;
 import org.dspace.app.util.LocalSchemaFilenameFilter;
@@ -135,7 +136,7 @@ import org.xml.sax.SAXException;
  * allow the registration of files (bitstreams) into DSpace.
  */
 public class ItemImportServiceImpl implements ItemImportService, InitializingBean {
-    private final Logger log = org.apache.logging.log4j.LogManager.getLogger(ItemImportServiceImpl.class);
+    private final Logger log = LogManager.getLogger();
 
     private DSpaceRunnableHandler handler;
 
@@ -181,6 +182,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     protected String tempWorkDir;
 
     protected boolean isTest = false;
+    protected boolean isExcludeContent = false;
     protected boolean isResume = false;
     protected boolean useWorkflow = false;
     protected boolean useWorkflowSendEmail = false;
@@ -272,7 +274,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
             // open and process the source directory
             File d = new java.io.File(sourceDir);
 
-            if (d == null || !d.isDirectory()) {
+            if (!d.isDirectory()) {
                 throw new Exception("Error, cannot open source directory " + sourceDir);
             }
 
@@ -445,12 +447,16 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     /**
      * Read the relationship manifest file.
      * 
-     * Each line in the file contains a relationship type id and an item identifier in the following format:
-     * 
-     * relation.<relation_key> <handle|uuid|folderName:import_item_folder|schema.element[.qualifier]:value>
-     * 
-     * The input_item_folder should refer the folder name of another item in this import batch.
-     * 
+     * Each line in the file contains a relationship type id and an item
+     * identifier in the following format:
+     *
+     * <p>
+     * {@code relation.<relation_key> <handle|uuid|folderName:import_item_folder|schema.element[.qualifier]:value>}
+     *
+     * <p>
+     * The {@code input_item_folder} should refer the folder name of another
+     * item in this import batch.
+     *
      * @param path The main import folder path.
      * @param filename The name of the manifest file to check ('relationships')
      * @return Map of found relationships
@@ -585,9 +591,10 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     /**
      * Lookup an item by a (unique) meta value.
      * 
-     * @param metaKey
-     * @param metaValue
-     * @return Item
+     * @param c current DSpace session.
+     * @param metaKey name of the metadata field to match.
+     * @param metaValue value to be matched.
+     * @return the matching Item.
      * @throws Exception if single item not found.
      */
     protected Item findItemByMetaValue(Context c, String metaKey, String metaValue) throws Exception {
@@ -631,7 +638,7 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
         // verify the source directory
         File d = new java.io.File(sourceDir);
 
-        if (d == null || !d.isDirectory()) {
+        if (!d.isDirectory()) {
             throw new Exception("Error, cannot open source directory "
                                     + sourceDir);
         }
@@ -1398,6 +1405,10 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     protected void processContentFileEntry(Context c, Item i, String path,
                                            String fileName, String bundleName, boolean primary) throws SQLException,
         IOException, AuthorizeException {
+        if (isExcludeContent) {
+            return;
+        }
+
         String fullpath = path + File.separatorChar + fileName;
 
         // get an input stream
@@ -1698,22 +1709,23 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
                               .trim();
             }
 
+            if (isTest) {
+                continue;
+            }
+
             Bitstream bs = null;
-            boolean notfound = true;
             boolean updateRequired = false;
 
-            if (!isTest) {
-                // find bitstream
-                List<Bitstream> bitstreams = itemService.getNonInternalBitstreams(c, myItem);
-                for (int j = 0; j < bitstreams.size() && notfound; j++) {
-                    if (bitstreams.get(j).getName().equals(bitstreamName)) {
-                        bs = bitstreams.get(j);
-                        notfound = false;
-                    }
+            // find bitstream
+            List<Bitstream> bitstreams = itemService.getNonInternalBitstreams(c, myItem);
+            for (Bitstream bitstream : bitstreams) {
+                if (bitstream.getName().equals(bitstreamName)) {
+                    bs = bitstream;
+                    break;
                 }
             }
 
-            if (notfound && !isTest) {
+            if (null == bs) {
                 // this should never happen
                 logInfo("\tdefault permissions set for " + bitstreamName);
             } else {
@@ -2055,15 +2067,11 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
         Thread go = new Thread() {
             @Override
             public void run() {
-                Context context = null;
-
+                Context context = new Context();
                 String importDir = null;
                 EPerson eperson = null;
 
                 try {
-
-                    // create a new dspace context
-                    context = new Context();
                     eperson = ePersonService.find(context, oldEPerson.getID());
                     context.setCurrentUser(eperson);
                     context.turnOffAuthorisationSystem();
@@ -2074,7 +2082,8 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
                     if (theOtherCollections != null) {
                         for (String colID : theOtherCollections) {
                             UUID colId = UUID.fromString(colID);
-                            if (!theOwningCollection.getID().equals(colId)) {
+                            if (theOwningCollection != null
+                                    && !theOwningCollection.getID().equals(colId)) {
                                 Collection col = collectionService.find(context, colId);
                                 if (col != null) {
                                     collectionList.add(col);
@@ -2337,6 +2346,11 @@ public class ItemImportServiceImpl implements ItemImportService, InitializingBea
     @Override
     public void setTest(boolean isTest) {
         this.isTest = isTest;
+    }
+
+    @Override
+    public void setExcludeContent(boolean isExcludeContent) {
+        this.isExcludeContent = isExcludeContent;
     }
 
     @Override
