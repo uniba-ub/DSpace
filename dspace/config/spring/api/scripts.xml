@@ -135,12 +135,12 @@
     </bean>
 
     <bean id="item-enhancer-type" class="org.dspace.content.enhancer.script.ItemEnhancerEntityTypeScriptConfiguration" >
-        <property name="description" value="Script that allows to enhance specific entity types"/>
+        <property name="description" value="Script that allows to enhance specific items of specific entity types or collections"/>
         <property name="dspaceRunnableClass" value="org.dspace.content.enhancer.script.ItemEnhancerEntityTypeScript"/>
     </bean>
 
     <bean id="item-enhancer-date" class="org.dspace.content.enhancer.script.ItemEnhancerByDateScriptConfiguration" >
-        <property name="description" value="Script that allows to enhance specific entity types by some date solrquery"/>
+        <property name="description" value="Script that allows to enhance specific items by some solrquery"/>
         <property name="dspaceRunnableClass" value="org.dspace.content.enhancer.script.ItemEnhancerByDateScript"/>
     </bean>
 
