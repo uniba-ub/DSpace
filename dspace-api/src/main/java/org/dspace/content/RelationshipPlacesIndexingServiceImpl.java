@@ -107,7 +107,7 @@ public class RelationshipPlacesIndexingServiceImpl implements RelationshipPlaces
                 times = leftItemRelation.getLeftPlace() - leftItemRelation.getRightPlace();
             }
             if (times > 0) {
-            rightItemsToAdd.addAll(Collections.nCopies(times, leftItemRelation.getRightItem().getID().toString()));
+                rightItemsToAdd.addAll(Collections.nCopies(times, leftItemRelation.getRightItem().getID().toString()));
             }
         }
         if (!rightItemsToAdd.isEmpty())  {
