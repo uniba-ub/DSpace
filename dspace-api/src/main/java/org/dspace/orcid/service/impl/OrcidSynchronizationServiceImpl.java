@@ -17,7 +17,6 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.dspace.content.Item.ANY;
 
 import java.sql.SQLException;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -29,7 +28,9 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
+import org.dspace.content.Relationship;
 import org.dspace.content.service.ItemService;
+import org.dspace.content.service.RelationshipService;
 import org.dspace.core.Context;
 import org.dspace.discovery.DiscoverQuery;
 import org.dspace.discovery.DiscoverResultItemIterator;
@@ -50,7 +51,6 @@ import org.dspace.profile.OrcidProfileSyncPreference;
 import org.dspace.profile.OrcidSynchronizationMode;
 import org.dspace.profile.service.ResearcherProfileService;
 import org.dspace.services.ConfigurationService;
-import org.dspace.util.UUIDUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -81,6 +81,9 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
 
     @Autowired
     private ResearcherProfileService researcherProfileService;
+
+    @Autowired
+    private RelationshipService relationshipService;
 
     @Override
     public void linkProfile(Context context, Item profile, OrcidTokenResponseDTO token) throws SQLException {
@@ -204,12 +207,14 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
                         return true;
                     case MINE:
                     case MY_SELECTED:
-                        String filterproperty = "orcid.relationpreference." + entityType + "." + option.get().name();
-                        String filter = configurationService.getProperty(filterproperty);
-                        if (isBlank(filter) || !filter.contains("{0}")) {
+                        String relationname = configurationService.getProperty(
+                            "orcid.relation." + entityType + "." + option.get().name());
+                        boolean exclusion = configurationService.getBooleanProperty("orcid.relation."
+                            + entityType + "." + option.get().name() + ".exclusion", false);
+                        if (isBlank(relationname)) {
                             return false;
                         }
-                        Iterator<Item> entities = checkRelation(context, profile, item, filter);
+                        Iterator<Item> entities = checkRelation(context, profile, item, relationname, exclusion);
                         if (entities.hasNext()) {
                             return true;
                         } else {
@@ -231,12 +236,68 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
 
     }
 
-    private Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname) {
+    @Override
+    public boolean isSyncSettingsBasedOnRelationshipCriteriaNotValid(Context context, Item profile, Item item) {
+        String entityType = itemService.getEntityTypeLabel(item);
+        if (entityType == null) {
+            return false;
+        }
+        Optional<OrcidEntitySyncPreference> option =
+            getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType));
+        if (option.isPresent()) {
+            try {
+                switch (option.get()) {
+                    case MINE:
+                    case MY_SELECTED:
+                        // Consider MINE and MY_SELECTED Settings
+                        String relationname = configurationService.getProperty(
+                            "orcid.relation." + entityType + "." + option.get().name());
+                        if (isBlank(relationname)) {
+                            return false;
+                        }
+                        boolean exclusion = configurationService.getBooleanProperty("orcid.relation."
+                            + entityType + "." + option.get().name() + ".exclusion", false);
+                        if (exclusion) {
+                            //check, if relationship exists
+                            List<Relationship> rels = relationshipService.findByItem(context, profile);
+                            boolean val = rels.stream()
+                                .anyMatch(relationship ->
+                                    relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
+                                        relationship.getLeftwardValue().contentEquals(relationname));
+                            return val;
+                        } else {
+                            //check if no relationship exists
+                            List<Relationship> rels = relationshipService.findByItem(context, profile);
+                            boolean val = rels.stream()
+                                .noneMatch(relationship ->
+                                    relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
+                                        relationship.getLeftwardValue().contentEquals(relationname));
+                            return val;
+                        }
+
+                    default:
+                        return false;
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }
+
+    private Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname,
+                                         boolean exclusion) {
+        StringBuilder sb = new StringBuilder();
+        if (exclusion) {
+            sb.append("-");
+        }
+        sb.append("relation." + filterrelationname + ":");
+        sb.append(profile.getID().toString());
+
         DiscoverQuery discoverQuery = new DiscoverQuery();
         discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
         discoverQuery.addFilterQueries("search.resourceid:" + item.getID());
-        filterrelationname = MessageFormat.format(filterrelationname, UUIDUtils.toString(profile.getID()));
-        discoverQuery.addFilterQueries(filterrelationname);
+        discoverQuery.addFilterQueries(sb.toString());
         discoverQuery.setMaxResults(1);
         return new DiscoverResultItemIterator(context, discoverQuery);
     }

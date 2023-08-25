@@ -488,8 +488,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         context.turnOffAuthorisationSystem();
 
-        configurationService.addPropertyValue("orcid.relationpreference.Publication.MY_SELECTED",
-                "relation.isResearchoutputsSelectedFor:{0}");
+        configurationService.addPropertyValue("orcid.relation.Publication.MY_SELECTED",
+                "isResearchoutputsSelectedFor");
 
         Item profile = ItemBuilder.createItem(context, profileCollection)
             .withTitle("Test User")
@@ -522,7 +522,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                 "hasSelectedResearchoutputs", 0, null, 0,
                 null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
 
         context.restoreAuthSystemState();
         context.commit();
@@ -544,7 +545,7 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
         context.turnOffAuthorisationSystem();
         Relationship secondrelselected =
                 RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType)
-                        .build();
+                    .withLeftwardValue("isResearchoutputsSelectedFor").build();
         context.restoreAuthSystemState();
         context.commit();
 
@@ -569,7 +570,7 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
     public void testNoOrcidQueueRecordCreationForPublicationIfRelationMYSELECTEDIsNotConfigured() throws Exception {
 
         context.turnOffAuthorisationSystem();
-        configurationService.setProperty("orcid.relationpreference.Publication.MY_SELECTED", null);
+        configurationService.setProperty("orcid.relation.Publication.MY_SELECTED", null);
         Item profile = ItemBuilder.createItem(context, profileCollection)
                 .withTitle("Test User")
                 .withOrcidIdentifier("0000-1111-2222-3333")
@@ -596,8 +597,10 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                         "hasSelectedResearchoutputs", 0, null, 0,
                         null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
-        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
 
         context.restoreAuthSystemState();
         context.commit();
@@ -614,11 +617,11 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
     }
     @Test
-    public void testNoOrcidQueueRecordCreationForPublicationIfRelationMYSELECTEDQueryHasNoProfile() throws Exception {
+    public void testNoOrcidQueueRecordCreationForPublicationIfRelationMYSELECTEDQueryIsDifferent() throws Exception {
 
         context.turnOffAuthorisationSystem();
-        configurationService.setProperty("orcid.relationpreference.Publication.MY_SELECTED",
-                "isResearchoutputsSelectedFor");
+        configurationService.setProperty("orcid.relation.Publication.MY_SELECTED",
+                "isSomeOtherRelationSelectedFor");
         Item profile = ItemBuilder.createItem(context, profileCollection)
                 .withTitle("Test User")
                 .withOrcidIdentifier("0000-1111-2222-3333")
@@ -645,11 +648,13 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                         "hasSelectedResearchoutputs", 0, null, 0,
                         null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
-        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
 
-        context.restoreAuthSystemState();
         context.commit();
+        context.restoreAuthSystemState();
 
         List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(orcidQueueRecords, hasSize(0));
@@ -694,8 +699,10 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                 "notDisplayingResearchoutputs", 0, null, 0,
                 null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType).build();
-        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType)
+            .withLeftwardValue("isResearchoutputsHiddenFor").build();
 
         context.restoreAuthSystemState();
         context.commit();
@@ -718,9 +725,10 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         context.turnOffAuthorisationSystem();
         Relationship relbeingdeleted =
-                RelationshipBuilder.createRelationshipBuilder(context, thirdpublication, profile, HiddenType).build();
-        context.restoreAuthSystemState();
+                RelationshipBuilder.createRelationshipBuilder(context, thirdpublication, profile, HiddenType)
+                    .withLeftwardValue("isResearchoutputsHiddenFor").build();
         context.commit();
+        context.restoreAuthSystemState();
 
         List<OrcidQueue> newcreationQueueRecords = orcidQueueService.findAll(context);
         assertThat(newcreationQueueRecords, hasSize(1));
@@ -769,11 +777,12 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                         "notDisplayingResearchoutputs", 0, null, 0,
                         null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType).build();
-        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType).build();
-
-        context.restoreAuthSystemState();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType)
+            .withLeftwardValue("isResearchoutputsHiddenFor").build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType)
+            .withLeftwardValue("isResearchoutputsHiddenFor").build();
         context.commit();
+        context.restoreAuthSystemState();
 
         List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(orcidQueueRecords, hasSize(0));
@@ -784,6 +793,67 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(newOrcidQueueRecords, hasSize(0));
+    }
+
+    @Test
+    public void testNoOrcidQueueRecordCreationForPublicationRelationMineIfOneDeleted() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        Item profile = ItemBuilder.createItem(context, profileCollection)
+            .withTitle("Test User")
+            .withOrcidIdentifier("0000-1111-2222-3333")
+            .withOrcidAccessToken("ab4d18a0-8d9a-40f1-b601-a417255c8d20", eperson)
+            .withOrcidSynchronizationPublicationsPreference(MINE)
+            .build();
+
+        Collection publicationCollection = createCollection("Publications", "Publication");
+
+        Item publication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        Item secondpublication = ItemBuilder.createItem(context, publicationCollection)
+            .withTitle("Test publication 2")
+            .withAuthor("Test User", profile.getID().toString())
+            .build();
+
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+
+        RelationshipType HiddenType = RelationshipTypeBuilder
+            .createRelationshipTypeBuilder(context, null, personType, "isResearchoutputsHiddenFor",
+                "notDisplayingResearchoutputs", 0, null, 0,
+                null).build();
+
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType)
+            .withLeftwardValue("isResearchoutputsHiddenFor").build();
+        Relationship hiddenbeingdeleted =
+            RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, HiddenType)
+                .withLeftwardValue("isResearchoutputsHiddenFor").build();
+
+        context.restoreAuthSystemState();
+        context.commit();
+
+        List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(orcidQueueRecords, hasSize(0));
+
+        addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
+        addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
+
+
+        List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newOrcidQueueRecords, hasSize(0));
+
+        context.commit();
+        context.turnOffAuthorisationSystem();
+        RelationshipBuilder.deleteRelationship(hiddenbeingdeleted.getID());
+        itemService.update(context,secondpublication);
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        List<OrcidQueue> newafterdeletionOrcidQueueRecords = orcidQueueService.findAll(context);
+        assertThat(newafterdeletionOrcidQueueRecords, hasSize(1));
     }
 
     @Test
@@ -863,8 +933,10 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
                         "hasSelectedResearchoutputs", 0, null, 0,
                         null).build();
 
-        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType).build();
-        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType).build();
+        RelationshipBuilder.createRelationshipBuilder(context, publication, profile, HiddenType)
+            .withLeftwardValue("isResearchoutputsHiddenFor").build();
+        RelationshipBuilder.createRelationshipBuilder(context, secondpublication, profile, SelectedType)
+            .withLeftwardValue("isResearchoutputsSelectedFor").build();
 
         context.restoreAuthSystemState();
         context.commit();
@@ -1415,7 +1487,7 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
             throws SQLException {
         context.turnOffAuthorisationSystem();
         orcidQueueService.recalculateOrcidQueue(context, profile, OrcidEntityType.PUBLICATION, preference);
-        context.restoreAuthSystemState();
         context.commit();
+        context.restoreAuthSystemState();
     }
 }

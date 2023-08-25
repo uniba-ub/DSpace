@@ -131,6 +131,18 @@ public interface OrcidSynchronizationService {
     Optional<OrcidSynchronizationMode> getSynchronizationMode(Item profile);
 
     /**
+     * Check if the current sync setting for the items is related to some relationship.
+     * And if so than check if the relationship criteria is not valid.
+     *
+     * @param  profile the researcher profile item
+     * @param  item    the entity type to check
+     * @return         true if the given entity type is bases on relationship
+     *                 false otherwise
+     */
+    boolean isSyncSettingsBasedOnRelationshipCriteriaNotValid(Context context, Item profile, Item item);
+
+
+    /**
      * Returns the ORCID synchronization preference related to the given entity type
      * configured for the given profile item.
      *

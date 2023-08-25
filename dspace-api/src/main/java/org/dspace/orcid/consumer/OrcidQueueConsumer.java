@@ -161,9 +161,12 @@ public class OrcidQueueConsumer implements Consumer {
 
             if (shouldNotBeSynchronized(context, relatedItem, entity) ||
                 isAlreadyQueued(context, relatedItem, entity)) {
-                // delete queue entries which are queued but which should not be synchronized anymore
-                if (isAlreadyQueued(context, relatedItem, entity) &&
-                        shouldNotBeSynchronized(context, relatedItem, entity)) {
+                // delete queue entries which are queued and relate on relationships,
+                // but where the relation does not exist anymore.
+                // Using the shouldNotBySynchonized might not be actual, because the solr
+                // might be behind the database state
+                if (isAlreadyQueued(context, relatedItem, entity)
+                    && isSyncSettingsBasedOnRelationshipCriteriaNotValid(context, relatedItem, entity)) {
                     List<OrcidQueue> queueentries =
                             orcidQueueService.findByProfileItemAndEntity(context, relatedItem, entity);
                     for (OrcidQueue queueentry : queueentries) {
@@ -302,6 +305,12 @@ public class OrcidQueueConsumer implements Consumer {
 
     private boolean shouldNotBeSynchronized(Context context, Item profileItem, Item entity) {
         return !orcidSynchronizationService.isSynchronizationAllowed(context, profileItem, entity);
+    }
+
+    private boolean isSyncSettingsBasedOnRelationshipCriteriaNotValid(
+        Context context, Item profileItem, Item entity) {
+        return orcidSynchronizationService.
+            isSyncSettingsBasedOnRelationshipCriteriaNotValid(context, profileItem, entity);
     }
 
     private boolean isNotProfileItem(Item profileItemItem) {
