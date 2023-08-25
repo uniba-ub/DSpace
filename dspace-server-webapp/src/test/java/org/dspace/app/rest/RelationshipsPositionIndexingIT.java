@@ -65,10 +65,14 @@ public class RelationshipsPositionIndexingIT extends AbstractEntityIntegrationTe
     private Item publication2;
     private Item publication3;
     private Item publication4;
+
+    private Item publication5;
     private Item project1;
     private Item project2;
 
     private RelationshipType selectedResearchOutputByAuthor;
+
+    private RelationshipType hiddenResearchOutputByAuthor;
     private RelationshipType selectedResearchOutputByProject;
 
     @Autowired
@@ -152,6 +156,12 @@ public class RelationshipsPositionIndexingIT extends AbstractEntityIntegrationTe
                                   .withIssueDate("2017-08-01")
                                   .build();
 
+        publication5 = ItemBuilder.createItem(context, patentCollection)
+                                .withTitle("Publication 5")
+                                .withAuthor("Testzz, Foo")
+                                .withIssueDate("2017-08-01")
+                                .build();
+
         project1 = ItemBuilder.createItem(context, projectCollection)
                                   .withTitle("Project 1")
                                   .build();
@@ -169,6 +179,16 @@ public class RelationshipsPositionIndexingIT extends AbstractEntityIntegrationTe
                                          "hasSelectedResearchoutputs",
                                          0, null,
                                          0, null).build();
+
+        selectedResearchOutputByAuthor = RelationshipTypeBuilder
+                                .createRelationshipTypeBuilder(
+                                    context,
+                                    null,
+                                    personEntity,
+                                    "isResearchoutputsHiddenFor",
+                                    "notDisplayingResearchoutputs",
+                                    0, null,
+                                    0, null).build();
 
         selectedResearchOutputByProject = RelationshipTypeBuilder
                                              .createRelationshipTypeBuilder(
@@ -441,6 +461,42 @@ public class RelationshipsPositionIndexingIT extends AbstractEntityIntegrationTe
                                      ));
 
         configurationService.setProperty("relationship.places.onlyright", "");
+    }
+
+    @Test
+    public void relationPlacesIndexedShouldFail() throws Exception {
+        configurationService.setProperty("relationship.places.onlyright",
+            "null::Person::isResearchoutputsSelectedFor::hasSelectedResearchoutputs");
+        context.turnOffAuthorisationSystem();
+        final Relationship author1ToPublication1 =
+            RelationshipBuilder.createRelationshipBuilder(context, publication1,
+                    author1, selectedResearchOutputByAuthor, -1, -1)
+                .build();
+        final Relationship author1ToPublication2 =
+            RelationshipBuilder.createRelationshipBuilder(context, publication2, author1,
+                    selectedResearchOutputByAuthor,
+                    -1, -1)
+                .build();
+
+        final Relationship author1ToPublication3 =
+            RelationshipBuilder.createRelationshipBuilder(context, publication3, author1,
+                    hiddenResearchOutputByAuthor,
+                    -1, -1)
+                .build();
+
+        final Relationship author1ToPublication4 =
+            RelationshipBuilder.createRelationshipBuilder(context, publication4, author1,
+                    hiddenResearchOutputByAuthor,
+                    -1, -1)
+                .build();
+        context.commit();
+        final Relationship author1ToPublication5 =
+            RelationshipBuilder.createRelationshipBuilder(context, publication5, author1,
+                    selectedResearchOutputByAuthor,
+                    -1, -1)
+                .build();
+        context.commit();
+        context.restoreAuthSystemState();
     }
 
     /**
