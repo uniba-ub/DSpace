@@ -639,12 +639,32 @@ public final class ChoiceAuthorityServiceImpl implements ChoiceAuthorityService 
         init();
 
         if (StringUtils.isEmpty(entityType)) {
-            return new ArrayList<String>(controller.keySet());
+            return List.copyOf((controller.keySet().stream().map(field -> {
+                if (isOverrideMetadata(field)) {
+                    return removeOverrideFieldDef(field);
+                }
+                return field;
+            }).collect(Collectors.toSet())));
         }
 
-        return controller.keySet().stream()
+        return List.copyOf(controller.keySet().stream()
             .filter(field -> isLinkableToAnEntityWithEntityType(controller.get(field), entityType))
-            .collect(Collectors.toList());
+            .map(field -> {
+                if (isOverrideMetadata(field)) {
+                    return removeOverrideFieldDef(field);
+                }
+                return field;
+            })
+            .collect(Collectors.toSet()));
+    }
+
+    private String removeOverrideFieldDef(String field) {
+        int startingPos = field.indexOf("_") + 1;
+        return field.substring(startingPos, field.length());
+    }
+
+    private boolean isOverrideMetadata(String field) {
+        return StringUtils.countMatches(field, "_") == 3;
     }
 
     @Override
