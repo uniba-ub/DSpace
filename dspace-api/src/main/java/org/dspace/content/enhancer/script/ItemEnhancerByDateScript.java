@@ -34,6 +34,7 @@ import org.dspace.discovery.SolrSearchCore;
 import org.dspace.eperson.EPerson;
 import org.dspace.eperson.factory.EPersonServiceFactory;
 import org.dspace.scripts.DSpaceRunnable;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.util.UUIDUtils;
 import org.dspace.utils.DSpace;
 import org.slf4j.Logger;
@@ -45,9 +46,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
 
- * Extended to solr search to discover not-enhanced entities.
- * Some Query can be delivered,
- * additional some daterange filterquery on the lastModified field
+ * This Script uses the solr search to discover the subset of entities being processed.
+ * This offers extended functionalities, e.g. enhance only items modified since or between
+ * timestamps etc... which cannot be expressed by the database on some easy way.
+ * - dateupper/datelower: filterquery for items between dates on the lastModified Date
+ * - entity: filterquery for entitytype (search.resourcetype)
+ * - collection: filterquery for collection (location.coll)
+ * - query: free hand search query, e.g. -cris.virtual.author:* . Best to use some criteria on already enhanced items
+ * - max: perform max items. Best for testing the entries.
+ * - limit: split result in smaller lists containint limit entries to avoid one big commit in the database
  * and additional collection/entitytype queries as filterfacets.
  *
  * @author florian.gantner@uni-bamberg.de
@@ -90,7 +97,9 @@ public class ItemEnhancerByDateScript
         this.collectionService = ContentServiceFactory.getInstance().getCollectionService();
         this.entityTypeService = ContentServiceFactory.getInstance().getEntityTypeService();
         itemEnhancerService = new DSpace().getSingletonService(ItemEnhancerService.class);
-        this.solrSearchCore = new DSpace().getSingletonService(SolrSearchCore.class);
+        this.solrSearchCore =
+            DSpaceServicesFactory.getInstance().getServiceManager().getServicesByType(SolrSearchCore.class).get(0);
+        //this.solrSearchCore = new DSpace().getSingletonService(SolrSearchCore.class);
 
         this.force = commandLine.hasOption('f');
         if (commandLine.hasOption('c')) {
@@ -130,11 +139,11 @@ public class ItemEnhancerByDateScript
         assignCurrentUserInContext();
         assignSpecialGroupsInContext();
         if (commandLine.hasOption('e') && Objects.isNull(entityTypeService.findByEntityType(context, entitytype))) {
-            throw new Exception("unknown entity " + entitytype);
+            throw new Exception("unknown EntityType " + entitytype);
         }
         if (commandLine.hasOption('c') && (Objects.isNull(collection)
             || Objects.isNull(this.collectionService.find(context, collection)))) {
-            throw new Exception("specified collection does not exist");
+            throw new Exception("specified Collection does not exist");
         }
         SolrPingResponse ping = solrSearchCore.getSolr().ping();
         if (ping.getStatus() > 299) {

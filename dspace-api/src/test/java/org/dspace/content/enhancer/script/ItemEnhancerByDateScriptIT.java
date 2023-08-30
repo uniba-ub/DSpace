@@ -11,7 +11,6 @@ import static org.dspace.app.matcher.MetadataValueMatcher.with;
 import static org.dspace.content.Item.ANY;
 import static org.dspace.core.CrisConstants.PLACEHOLDER_PARENT_METADATA_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasSize;
@@ -152,7 +151,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         firstPublication = reload(firstPublication);
         secondPublication = reload(secondPublication);
@@ -210,7 +209,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -233,7 +232,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
 
         runnableHandler = runScript(false);
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -280,7 +279,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -303,7 +302,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
 
         runnableHandler = runScript(true);
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -362,7 +361,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -410,7 +409,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
@@ -447,7 +446,7 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         TestDSpaceRunnableHandler runnableHandler = runScript(false);
 
         assertThat(runnableHandler.getErrorMessages(), empty());
-        assertThat(runnableHandler.getInfoMessages(), contains("Enhancement completed with success"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
 
         publication = reload(publication);
 
