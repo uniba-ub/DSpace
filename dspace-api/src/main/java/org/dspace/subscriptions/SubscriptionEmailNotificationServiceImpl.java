@@ -117,6 +117,7 @@ public class SubscriptionEmailNotificationServiceImpl implements SubscriptionEma
                                               collectionsItems, items);
                             communityItems.clear();
                             collectionsItems.clear();
+                            items.clear();
                         }
                     } else {
                         //in the end of the iteration
