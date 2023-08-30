@@ -8,11 +8,12 @@
 package org.dspace.content.enhancer.script;
 
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.enhancer.service.ItemEnhancerService;
@@ -35,9 +36,13 @@ import org.slf4j.LoggerFactory;
  * calculated metadata with the enhancement.
  *
  * @author Luca Giamminonni (luca.giamminonni at 4science.it)
- * Extended to limit the item set to collection/entity wide use to speed up process
- * and recalculation of certain entities.
- * Extended to use some pagination option with some limit where some commit to the database is made
+ *
+ * Extended to limit the item set to collection/entitytype to speed up process
+ * Extended to use pagination option with max/offset/limit options
+ * - max for testing purposes (process max x items per collection)
+ * - offset for pagination (start with item 0+offset per collection)
+ * - limit to make some intermediary commit between x items (recommended 100 steps)
+ * to make the process more error prone
  * 
  * @author florian.gantner@uni-bamberg.de
  *
@@ -107,13 +112,25 @@ public class ItemEnhancerEntityTypeScript
         context = new Context();
         assignCurrentUserInContext();
         assignSpecialGroupsInContext();
-        if (commandLine.hasOption('e') && Objects.isNull(entityTypeService.findByEntityType(context, entitytype))) {
-            throw new Exception("unknown entity " + entitytype);
+        if (Objects.nonNull(entitytype) && Objects.isNull(entityTypeService.findByEntityType(context, entitytype))) {
+            throw new Exception("unknown EntityType " + entitytype);
         }
-        if (commandLine.hasOption('c') && (Objects.isNull(collection)
-            || Objects.isNull(this.collectionService.find(context, collection)))) {
-            throw new Exception("specified collection does not exist");
+        if (Objects.nonNull(entitytype) && StringUtils.isNotBlank(entitytype) &&
+            this.collectionService.findAll(context).stream()
+                .noneMatch(col -> col.getEntityType().contentEquals(entitytype))) {
+            throw new Exception("no Collections with EntityType " + entitytype);
         }
+        if (commandLine.hasOption('c') && Objects.isNull(collection)) {
+            throw new Exception("invalid uuid in the specified Collection");
+        }
+        if (Objects.nonNull(collection) && (Objects.isNull(this.collectionService.find(context, collection)))) {
+            throw new Exception("specified Collection does not exist");
+        }
+        if (Objects.nonNull(collection) && (Objects.nonNull(entitytype)) &&
+            !this.collectionService.find(context, collection).getEntityType().contentEquals(entitytype)) {
+            throw new Exception("the specified Collection does not match with the specified EntityType");
+        }
+
         context.turnOffAuthorisationSystem();
         try {
             enhanceItems();
@@ -127,29 +144,28 @@ public class ItemEnhancerEntityTypeScript
         }
     }
 
-    private void enhanceItems() {
-
-        if (this.limit > 0) {
-            //use limit and max parameters for pagination.
-            findItemsToEnhanceLimitMax();
-        } else {
-            //common way
-            if (Objects.nonNull(entitytype)) {
-                findItemsToEnhance().forEachRemaining(this::enhanceItemEntityCheck);
-            } else {
-                findItemsToEnhance().forEachRemaining(this::enhanceItem);
+    private void enhanceItems() throws SQLException {
+        if (Objects.nonNull(collection)) {
+            Collection coll = this.collectionService.find(context, collection);
+            findItemsToEnhance(coll);
+        } else if (Objects.nonNull(entitytype)) {
+            //for each colelction with entity type
+            for (Collection coll : collectionService.findAll(context).stream()
+                .filter(collection1 -> collection1.getEntityType().contentEquals(entitytype)).collect(
+                Collectors.toList())) {
+                findItemsToEnhance(coll);
             }
+        } else {
+            findItemsToEnhance(null);
         }
     }
 
-    private void findItemsToEnhanceLimitMax() {
-        Collection coll;
+    private void findItemsToEnhance(Collection coll) {
         int total = 0;
         int counter = 0;
-        if (Objects.nonNull(collection)) {
-            //Paginate through items in one collection
+        if (Objects.nonNull(coll)) {
+            //Paginate through items in one (given) collection
             try {
-                coll = collectionService.find(context, collection);
                 total = itemService.countItems(context, coll);
             } catch (SQLException e) {
                 handler.logError(e.getMessage());
@@ -162,31 +178,62 @@ public class ItemEnhancerEntityTypeScript
                 //offset is being added to counter and offset
                 total += offset;
                 counter += offset;
-                handler.logInfo("offset " + offset + " added. Range: ["
-                    + counter + " to " + total + "] in " + limit + " steps");
-                log.info("offset " + offset + " added. Range: ["
-                    + counter + " to " + total + "] in " + limit + " steps");
+                if (limit > 0) {
+                    handler.logInfo("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "] in " + limit + " steps");
+                    log.info("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "] in " + limit + " steps");
+                } else {
+                    handler.logInfo("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "]");
+                    log.info("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "]");
+                }
             } else {
-                handler.logInfo("Range: [" + counter + " to "
-                    + total + "] in " + limit + " steps");
-                log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                if (limit > 0) {
+                    handler.logInfo("Range: [" + counter + " to "
+                        + total + "] in " + limit + " steps");
+                    log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                } else {
+                    handler.logInfo("Range: [" + counter + " to "
+                        + total + "]");
+                    log.info("Range: [" + counter + " to " + total + "]");
+                }
             }
             while (counter < total) {
-                try {
-                    itemService.findAllByCollection(context, coll, limit, counter).forEachRemaining(this::enhanceItem);
-                    counter += limit;
-                    context.commit();
-                    handler.logInfo("processed " + counter + " out of total " + total + " items");
-                    log.info("processed " + counter + " out of total " + total + " items");
-                } catch (SQLException e) {
-                    handler.logError(e.getMessage());
-                    counter += limit;
-                    handler.logInfo("processed " + counter + " out of total " + total + " items");
-                    log.info("processed " + counter + " out of total " + total + " items");
+                if (limit > 0) {
+                    try {
+                        itemService.findAllByCollection(context, coll, limit, counter)
+                            .forEachRemaining(this::enhanceItem);
+                        counter += limit;
+                        context.commit();
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    } catch (SQLException e) {
+                        handler.logError(e.getMessage());
+                        counter += limit;
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    }
+                } else {
+                    try {
+                        // no limit, so process all items in one commit
+                        itemService.findAllByCollection(context, coll, total, counter)
+                            .forEachRemaining(this::enhanceItem);
+                        counter += total;
+                        context.commit();
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    } catch (SQLException e) {
+                        handler.logError(e.getMessage());
+                        counter += limit;
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    }
                 }
             }
         } else {
-            //loop through all!
+            // operate over all items
             try {
                 total = itemService.countTotal(context);
             } catch (SQLException e) {
@@ -200,51 +247,67 @@ public class ItemEnhancerEntityTypeScript
                 //offset is being added to counter and offset
                 total += offset;
                 counter += offset;
-                handler.logInfo("offset" + offset + " added. Range: ["
-                    + counter + " to " + total + "] in " + limit + " steps");
-                log.info("offset" + offset + " added. Range: ["
-                    + counter + " to " + total + "] in " + limit + " steps");
+                if (limit > 0) {
+                    handler.logInfo("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "] in " + limit + " steps");
+                    log.info("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "] in " + limit + " steps");
+                } else {
+                    handler.logInfo("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "]");
+                    log.info("offset " + offset + " added. Range: ["
+                        + counter + " to " + total + "]");
+                }
             } else {
-                handler.logInfo("Range: [" + counter + " to " + total + "] in " + limit + " steps");
-                log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                if (limit > 0) {
+                    handler.logInfo("Range: [" + counter + " to "
+                        + total + "] in " + limit + " steps");
+                    log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                } else {
+                    handler.logInfo("Range: [" + counter + " to "
+                        + total + "]");
+                    log.info("Range: [" + counter + " to " + total + "]");
+                }
             }
             while (counter < total) {
-                try {
-                    //No Entity check here!
-                    if (Objects.nonNull(this.entitytype)) {
-                        itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItemEntityCheck);
-                    } else {
-                        itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItem);
+                if (limit > 0) {
+                    try {
+                        // Check for entity type in enhanceItem method
+                        if (Objects.nonNull(this.entitytype)) {
+                            itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItemEntityCheck);
+                        } else {
+                            itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItem);
+                        }
+                        counter += limit;
+                        context.commit();
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    } catch (SQLException e) {
+                        handler.logError(e.getMessage());
+                        counter += limit;
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
                     }
-                    counter += limit;
-                    context.commit();
-                    handler.logInfo("processed " + counter + " out of total " + total + " items");
-                    log.info("processed " + counter + " out of total " + total + " items");
-                } catch (SQLException e) {
-                    handler.logError(e.getMessage());
-                    counter += limit;
-                    handler.logInfo("processed " + counter + " out of total " + total + " items");
-                    log.info("processed " + counter + " out of total " + total + " items");
+                } else {
+                    try {
+                        // Check for entity type in enhanceItem method
+                        if (Objects.nonNull(this.entitytype)) {
+                            itemService.findAll(context, total, counter).forEachRemaining(this::enhanceItemEntityCheck);
+                        } else {
+                            itemService.findAll(context, total, counter).forEachRemaining(this::enhanceItem);
+                        }
+                        counter += total;
+                        context.commit();
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    } catch (SQLException e) {
+                        handler.logError(e.getMessage());
+                        counter += total;
+                        handler.logInfo("processed " + counter + " out of total " + total + " items");
+                        log.info("processed " + counter + " out of total " + total + " items");
+                    }
                 }
             }
-        }
-    }
-
-    private Iterator<Item> findItemsToEnhance() {
-        try {
-            Iterator<Item> result = null;
-            if (Objects.nonNull(collection)) {
-            //Check, if uuid exist
-                Collection coll = collectionService.find(context, collection);
-                if (coll != null) {
-                    result = itemService.findAllByCollection(context, coll);
-                }
-            } else {
-                result = itemService.findAll(context);
-            }
-            return result;
-        } catch (SQLException e) {
-            throw new SQLRuntimeException(e);
         }
     }
 
@@ -258,7 +321,7 @@ public class ItemEnhancerEntityTypeScript
     }
 
     /**
-     * Additional Entity Check.
+     * Additional Entity Check. Only applicable when operating over all entities
     */
     private void enhanceItemEntityCheck(Item item) {
         if (Objects.nonNull(entitytype)) {
