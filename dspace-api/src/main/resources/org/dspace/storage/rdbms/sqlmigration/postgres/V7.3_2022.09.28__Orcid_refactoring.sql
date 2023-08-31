@@ -130,13 +130,14 @@ AND token_metadata_value.metadata_field_id = (
 );
 
 -- DELETE access token and refresh token metadata values
-DELETE FROM metadatavalue mv 
-WHERE mv.metadata_field_id  IN (
-SELECT mf.metadata_field_id FROM metadatafieldregistry mf 
-	WHERE mf.element = 'orcid' AND mf.qualifier IN ('refresh-token', 'access-token')
-	AND mf.metadata_schema_id IN (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id IN ('eperson', 'cris'))
-);
+-- Uniba: do not remove this fields, because we need them for the migration!
+-- DELETE FROM metadatavalue mv
+-- WHERE mv.metadata_field_id  IN (
+-- SELECT mf.metadata_field_id FROM metadatafieldregistry mf
+--	WHERE mf.element = 'orcid' AND mf.qualifier IN ('refresh-token', 'access-token')
+--	AND mf.metadata_schema_id IN (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id IN ('eperson', 'cris'))
+-- );
 
-DELETE FROM metadatafieldregistry mf 
-WHERE mf.element = 'orcid' AND mf.qualifier IN ('refresh-token', 'access-token')
-AND mf.metadata_schema_id IN (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id IN ('eperson', 'cris'));
+-- DELETE FROM metadatafieldregistry mf
+-- WHERE mf.element = 'orcid' AND mf.qualifier IN ('refresh-token', 'access-token')
+-- AND mf.metadata_schema_id IN (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id IN ('eperson', 'cris'));

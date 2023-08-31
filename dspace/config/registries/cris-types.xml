@@ -36,7 +36,7 @@
 		<qualifier>definition</qualifier>
         <scope_note>Metadata to link a collection with a submission type</scope_note>
 	</dc-type>
-    
+
     <dc-type>
         <schema>cris</schema>
         <element>submission</element>
@@ -265,6 +265,13 @@
         <element>entity</element>
         <qualifier>style</qualifier>
         <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>orcid</element>
+        <qualifier>access-token</qualifier>
+        <scope_note>needed for migration in 7.0. Being deleted with V7.3 Migration when token was written to token_table</scope_note>
     </dc-type>
 
 </dspace-dc-types>

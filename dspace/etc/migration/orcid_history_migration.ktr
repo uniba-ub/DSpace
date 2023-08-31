@@ -435,6 +435,28 @@
     <is_key_private>N</is_key_private>
   </info>
   <notepads>
+    <notepad>
+      <note>uniba: migrate access-token (AT) to token table
+adopted from V7.3  flyway migration script</note>
+      <xloc>592</xloc>
+      <yloc>944</yloc>
+      <width>323</width>
+      <heigth>44</heigth>
+      <fontname>Ubuntu</fontname>
+      <fontsize>11</fontsize>
+      <fontbold>N</fontbold>
+      <fontitalic>N</fontitalic>
+      <fontcolorred>255</fontcolorred>
+      <fontcolorgreen>255</fontcolorgreen>
+      <fontcolorblue>255</fontcolorblue>
+      <backgroundcolorred>0</backgroundcolorred>
+      <backgroundcolorgreen>69</backgroundcolorgreen>
+      <backgroundcolorblue>125</backgroundcolorblue>
+      <bordercolorred>100</bordercolorred>
+      <bordercolorgreen>100</bordercolorgreen>
+      <bordercolorblue>100</bordercolorblue>
+      <drawshadow>Y</drawshadow>
+    </notepad>
   </notepads>
   <connection>
     <name>dspace</name>
@@ -582,6 +604,16 @@
       <to>add orcid authenticated metadata value</to>
       <enabled>Y</enabled>
     </hop>
+    <hop>
+      <from>search AT mdf</from>
+      <to>Check AT mdf</to>
+      <enabled>Y</enabled>
+    </hop>
+    <hop>
+      <from>Check AT mdf</from>
+      <to>Update Orcid Token</to>
+      <enabled>Y</enabled>
+    </hop>
   </order>
   <step>
     <name>Add sequence</name>
@@ -669,6 +701,53 @@
     <GUI>
       <xloc>672</xloc>
       <yloc>752</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>Check AT mdf</name>
+    <type>FilterRows</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <send_true_to>Update Orcid Token</send_true_to>
+    <send_false_to/>
+    <compare>
+      <condition>
+        <negated>N</negated>
+        <conditions>
+          <condition>
+            <negated>N</negated>
+            <leftvalue>qualifier</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue/>
+          </condition>
+          <condition>
+            <negated>N</negated>
+            <operator>AND</operator>
+            <leftvalue>metadata_field_id</leftvalue>
+            <function>IS NOT NULL</function>
+            <rightvalue/>
+          </condition>
+        </conditions>
+      </condition>
+    </compare>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>736</xloc>
+      <yloc>880</yloc>
       <draw>Y</draw>
     </GUI>
   </step>
@@ -918,6 +997,76 @@
     </GUI>
   </step>
   <step>
+    <name>Update Orcid Token</name>
+    <type>ExecSQL</type>
+    <description/>
+    <distribute>Y</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>dspace</connection>
+    <execute_each_row>N</execute_each_row>
+    <single_statement>Y</single_statement>
+    <replace_variables>N</replace_variables>
+    <quoteString>N</quoteString>
+    <sql>INSERT INTO orcid_token 
+SELECT 
+	nextval('orcid_token_id_seq'),
+	owner_metadata_value.authority::uuid,
+	token_metadata_value.dspace_object_id,
+	token_metadata_value.text_value
+FROM metadatavalue token_metadata_value, metadatavalue owner_metadata_value, item item
+WHERE owner_metadata_value.dspace_object_id = token_metadata_value.dspace_object_id
+AND item.uuid = owner_metadata_value.dspace_object_id
+AND item.in_archive = true
+AND owner_metadata_value.metadata_field_id = (
+	SELECT mf.metadata_field_id FROM metadatafieldregistry mf 
+	WHERE mf.element = 'object' AND mf.qualifier = 'owner'
+	AND mf.metadata_schema_id = (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id = 'dspace')
+) 
+AND token_metadata_value.metadata_field_id = (
+	SELECT mf.metadata_field_id FROM metadatafieldregistry mf 
+	WHERE mf.element = 'orcid' AND mf.qualifier = 'access-token'
+	AND mf.metadata_schema_id = (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id = 'cris')
+);
+INSERT INTO orcid_token 
+SELECT 
+	nextval('orcid_token_id_seq'),
+	token_metadata_value.dspace_object_id,
+	null,
+	token_metadata_value.text_value
+FROM metadatavalue token_metadata_value
+WHERE NOT EXISTS (SELECT 1 FROM orcid_token ot where ot.eperson_id = token_metadata_value.dspace_object_id)
+AND token_metadata_value.metadata_field_id = (
+	SELECT mf.metadata_field_id FROM metadatafieldregistry mf 
+	WHERE mf.element = 'orcid' AND mf.qualifier = 'access-token'
+	AND mf.metadata_schema_id = (SELECT ms.metadata_schema_id from metadataschemaregistry ms where ms.short_id = 'eperson')
+);</sql>
+    <set_params>N</set_params>
+    <insert_field/>
+    <update_field/>
+    <delete_field/>
+    <read_field/>
+    <arguments>
+    </arguments>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>944</xloc>
+      <yloc>880</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
     <name>add INSERT operation and status</name>
     <type>Constant</type>
     <description/>
@@ -991,7 +1140,7 @@ nextval('metadatavalue_seq'),
  from metadatafieldregistry field, metadataschemaregistry sc 
  where field.element = 'orcid' 
  and field.qualifier = 'authenticated'
- and sc.short_id = 'cris' 
+ and sc.short_id = 'dspace'
  and field.metadata_schema_id = sc.metadata_schema_id),
 'true',
 null,
@@ -1537,6 +1686,92 @@ where putcode is not null;</sql>
     <GUI>
       <xloc>1248</xloc>
       <yloc>752</yloc>
+      <draw>Y</draw>
+    </GUI>
+  </step>
+  <step>
+    <name>search AT mdf</name>
+    <type>TableInput</type>
+    <description/>
+    <distribute>N</distribute>
+    <custom_distribution/>
+    <copies>1</copies>
+    <partitioning>
+      <method>none</method>
+      <schema_name/>
+    </partitioning>
+    <connection>dspace</connection>
+    <sql>SELECT mf.metadata_field_id, mf.qualifier
+FROM metadatafieldregistry mf, metadataschemaregistry ms
+WHERE mf.element = 'orcid'
+AND mf.qualifier = 'access-token'
+AND mf.metadata_schema_id = ms.metadata_schema_id
+AND ms.short_id = 'cris';</sql>
+    <limit>1</limit>
+    <lookup/>
+    <execute_each_row>N</execute_each_row>
+    <variables_active>N</variables_active>
+    <lazy_conversion_active>N</lazy_conversion_active>
+    <cached_row_meta_active>N</cached_row_meta_active>
+    <row-meta>
+      <value-meta>
+        <type>Integer</type>
+        <storagetype>normal</storagetype>
+        <name>metadata_field_id</name>
+        <length>9</length>
+        <precision>0</precision>
+        <origin>search access-token metadata field</origin>
+        <comments>metadata_field_id</comments>
+        <conversion_Mask>####0;-####0</conversion_Mask>
+        <decimal_symbol>.</decimal_symbol>
+        <grouping_symbol>,</grouping_symbol>
+        <currency_symbol/>
+        <trim_type>none</trim_type>
+        <case_insensitive>N</case_insensitive>
+        <collator_disabled>Y</collator_disabled>
+        <collator_strength>0</collator_strength>
+        <sort_descending>N</sort_descending>
+        <output_padding>N</output_padding>
+        <date_format_lenient>N</date_format_lenient>
+        <date_format_locale>it_IT</date_format_locale>
+        <date_format_timezone>Europe/Rome</date_format_timezone>
+        <lenient_string_to_number>N</lenient_string_to_number>
+      </value-meta>
+      <value-meta>
+        <type>String</type>
+        <storagetype>normal</storagetype>
+        <name>qualifier</name>
+        <length>64</length>
+        <precision>-1</precision>
+        <origin>search access-token metadata field</origin>
+        <comments>qualifier</comments>
+        <conversion_Mask/>
+        <decimal_symbol>.</decimal_symbol>
+        <grouping_symbol>,</grouping_symbol>
+        <currency_symbol/>
+        <trim_type>none</trim_type>
+        <case_insensitive>N</case_insensitive>
+        <collator_disabled>Y</collator_disabled>
+        <collator_strength>0</collator_strength>
+        <sort_descending>N</sort_descending>
+        <output_padding>N</output_padding>
+        <date_format_lenient>N</date_format_lenient>
+        <date_format_locale>it_IT</date_format_locale>
+        <date_format_timezone>Europe/Rome</date_format_timezone>
+        <lenient_string_to_number>N</lenient_string_to_number>
+      </value-meta>
+    </row-meta>
+    <attributes/>
+    <cluster_schema/>
+    <remotesteps>
+      <input>
+      </input>
+      <output>
+      </output>
+    </remotesteps>
+    <GUI>
+      <xloc>608</xloc>
+      <yloc>880</yloc>
       <draw>Y</draw>
     </GUI>
   </step>

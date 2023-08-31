@@ -51,4 +51,11 @@
         <scope_note>Metadata field used for the granted ORCID scopes</scope_note>
     </dc-type>
 
+    <dc-type>
+        <schema>eperson</schema>
+        <element>orcid</element>
+        <qualifier>access-token</qualifier>
+        <scope_note>should exist in 5.10, needed for migration in V7.0. Being deleted with V7.3 Migration when token was written to token_table</scope_note>
+    </dc-type>
+
 </dspace-dc-types>
