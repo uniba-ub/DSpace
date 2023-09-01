@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
+
+    <!--<bean class="org.dspace.content.edit.service.impl.AssociateItemServiceImpl"/> -->
+
+    <bean class="org.dspace.content.edit.service.impl.AssociateItemModeServiceImpl">
+        <property name="associateModesMap">
+            <map>
+                <entry key="project">
+                    <list>
+                        <bean class="org.dspace.content.edit.AssociateItemMode">
+                            <property name="name" value="PROJECTPUBLICATION" />
+                            <property name="security">
+                                <value type="org.dspace.content.security.CrisSecurity">
+                                    ITEM_ADMIN
+                                </value>
+                            </property>
+                            <property name="discovery" value="publication" />
+                            <property name="metadatafield" value="dc.relation.project" />
+                            <property name="itemTypeSource" value="Publication" />
+                            <property name="itemTypeTarget" value="Project" />
+                            <property name="disableAuthSource" value="true" />
+                            <!--
+                            <property name="conditionSource" value-ref="" />
+                            <property name="conditionTarget" value-ref="" />
+                            -->
+                        </bean>
+
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+</beans>
