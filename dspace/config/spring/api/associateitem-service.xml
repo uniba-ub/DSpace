@@ -4,7 +4,7 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
-    <!--<bean class="org.dspace.content.edit.service.impl.AssociateItemServiceImpl"/> -->
+    <bean class="org.dspace.content.edit.service.impl.AssociateItemServiceImpl"/>
 
     <bean class="org.dspace.content.edit.service.impl.AssociateItemModeServiceImpl">
         <property name="associateModesMap">
@@ -15,8 +15,13 @@
                             <property name="name" value="PROJECTPUBLICATION" />
                             <property name="security">
                                 <value type="org.dspace.content.security.CrisSecurity">
-                                    ITEM_ADMIN
+                                    CUSTOM
                                 </value>
+                            </property>
+                            <property name="users">
+                                <list>
+                                    <value>crispj.investigator</value>
+                                </list>
                             </property>
                             <property name="discovery" value="publication" />
                             <property name="metadatafield" value="dc.relation.project" />
@@ -28,6 +33,7 @@
                             <property name="conditionTarget" value-ref="" />
                             -->
                         </bean>
+
 
                     </list>
                 </entry>
