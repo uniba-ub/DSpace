@@ -177,7 +177,14 @@
                     <property name="numberOfItems" value="5"/>
                 </bean>
             </list>
+              <list>
+                  <bean class="org.dspace.layout.CrisLayoutOrgunittreeComponent">
+                      <property name="title" value="explore.orgunittree.title" />
+                      <property name="style" value="col-md-12" />
+                  </bean>
+              </list>
           </list>
+
         </constructor-arg>
     </bean>
                 

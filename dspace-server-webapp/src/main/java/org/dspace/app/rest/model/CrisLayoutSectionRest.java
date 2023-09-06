@@ -10,6 +10,7 @@ package org.dspace.app.rest.model;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.fasterxml.jackson.annotation.JsonGetter;
@@ -210,9 +211,13 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
 
         private String discoveryConfigurationName;
 
+        private String searchConfigurationName;
+
         private String style;
 
         private Integer facetsPerRow;
+
+        private Integer maxFacetEntries;
 
         public String getDiscoveryConfigurationName() {
             return discoveryConfigurationName;
@@ -246,11 +251,29 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
         public Integer getFacetsPerRow() {
             return facetsPerRow;
         }
+
+        public String getSearchConfigurationName() {
+            return searchConfigurationName;
+        }
+
+        public void setSearchConfigurationName(String searchConfigurationName) {
+            this.searchConfigurationName = searchConfigurationName;
+        }
+
+        public Integer getMaxFacetEntries() {
+            return maxFacetEntries;
+        }
+
+        public void setMaxFacetEntries(Integer maxFacetEntries) {
+            this.maxFacetEntries = maxFacetEntries;
+        }
     }
 
     public static class CrisLayoutSearchComponentRest implements CrisLayoutSectionComponentRest {
 
         private String discoveryConfigurationName;
+
+        private String searchFilterConfigurationName;
 
         private String style;
 
@@ -307,6 +330,14 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
 
         public boolean getDisplayTitle() {
             return displayTitle;
+        }
+
+        public String getSearchFilterConfigurationName() {
+            return searchFilterConfigurationName;
+        }
+
+        public void setSearchFilterConfigurationName(String searchFilterConfigurationName) {
+            this.searchFilterConfigurationName = searchFilterConfigurationName;
         }
     }
 
@@ -373,6 +404,58 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
 
         public List<CrisLayoutTextRowComponentRest> getTextRows() {
             return textRows;
+        }
+    }
+
+    public static class CrisLayoutLinkRowComponentRest implements CrisLayoutSectionComponentRest,
+            Comparable<CrisLayoutLinkRowComponentRest> {
+
+        private final String style;
+        private final String link;
+        private final String label;
+        private final String target;
+        private final String icon;
+        private final Integer order;
+
+        public CrisLayoutLinkRowComponentRest(Integer order, String style, String link, String label, String target,
+                                              String icon) {
+            this.order = order;
+            this.style = style;
+            this.link = link;
+            this.label = label;
+            this.target = target;
+            this.icon = icon;
+        }
+
+        @Override
+        public String getComponentType() {
+            return "text-link";
+        }
+
+        @Override
+        public String getStyle() {
+            return style;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getTarget() {
+            return target;
+        }
+
+        public String getIcon() {
+            return icon;
+        }
+
+        @Override
+        public int compareTo(CrisLayoutLinkRowComponentRest other) {
+            return this.order.compareTo(other.order);
         }
     }
 
@@ -562,4 +645,78 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
         }
     }
 
+    public static class CrisLayoutAwardtreeComponentRest implements CrisLayoutSectionComponentRest {
+
+        private String style;
+        private String title;
+        private Map<String,String> rendering;
+
+        @Override
+        public String getComponentType() {
+            return "awardtree";
+        }
+
+        @Override
+        public String getStyle() {
+            return style;
+        }
+
+        public void setStyle(String style) {
+            this.style = style;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        public void setRendering(Map<String,String> rendering) {
+            this.rendering = rendering;
+        }
+
+        public Map<String,String> getRendering() {
+            return this.rendering;
+        }
+
+    }
+
+    public static class CrisLayoutOrgunittreeComponentRest implements CrisLayoutSectionComponentRest {
+
+        private String style;
+        private String title;
+        private Map<String, String> rendering;
+
+        @Override
+        public String getComponentType() {
+            return "orgunittree";
+        }
+
+        @Override
+        public String getStyle() {
+            return style;
+        }
+
+        public void setStyle(String style) {
+            this.style = style;
+        }
+
+        public void setTitle(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return this.title;
+        }
+
+        public void setRendering(Map<String, String> rendering) {
+            this.rendering = rendering;
+        }
+
+        public Map<String, String> getRendering() {
+            return this.rendering;
+        }
+    }
 }
