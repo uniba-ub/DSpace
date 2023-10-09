@@ -12,6 +12,7 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.verify;
@@ -199,6 +200,8 @@ public class CreateWorkspaceItemFromExternalServiceIT extends AbstractController
                                    + ".traditionalpageone['dc.identifier.scopus'][0].value", is(scopus2R.getValue())))
                  .andExpect(jsonPath("$._embedded.workflowitems[1].sections"
                                    + ".traditionalpageone['dc.identifier.doi'][0].value", is(doi2R.getValue())))
+                 .andExpect(jsonPath("$._embedded.workflowitems[0].sections.license.url",
+                         containsString("/api/core/bitstreams/")))
                  .andExpect(jsonPath("$.page.totalElements", is(2)));
     }
 
