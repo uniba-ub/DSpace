@@ -11,5 +11,6 @@ public enum CrisLayoutBoxTypes {
     IIIFVIEWER,
     METADATA,
     RELATION,
-    METRICS
+    METRICS,
+    COLLECTIONS
 }
