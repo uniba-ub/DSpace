@@ -10,6 +10,7 @@ package org.dspace.content.edit;
 import java.util.List;
 
 import org.dspace.content.logic.DefaultFilter;
+import org.dspace.content.logic.Filter;
 import org.dspace.content.security.AccessItemMode;
 import org.dspace.content.security.CrisSecurity;
 
@@ -135,6 +136,11 @@ public class AssociateItemMode implements AccessItemMode {
     @Override
     public List<String> getGroups() {
         return groups;
+    }
+
+    @Override
+    public Filter getAdditionalFilter() {
+        return null;
     }
 
     @Override
