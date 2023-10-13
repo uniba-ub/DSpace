@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 @ComponentScan( {"org.dspace.app.rest.converter", "org.dspace.app.rest.repository", "org.dspace.app.rest.utils",
     "org.dspace.app.configuration", "org.dspace.iiif", "org.dspace.app.iiif", "org.dspace.app.rest.link",
-    "org.dspace.app.rest.converter.factory" })
+    "org.dspace.app.rest.converter.factory", "org.dspace.app.scheduler" })
 public class ApplicationConfig {
     // Allowed CORS origins ("Access-Control-Allow-Origin" header)
     // Can be overridden in DSpace configuration
@@ -38,7 +38,7 @@ public class ApplicationConfig {
 
     // Allowed IIIF CORS origins ("Access-Control-Allow-Origin" header)
     // Can be overridden in DSpace configuration
-    @Value("${rest.cors.bitstream-allow-origins}")
+    @Value("${rest.cors.bitstream-allowed-origins}")
     private String[] bitstreamCorsAllowedOrigins;
 
     // Whether to allow credentials (cookies) in CORS requests ("Access-Control-Allow-Credentials" header)
