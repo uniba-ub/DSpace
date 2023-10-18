@@ -23,7 +23,7 @@ public class RootRest extends RestAddressableModel {
     private String dspaceVersion;
     private String crisVersion;
 
-	public String getCategory() {
+    public String getCategory() {
         return CATEGORY;
     }
 
@@ -69,12 +69,12 @@ public class RootRest extends RestAddressableModel {
     }
 
     public String getCrisVersion() {
-		return crisVersion;
-	}
+        return crisVersion;
+    }
 
-	public void setCrisVersion(String crisVersion) {
-		this.crisVersion = crisVersion;
-	}
+    public void setCrisVersion(String crisVersion) {
+        this.crisVersion = crisVersion;
+    }
 
     @Override
     public boolean equals(Object object) {

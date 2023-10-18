@@ -30,7 +30,7 @@ public class RootConverter {
         rootRest.setDspaceUI(configurationService.getProperty("dspace.ui.url"));
         rootRest.setDspaceServer(configurationService.getProperty("dspace.server.url"));
         rootRest.setDspaceVersion(CrisConstants.DSPACE_BASE_VERSION);
-        rootRest.setCrisVersion(getSourceVersion());        
+        rootRest.setCrisVersion(getSourceVersion());
         return rootRest;
     }
 }
