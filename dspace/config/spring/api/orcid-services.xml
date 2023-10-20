@@ -112,6 +112,7 @@
 					<property name="roleField" value="${orcid.mapping.affiliation.role}" />
 					<property name="startDateField" value="${orcid.mapping.affiliation.start-date}" />
 					<property name="endDateField" value="${orcid.mapping.affiliation.end-date}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidAffiliationFactory">
@@ -121,6 +122,7 @@
 					<property name="roleField" value="${orcid.mapping.qualification.role}" />
 					<property name="startDateField" value="${orcid.mapping.qualification.start-date}" />
 					<property name="endDateField" value="${orcid.mapping.qualification.end-date}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidAffiliationFactory">
@@ -130,36 +132,42 @@
 					<property name="roleField" value="${orcid.mapping.education.role}" />
 					<property name="startDateField" value="${orcid.mapping.education.start-date}" />
 					<property name="endDateField" value="${orcid.mapping.education.end-date}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidSimpleValueObjectFactory">
 					<constructor-arg name="sectionType" value="OTHER_NAMES" />
 					<constructor-arg name="preference" value="BIOGRAPHICAL" />
 					<property name="metadataFields" value="${orcid.mapping.other-names}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidSimpleValueObjectFactory">
 					<constructor-arg name="sectionType" value="KEYWORDS" />
 					<constructor-arg name="preference" value="BIOGRAPHICAL" />
 					<property name="metadataFields" value="${orcid.mapping.keywords}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidSimpleValueObjectFactory">
 					<constructor-arg name="sectionType" value="COUNTRY" />
 					<constructor-arg name="preference" value="BIOGRAPHICAL" />
 					<property name="metadataFields" value="${orcid.mapping.country}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidPersonExternalIdentifierFactory">
 					<constructor-arg name="sectionType" value="EXTERNAL_IDS" />
 					<constructor-arg name="preference" value="IDENTIFIERS" />
 					<property name="externalIds" value="${orcid.mapping.person-external-ids}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     			<bean class="org.dspace.orcid.model.factory.impl.OrcidSimpleValueObjectFactory">
 					<constructor-arg name="sectionType" value="RESEARCHER_URLS" />
 					<constructor-arg name="preference" value="IDENTIFIERS" />
 					<property name="metadataFields" value="${orcid.mapping.researcher-urls}" />
+					<!-- <property name="allowedMetadataVisibility" value="true" /> -->
 				</bean>
 				
     		</list>

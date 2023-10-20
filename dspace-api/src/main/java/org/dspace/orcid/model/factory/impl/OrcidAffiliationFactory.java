@@ -50,6 +50,8 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
 
     private String endDateField;
 
+    private boolean isAllowedMetadataVisibility = false;
+
     public OrcidAffiliationFactory(OrcidProfileSectionType sectionType, OrcidProfileSyncPreference preference) {
         super(sectionType, preference);
     }
@@ -93,7 +95,13 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
         int groupSize = metadataGroups.getOrDefault(organizationField, Collections.emptyList()).size();
         for (int currentGroupIndex = 0; currentGroupIndex < groupSize; currentGroupIndex++) {
             List<MetadataValue> metadataValues = getMetadataValueByPlace(metadataGroups, currentGroupIndex);
-            signatures.add(metadataSignatureGenerator.generate(context, metadataValues));
+            //only "visible" metadatavalues within this group
+            metadataValues = metadataValues.stream()
+                .filter(metadataValue -> getAllowedMetadataVisibility(metadataValue))
+                .collect(Collectors.toList());
+            if (!metadataValues.isEmpty()) {
+                signatures.add(metadataSignatureGenerator.generate(context, metadataValues));
+            }
         }
 
         return signatures;
@@ -152,6 +160,13 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
         return value == null || isBlank(value.getValue()) || value.getValue().equals(PLACEHOLDER_PARENT_METADATA_VALUE);
     }
 
+    private boolean getAllowedMetadataVisibility(MetadataValue metadataValue) {
+        if (isAllowedMetadataVisibility()) {
+            return metadataValue.getSecurityLevel() == null || metadataValue.getSecurityLevel() == 0;
+        }
+        return true;
+    }
+
     private Map<String, List<MetadataValue>> getMetadataGroups(Item item) {
         Map<String, List<MetadataValue>> metadataGroups = new HashMap<>();
         metadataGroups.put(organizationField, itemService.getMetadataByMetadataString(item, organizationField));
@@ -204,4 +219,11 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
         this.endDateField = endDateField;
     }
 
+    public boolean isAllowedMetadataVisibility() {
+        return isAllowedMetadataVisibility;
+    }
+
+    public void setAllowedMetadataVisibility(boolean allowedMetadataVisibility) {
+        isAllowedMetadataVisibility = allowedMetadataVisibility;
+    }
 }
