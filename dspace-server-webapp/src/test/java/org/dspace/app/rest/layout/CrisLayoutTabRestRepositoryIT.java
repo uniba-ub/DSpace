@@ -16,6 +16,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.hasValue;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
@@ -63,6 +64,7 @@ import org.dspace.content.EntityType;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataField;
 import org.dspace.content.MetadataSchema;
+import org.dspace.content.service.BitstreamService;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.content.service.MetadataSchemaService;
@@ -103,6 +105,9 @@ public class CrisLayoutTabRestRepositoryIT extends AbstractControllerIntegration
 
     @Autowired
     private CrisLayoutTabService crisLayoutTabService;
+
+    @Autowired
+    private BitstreamService bitstreamService;
 
     private final String METADATASECURITY_URL = "http://localhost:8080/api/core/metadatafield/";
 
@@ -1784,6 +1789,194 @@ public class CrisLayoutTabRestRepositoryIT extends AbstractControllerIntegration
             .andExpect(jsonPath("$.type", is("bitstream")))
             .andExpect(jsonPath("$.name", is(bitstream2.getName())));
 
+    }
+
+    @Test
+    public void excludeThumbnailNegativeMetadataValueMatcherTabBoxConfiguration() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType eType =
+            EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+        // Setting up configuration for dc.type = logo with rendering thumbnail
+        MetadataField metadataField =
+            mfss.findByElement(context, "dc", "type", null);
+
+        CrisLayoutBox box =
+            CrisLayoutBoxBuilder.createBuilder(context, eType, true, false)
+                                .withShortname("researcherprofile")
+                                .withSecurity(LayoutSecurity.PUBLIC)
+                                .build();
+
+        CrisLayoutField field =
+            CrisLayoutFieldBuilder.createBistreamField(context, metadataField, "ORIGINAL", 0, 0, 0)
+                                  .withRendering("thumbnail")
+                                  .withBox(box)
+                                  .build();
+
+        // filter out bitstreams with "personal picture" as dc.type
+        ((CrisLayoutFieldBitstream)field).setMetadataValue("!personal picture");
+
+        CrisLayoutTab tab =
+            CrisLayoutTabBuilder.createTab(context, eType, 0)
+                                .withShortName("otherinfo")
+                                .withSecurity(LayoutSecurity.PUBLIC)
+                                .withHeader("Other")
+                                .addBoxIntoNewRow(box)
+                                .build();
+
+        Community community = CommunityBuilder.createCommunity(context).build();
+        Collection personCollection = CollectionBuilder.createCollection(context, community).build();
+        Item item = ItemBuilder.createItem(context, personCollection).withEntityType("Person").build();
+
+        Bundle original = BundleBuilder.createBundle(context, item).withName("ORIGINAL").build();
+
+        org.dspace.content.Bitstream bitstream0 =
+            BitstreamBuilder.createBitstream(context, original, InputStream.nullInputStream())
+                            .withType("logo")
+                            .build();
+
+        original.setPrimaryBitstreamID(bitstream0);
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        item = context.reloadEntity(item);
+
+        getClient().perform(get("/api/layout/tabs/search/findByItem")
+                                .param("uuid", item.getID().toString()))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$.page.totalElements", Matchers.is(1)))
+                   .andExpect(jsonPath("$._embedded.tabs", contains(matchTab(tab))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", hasSize(1)))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", contains(matchBox(box))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[1]").doesNotExist());
+
+        context.turnOffAuthorisationSystem();
+
+        original = context.reloadEntity(original);
+        org.dspace.content.Bitstream bitstream1 =
+            BitstreamBuilder.createBitstream(context, original, InputStream.nullInputStream())
+                            .withType("personal picture")
+                            .build();
+        original.setPrimaryBitstreamID(bitstream1);
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        item = context.reloadEntity(item);
+
+        getClient().perform(get("/api/layout/tabs/search/findByItem")
+                                .param("uuid", item.getID().toString()))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$.page.totalElements", Matchers.is(1)))
+                   .andExpect(jsonPath("$._embedded.tabs", contains(matchTab(tab))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", hasSize(1)))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", contains(matchBox(box))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[1]").doesNotExist());
+
+        context.turnOffAuthorisationSystem();
+
+        bitstream0 = context.reloadEntity(bitstream0);
+
+        bitstreamService.delete(context, bitstream0);
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        context.reloadEntity(item);
+
+        getClient().perform(get("/api/layout/tabs/search/findByItem")
+                                .param("uuid", item.getID().toString()))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$.page.totalElements", Matchers.is(0)))
+                   .andExpect(jsonPath("$._embedded.tabs").doesNotExist());
+
+    }
+
+    @Test
+    public void excludeThumbnailNegativeMetadataValueMatcherTabMultiBoxConfiguration() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType eType =
+            EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+        // Setting up configuration for dc.type = logo with rendering thumbnail
+        MetadataField dcType =
+            mfss.findByElement(context, "dc", "type", null);
+        MetadataField dcTitle =
+            mfss.findByElement(context, "dc", "title", null);
+
+        CrisLayoutBox thumbnailBox =
+            CrisLayoutBoxBuilder.createBuilder(context, eType, true, false)
+                                .withShortname("researcherprofile")
+                                .withSecurity(LayoutSecurity.PUBLIC)
+                                .build();
+        CrisLayoutBox titleBox =
+            CrisLayoutBoxBuilder.createBuilder(context, eType, true, false)
+                                .withShortname("title")
+                                .withSecurity(LayoutSecurity.PUBLIC)
+                                .build();
+
+        CrisLayoutField thumbnailField =
+            CrisLayoutFieldBuilder.createBistreamField(context, dcType, "ORIGINAL", 0, 0, 0)
+                                  .withRendering("thumbnail")
+                                  .withBox(thumbnailBox)
+                                  .build();
+
+        // filter out bitstreams with "personal picture" as dc.type
+        ((CrisLayoutFieldBitstream)thumbnailField).setMetadataValue("!personal picture");
+
+        CrisLayoutField titleField =
+            CrisLayoutFieldBuilder.createMetadataField(context, dcTitle, 0, 0)
+                                  .withRendering("heading")
+                                  .withBox(titleBox)
+                                  .build();
+
+        CrisLayoutTab tab =
+            CrisLayoutTabBuilder.createTab(context, eType, 0)
+                                .withShortName("otherinfo")
+                                .withSecurity(LayoutSecurity.PUBLIC)
+                                .withHeader("Other")
+                                .addBoxIntoNewRow(thumbnailBox)
+                                .addBoxIntoNewRow(titleBox)
+                                .build();
+
+        Community community = CommunityBuilder.createCommunity(context).build();
+        Collection personCollection = CollectionBuilder.createCollection(context, community).build();
+        Item item =
+            ItemBuilder.createItem(context, personCollection)
+                       .withEntityType("Person")
+                       .withTitle("Custom Person")
+                       .build();
+
+        Bundle original =
+            BundleBuilder.createBundle(context, item)
+                         .withName("ORIGINAL")
+                         .build();
+
+        org.dspace.content.Bitstream bitstream0 =
+            BitstreamBuilder.createBitstream(context, original, InputStream.nullInputStream())
+                            .withType("personal picture")
+                            .build();
+
+        original.setPrimaryBitstreamID(bitstream0);
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        item = context.reloadEntity(item);
+
+        getClient().perform(get("/api/layout/tabs/search/findByItem")
+                                .param("uuid", item.getID().toString()))
+                   .andExpect(status().isOk())
+                   .andExpect(content().contentType(contentType))
+                   .andExpect(jsonPath("$.page.totalElements", Matchers.is(1)))
+                   .andExpect(jsonPath("$._embedded.tabs", contains(matchTab(tab))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", hasSize(1)))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes",
+                                       not(contains(matchBox(thumbnailBox), matchBox(titleBox)))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[0].cells[0].boxes", contains(matchBox(titleBox))))
+                   .andExpect(jsonPath("$._embedded.tabs[0].rows[1]").doesNotExist());
     }
 
     private CrisLayoutTabRest parseJson(String name) throws Exception {
