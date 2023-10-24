@@ -159,6 +159,8 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
                 return hasRelationBoxContent(context, box, item);
             case "METRICS":
                 return hasMetricsBoxContent(context, box, item);
+            case "COLLECTIONS":
+                return isOwningCollectionPresent(item);
             case "IIIFVIEWER":
                 return isIiifEnabled(item);
             case "METADATA":
@@ -244,6 +246,10 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
     private boolean isIiifEnabled(Item item) {
         return BooleanUtils.toBoolean(itemService.getMetadataFirstValue(item,
             new MetadataFieldName("dspace.iiif.enabled"), Item.ANY));
+    }
+
+    private boolean isOwningCollectionPresent(Item item) {
+        return Objects.nonNull(item.getOwningCollection());
     }
 
     private boolean currentUserIsNotAllowedToReadItem(Context context, Item item) {
