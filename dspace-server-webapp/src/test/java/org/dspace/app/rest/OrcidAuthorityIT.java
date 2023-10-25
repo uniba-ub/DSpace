@@ -141,7 +141,7 @@ public class OrcidAuthorityIT extends AbstractControllerIntegrationTest {
                 affiliationEntry(author_2, "Author 2", ""),
                 affiliationEntry(author_3, "Author 3", "OrgUnit_2::" + id(orgUnit_2)),
                 affiliationEntry(author_4, "Author 4", "OrgUnit_1::" + id(orgUnit_1)),
-                orcidEntry("Author From Orcid 1", REFERENCE, "0000-1111-2222-3333"),
+                orcidEntry("Author From Orcid 1", GENERATE, "0000-1111-2222-3333"),
                 orcidEntry("Author From Orcid 2", GENERATE, "0000-2222-3333-4444"),
                 orcidEntry("Author From Orcid 3", GENERATE, "0000-5555-6666-7777"))))
             .andExpect(jsonPath("$.page.size", Matchers.is(20)))
