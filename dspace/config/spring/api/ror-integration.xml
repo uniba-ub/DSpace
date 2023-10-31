@@ -1,0 +1,35 @@
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+           http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+           http://www.springframework.org/schema/context
+           http://www.springframework.org/schema/context/spring-context-2.5.xsd http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util.xsd"
+       default-autowire-candidates="*Service,*DAO,javax.sql.DataSource">
+
+    <context:annotation-config/>
+    <!-- allows us to use spring annotations in beans -->
+    
+     <util:map id="rorMetadataFieldMap" key-type="org.dspace.importer.external.metadatamapping.MetadataFieldConfig" value-type="org.dspace.importer.external.metadatamapping.contributor.MetadataContributor">
+        <entry key-ref="ror.title" value-ref="rorTitleContrib"/>
+        <entry key-ref="ror.identifier" value-ref="rorIdentifierContrib"/>
+    </util:map>
+
+    <bean id="rorTitleContrib" class="org.dspace.importer.external.metadatamapping.contributor.SimpleJsonPathMetadataContributor">
+        <property name="field" ref="ror.title"/>
+        <property name="query" value="/name"/>
+    </bean>
+    <bean id="ror.title" class="org.dspace.importer.external.metadatamapping.MetadataFieldConfig">
+        <constructor-arg value="dc.title"/>
+    </bean>
+
+    <bean id="rorIdentifierContrib" class="org.dspace.importer.external.metadatamapping.contributor.SimpleJsonPathMetadataContributor">
+        <property name="field" ref="ror.identifier"/>
+        <property name="query" value="/id"/>
+    </bean>
+    <bean id="ror.identifier" class="org.dspace.importer.external.metadatamapping.MetadataFieldConfig">
+        <constructor-arg value="organization.identifier.ror"/>
+    </bean>
+
+</beans>
