@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.dspace.core.Context;
 import org.dspace.discovery.IndexableObject;
 import org.dspace.discovery.indexobject.IndexableDSpaceObject;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -21,6 +24,8 @@ import org.dspace.services.factory.DSpaceServicesFactory;
  * @author Kevin Van de Velde (kevin at atmire dot com)
  */
 public class DiscoveryConfigurationService {
+
+    private static final Logger log = LogManager.getLogger();
 
     private Map<String, DiscoveryConfiguration> map;
     private Map<Integer, List<String>> toIgnoreMetadataFields = new HashMap<>();
@@ -51,14 +56,26 @@ public class DiscoveryConfigurationService {
         this.toIgnoreMetadataFields = toIgnoreMetadataFields;
     }
 
-    public DiscoveryConfiguration getDiscoveryConfiguration(IndexableObject dso) {
+    /**
+     * Retrieve the discovery configuration for the provided IndexableObject. When a DSpace Object can be retrieved from
+     * the IndexableObject, the discovery configuration will be returned for the DSpace Object. Otherwise, a check will
+     * be done to look for the unique index ID of the IndexableObject. When the IndexableObject is null, the default
+     * configuration will be retrieved
+     *
+     * When no direct match is found, the parent object will
+     * be checked until there is no parent left, in which case the "default" configuration will be returned.
+     * @param context   - The database context
+     * @param indexableObject       - The IndexableObject to retrieve the configuration for
+     * @return the discovery configuration for the provided IndexableObject.
+     */
+    public DiscoveryConfiguration getDiscoveryConfiguration(IndexableObject indexableObject) {
         String name;
-        if (dso == null) {
+        if (indexableObject == null) {
             name = "default";
-        } else if (dso instanceof IndexableDSpaceObject) {
-            name = ((IndexableDSpaceObject) dso).getIndexedObject().getHandle();
+        } else if (indexableObject instanceof IndexableDSpaceObject) {
+            name = ((IndexableDSpaceObject) indexableObject).getIndexedObject().getHandle();
         } else {
-            name = dso.getUniqueIndexID();
+            name = indexableObject.getUniqueIndexID();
         }
 
         return getDiscoveryConfigurationByNameOrDefault(name);
@@ -101,6 +118,18 @@ public class DiscoveryConfigurationService {
             if (config.isIndexAlways()) {
                 configs.add(config);
             }
+        }
+        return configs;
+    }
+
+    /**
+     * @return All configurations for {@link org.dspace.discovery.configuration.DiscoverySearchFilterFacet}
+     */
+    public List<DiscoverySearchFilterFacet> getAllFacetsConfig() {
+        List<DiscoverySearchFilterFacet> configs = new ArrayList<>();
+        for (String key : map.keySet()) {
+            DiscoveryConfiguration config = map.get(key);
+            configs.addAll(config.getSidebarFacets());
         }
         return configs;
     }

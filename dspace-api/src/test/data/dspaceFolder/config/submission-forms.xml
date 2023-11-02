@@ -1638,7 +1638,7 @@ You can leave out the day and/or month if they aren't applicable.</hint>
         </field>
       </row>
     </form>
-    
+
     <form name="qualdroptest">
      <row>
        <field>
@@ -1654,7 +1654,7 @@ You can leave out the day and/or month if they aren't applicable.</hint>
        </field>
      </row>
    </form>
-   
+
    <form name="typebindtest">
      <row>
        <field>
@@ -1723,7 +1723,7 @@ You can leave out the day and/or month if they aren't applicable.</hint>
        </field>
      </row>
    </form>
-   
+
    <form name="languagetest">
       <row>
         <field>
@@ -1878,7 +1878,7 @@ You can leave out the day and/or month if they aren't applicable.</hint>
        </field>
      </row>
 	</form>
-	
+
 	<form name="testVisibility">
 		<row>
 			<field>

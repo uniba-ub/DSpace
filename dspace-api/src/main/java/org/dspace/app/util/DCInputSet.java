@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -145,6 +146,9 @@ public class DCInputSet {
                     } catch (DCInputsReaderException e) {
                         log.error(e.getMessage(), e);
                     }
+                } else if (field.isRelationshipField() &&
+                    ("relation." + field.getRelationshipType()).equals(fieldName)) {
+                    return Optional.of(field);
                 } else {
                     String fullName = field.getFieldName();
                     if (fullName.equals(fieldName)) {

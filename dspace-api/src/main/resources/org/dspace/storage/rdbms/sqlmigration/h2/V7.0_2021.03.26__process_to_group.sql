@@ -5,7 +5,6 @@
 --
 -- http://www.dspace.org/license/
 --
-
 -------------------------------------------------------------------------------
 -- Sequences for Process within Group feature
 -------------------------------------------------------------------------------
@@ -15,3 +14,8 @@ CREATE TABLE Process2Group
   process_id INTEGER REFERENCES Process(process_id),
   group_id UUID REFERENCES epersongroup (uuid) ON DELETE CASCADE
 );
+-----------------------------------------------------------------------------------
+-- Drop the 'history_seq' sequence (related table deleted at Dspace-1.5)
+-----------------------------------------------------------------------------------
+
+DROP SEQUENCE history_seq;

@@ -4,7 +4,7 @@
 ##             {1} Communities updates
 ##             {2} Items updates
 
-This email is sent from DSpace-CRIS based on the chosen subscription preferences.
+This email is sent from ${config.get('dspace.name')} based on the chosen subscription preferences.
 
 Communities
 -----------
