@@ -198,6 +198,9 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
     private List<ImportRecord> searchById(String id) {
 
         List<ImportRecord> adsResults = new ArrayList<>();
+
+        id = StringUtils.removeStart(id, "https://ror.org/");
+
         try {
             Map<String, Map<String, String>> params = new HashMap<String, Map<String, String>>();
 
