@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import org.dspace.importer.external.metadatamapping.MetadatumDTO;
 
@@ -92,6 +93,12 @@ public class ImportRecord {
             }
         }
         return values;
+    }
+
+    public Optional<String> getSingleValue(String schema, String element, String qualifier) {
+        return getValue(schema, element, qualifier).stream()
+            .map(MetadatumDTO::getValue)
+            .findFirst();
     }
 
     /**

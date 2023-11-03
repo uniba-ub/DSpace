@@ -9,14 +9,16 @@
 package org.dspace.content.authority;
 
 import java.util.Collection;
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringUtils;
 import org.dspace.content.authority.factory.ItemAuthorityServiceFactory;
 import org.dspace.importer.external.datamodel.ImportRecord;
 import org.dspace.importer.external.exception.MetadataSourceException;
+import org.dspace.importer.external.metadatamapping.MetadatumDTO;
 import org.dspace.importer.external.ror.service.RorImportMetadataSourceServiceImpl;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -81,7 +83,51 @@ public class RorOrgUnitAuthority extends ItemAuthority {
     }
 
     private Map<String, String> buildExtras(ImportRecord orgUnit) {
-        return new HashMap<>();
+
+        Map<String, String> extras = new LinkedHashMap<String, String>();
+
+        addExtra(extras, getIdentifier(orgUnit), "id");
+
+        orgUnit.getSingleValue("dc", "type", null)
+            .ifPresent(type -> addExtra(extras, type, "type"));
+
+        String acronym = orgUnit.getValue("oairecerif", "acronym", null).stream()
+            .map(MetadatumDTO::getValue)
+            .collect(Collectors.joining(", "));
+
+        if (StringUtils.isNotBlank(acronym)) {
+            addExtra(extras, acronym, "acronym");
+        }
+
+        return extras;
+    }
+
+    private void addExtra(Map<String, String> extras, String value, String extraType) {
+
+        String key = getKey(extraType);
+
+        if (useAsData(extraType)) {
+            extras.put("data-" + key, value);
+        }
+        if (useForDisplaying(extraType)) {
+            extras.put(key, value);
+        }
+
+    }
+
+    private boolean useForDisplaying(String extraType) {
+        return configurationService.getBooleanProperty("cris.OrcidAuthority."
+            + getPluginInstanceName() + "." + extraType + ".display", true);
+    }
+
+    private boolean useAsData(String extraType) {
+        return configurationService.getBooleanProperty("cris.OrcidAuthority."
+            + getPluginInstanceName() + "." + extraType + ".as-data", true);
+    }
+
+    private String getKey(String extraType) {
+        return configurationService.getProperty("cris.OrcidAuthority."
+            + getPluginInstanceName() + "." + extraType + ".key", "ror_orgunit_" + extraType);
     }
 
     private String composeAuthorityValue(String rorId) {

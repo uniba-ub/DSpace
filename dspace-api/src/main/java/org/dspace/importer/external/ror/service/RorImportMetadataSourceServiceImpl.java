@@ -15,6 +15,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Collectors;
 import javax.el.MethodNotFoundException;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -69,7 +70,7 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
 
     @Override
     public Collection<ImportRecord> getRecords(String query, int start, int count) throws MetadataSourceException {
-        return retry(new SearchByQueryCallable(query));
+        return retry(new SearchByQueryCallable(query, start));
     }
 
     @Override
@@ -110,9 +111,10 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
 
         private Query query;
 
-        private SearchByQueryCallable(String queryString) {
+        private SearchByQueryCallable(String queryString, int start) {
             query = new Query();
             query.addParameter("query", queryString);
+            query.addParameter("start", start);
         }
 
         private SearchByQueryCallable(Query query) {
@@ -121,7 +123,8 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
 
         @Override
         public List<ImportRecord> call() throws Exception {
-            return search(query.getParameterAsClass("query", String.class));
+            return search(query.getParameterAsClass("query", String.class),
+                query.getParameterAsClass("start", Integer.class));
         }
     }
 
@@ -220,13 +223,16 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
         return adsResults;
     }
 
-    private List<ImportRecord> search(String query) {
+    private List<ImportRecord> search(String query, Integer start) {
         List<ImportRecord> adsResults = new ArrayList<>();
         try {
             Map<String, Map<String, String>> params = new HashMap<String, Map<String, String>>();
 
             URIBuilder uriBuilder = new URIBuilder(this.url);
             uriBuilder.addParameter("query", query);
+            if (start != null) {
+                uriBuilder.addParameter("page", String.valueOf((start / 20) + 1));
+            }
 
             String resp = liveImportClient.executeHttpGetRequest(timeout, uriBuilder.toString(), params);
             if (StringUtils.isEmpty(resp)) {
@@ -247,7 +253,20 @@ public class RorImportMetadataSourceServiceImpl extends AbstractImportMetadataSo
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
-        return adsResults;
+
+        if (start == null) {
+            return adsResults;
+        }
+
+        if (start % 20 == 0) {
+            return adsResults.stream()
+                .limit(10)
+                .collect(Collectors.toList());
+        } else {
+            return adsResults.stream()
+                .skip(10)
+                .collect(Collectors.toList());
+        }
     }
 
     private JsonNode convertStringJsonToJsonNode(String json) {
