@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+import org.dspace.content.MetadataFieldName;
 import org.dspace.importer.external.metadatamapping.MetadatumDTO;
 
 /**
@@ -93,6 +94,11 @@ public class ImportRecord {
             }
         }
         return values;
+    }
+
+    public Optional<String> getSingleValue(String field) {
+        MetadataFieldName metadataFieldName = new MetadataFieldName(field);
+        return getSingleValue(metadataFieldName.schema, metadataFieldName.element, metadataFieldName.qualifier);
     }
 
     public Optional<String> getSingleValue(String schema, String element, String qualifier) {
