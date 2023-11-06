@@ -7,8 +7,6 @@
  */
 package org.dspace.app.rest;
 
-import static org.dspace.app.rest.matcher.SubmissionFormFieldMatcher.matchFormWithVisibility;
-import static org.dspace.app.rest.matcher.SubmissionFormFieldMatcher.matchFormWithoutVisibility;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
@@ -20,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Locale;
-import java.util.Map;
 
 import org.dspace.app.rest.matcher.SubmissionFormFieldMatcher;
 import org.dspace.app.rest.repository.SubmissionFormRestRepository;

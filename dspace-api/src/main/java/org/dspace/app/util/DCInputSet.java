@@ -11,7 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -104,9 +103,9 @@ public class DCInputSet {
      * @return true if the current set has all the prev. published fields
      */
     public boolean isDefinedPubBefore() {
-        return (isFieldPresent("dc.date.issued") &&
+        return isFieldPresent("dc.date.issued") &&
             isFieldPresent("dc.identifier.citation") &&
-            isFieldPresent("dc.publisher"));
+            isFieldPresent("dc.publisher");
     }
 
     /**

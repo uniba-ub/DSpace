@@ -7,18 +7,14 @@
  */
 package org.dspace.discovery;
 
-import static org.dspace.discovery.SolrServiceWorkspaceWorkflowRestrictionPlugin.DISCOVER_WORKSPACE_CONFIGURATION_NAME;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletRequest;
 
 import org.dspace.AbstractIntegrationTestWithDatabase;
@@ -28,7 +24,6 @@ import org.dspace.authorize.AuthorizeException;
 import org.dspace.builder.ClaimedTaskBuilder;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
-import org.dspace.builder.EPersonBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.builder.PoolTaskBuilder;
 import org.dspace.builder.WorkflowItemBuilder;
@@ -44,8 +39,6 @@ import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.WorkspaceItemService;
-import org.dspace.discovery.configuration.DiscoveryConfiguration;
-import org.dspace.discovery.configuration.DiscoverySortFieldConfiguration;
 import org.dspace.discovery.indexobject.IndexableClaimedTask;
 import org.dspace.discovery.indexobject.IndexableCollection;
 import org.dspace.discovery.indexobject.IndexableItem;

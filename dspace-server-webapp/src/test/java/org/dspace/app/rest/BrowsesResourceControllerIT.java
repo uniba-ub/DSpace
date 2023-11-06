@@ -24,7 +24,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import org.dspace.app.rest.matcher.BrowseEntryResourceMatcher;
 import org.dspace.app.rest.matcher.BrowseIndexMatcher;
 import org.dspace.app.rest.matcher.ItemMatcher;
-import org.dspace.app.rest.model.BrowseIndexRest;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
@@ -1516,7 +1515,7 @@ public class BrowsesResourceControllerIT extends AbstractControllerIntegrationTe
                    //Verify that the startsWith paramater is included in the links
                     .andExpect(jsonPath("$._links.self.href", containsString("?startsWith=C")));
 
-    };
+    }
 
     @Test
     public void testBrowseByEntriesStartsWithAndDiacritics() throws Exception {
@@ -1676,7 +1675,7 @@ public class BrowsesResourceControllerIT extends AbstractControllerIntegrationTe
                    //Verify that the startsWith paramater is included in the links
                    .andExpect(jsonPath("$._links.self.href", containsString("?startsWith=Guión")));
 
-    };
+    }
 
     @Test
     public void testBrowseByItemsStartsWith() throws Exception {
