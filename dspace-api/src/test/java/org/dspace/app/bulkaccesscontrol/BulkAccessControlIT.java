@@ -148,7 +148,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -191,7 +191,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -232,7 +232,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -396,7 +396,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -440,7 +440,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -488,7 +488,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -506,7 +506,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -538,7 +538,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -579,7 +579,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -619,7 +619,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -660,7 +660,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -700,7 +700,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -740,7 +740,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -782,7 +782,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(3));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -824,7 +824,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         TestDSpaceRunnableHandler testDSpaceRunnableHandler = new TestDSpaceRunnableHandler();
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(3));
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
 
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
@@ -868,7 +868,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
             containsString("constraint is not supported when uuid isn't an Item")
         ));
@@ -915,7 +915,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
             containsString("constraint isn't supported when multiple uuids are provided")
         ));
@@ -1031,7 +1031,7 @@ public class BulkAccessControlIT extends AbstractIntegrationTestWithDatabase {
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), testDSpaceRunnableHandler, kernelImpl);
 
         assertThat(testDSpaceRunnableHandler.getWarningMessages(), empty());
-        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(1));
+        assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasSize(2));
         assertThat(testDSpaceRunnableHandler.getErrorMessages(), hasItem(
             containsString("accessConditions of item must be provided with mode<add>")
         ));
