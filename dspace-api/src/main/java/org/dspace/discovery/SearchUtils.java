@@ -174,7 +174,7 @@ public class SearchUtils {
     public static DiscoveryConfiguration getDiscoveryConfigurationByDSO(
         Context context, DSpaceObject dso) {
         DiscoveryConfigurationService configurationService = getConfigurationService();
-        return configurationService.getDiscoveryConfiguration((IndexableObject) dso);
+        return configurationService.getDiscoveryDSOConfiguration(context, dso);
     }
 
     public static DiscoveryConfigurationService getConfigurationService() {
