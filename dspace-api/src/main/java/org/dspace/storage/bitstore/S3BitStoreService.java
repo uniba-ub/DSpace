@@ -44,7 +44,6 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -302,10 +301,6 @@ public class S3BitStoreService extends BaseBitStoreService {
         ) {
             Utils.bufferedCopy(dis, fos);
             in.close();
-            byte[] md5Digest = dis.getMessageDigest().digest();
-            String md5Base64 = Base64.encodeBase64String(md5Digest);
-            ObjectMetadata objMetadata = new ObjectMetadata();
-            objMetadata.setContentMD5(md5Base64);
 
             Upload upload = tm.upload(bucketName, key, scratchFile);
 
