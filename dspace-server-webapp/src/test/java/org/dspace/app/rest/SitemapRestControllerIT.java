@@ -71,6 +71,9 @@ public class SitemapRestControllerIT extends AbstractControllerIntegrationTest {
         policyService.removeAllPolicies(context, communityRestricted);
         collection = CollectionBuilder.createCollection(context, community).build();
         collectionRestricted = CollectionBuilder.createCollection(context, community).build();
+        Collection publicationCollection = CollectionBuilder.createCollection(context, community)
+                .withEntityType("Publication")
+                .withName("Publication Collection").build();
         policyService.removeAllPolicies(context, collectionRestricted);
 
         this.item1 = createItem(context, collection)
@@ -91,20 +94,17 @@ public class SitemapRestControllerIT extends AbstractControllerIntegrationTest {
                 .withIssueDate("2015-8-3")
                 .makeUnDiscoverable()
                 .build();
-        this.entityPublication = createItem(context, collection)
+        this.entityPublication = createItem(context, publicationCollection)
                 .withTitle("Item Publication")
-                .withEntityType("Publication")
                 .withIssueDate("2015-8-3")
                 .build();
-        this.entityPublicationRestricted = createItem(context, collection)
+        this.entityPublicationRestricted = createItem(context, publicationCollection)
                 .withTitle("Item Publication Restricted")
-                .withEntityType("Publication")
                 .withIssueDate("2015-8-3")
                 .build();
         policyService.removeAllPolicies(context, entityPublicationRestricted);
-        this.entityPublicationUndiscoverable = createItem(context, collection)
+        this.entityPublicationUndiscoverable = createItem(context, publicationCollection)
                 .withTitle("Item Publication")
-                .withEntityType("Publication")
                 .withIssueDate("2015-8-3")
                 .makeUnDiscoverable()
                 .build();
