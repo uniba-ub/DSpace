@@ -32,9 +32,4 @@
         <property name="description" value="Mocking a script for testing purposes" />
         <property name="dspaceRunnableClass" value="org.dspace.scripts.impl.MockDSpaceRunnableScript"/>
     </bean>
-
-    <bean id="bulk-access-control" class="org.dspace.app.bulkaccesscontrol.BulkAccessControlCliScriptConfiguration" primary="true">
-        <property name="description" value="Bulk access control"/>
-        <property name="dspaceRunnableClass" value="org.dspace.app.bulkaccesscontrol.BulkAccessControlCli"/>
-    </bean>
 </beans>
