@@ -109,10 +109,13 @@ public final class PersonNameUtil {
 
         List<String> namePermutations = new ArrayList<String>();
 
-        PermutationIterator<String> permutationIterator = new PermutationIterator<String>(List.of(name.split(" ")));
+        List<String> names = List.of(name.split(" "));
+        if (names.size() < 5) {
+            PermutationIterator<String> permutationIterator = new PermutationIterator<String>(names);
 
-        while (permutationIterator.hasNext()) {
-            namePermutations.add(String.join(" ", permutationIterator.next()));
+            while (permutationIterator.hasNext()) {
+                namePermutations.add(String.join(" ", permutationIterator.next()));
+            }
         }
 
         return namePermutations;
