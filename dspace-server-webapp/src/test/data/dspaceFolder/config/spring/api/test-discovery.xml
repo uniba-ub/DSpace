@@ -3946,8 +3946,10 @@
         </property>
     </bean>
 
-    <bean id="searchFilterType" class="org.dspace.discovery.configuration.DiscoverySearchFilterFacet">
+    <bean id="searchFilterType" class="org.dspace.discovery.configuration.HierarchicalSidebarFacetConfiguration">
         <property name="indexFieldName" value="itemtype" />
+        <property name="splitter" value="::" />
+        <property name="onlyLastNodeRelevant" value="true" />
         <property name="metadataFields">
             <list>
                 <value>dc.type</value>
