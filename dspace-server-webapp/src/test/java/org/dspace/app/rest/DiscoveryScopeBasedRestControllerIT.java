@@ -502,11 +502,15 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
-                                      FacetEntryMatcher.authorFacet(false),
-                                      FacetEntryMatcher.subjectFacet(false),
-                                      FacetEntryMatcher.dateIssuedFacet(false),
-                                      FacetEntryMatcher.hasContentInOriginalBundleFacet(false),
-                                      FacetEntryMatcher.entityTypeFacet(false)
+                                       FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                       FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
+                                       FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
+                                       FacetEntryMatcher.authorFacet(false),
+                                       FacetEntryMatcher.subjectFacet(false),
+                                       FacetEntryMatcher.dateIssuedFacet(false),
+                                       FacetEntryMatcher.hasContentInOriginalBundleFacet(false),
+                                       FacetEntryMatcher.entityTypeFacet(false),
+                                       FacetEntryMatcher.anyFacet("language", "text")
                               ))
                    );
     }
@@ -614,11 +618,15 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
-                                      FacetEntryMatcher.authorFacet(false),
-                                      FacetEntryMatcher.subjectFacet(false),
-                                      FacetEntryMatcher.dateIssuedFacet(false),
-                                      FacetEntryMatcher.hasContentInOriginalBundleFacet(false),
-                                      FacetEntryMatcher.entityTypeFacet(false)
+                                       FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                       FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
+                                       FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
+                                       FacetEntryMatcher.authorFacet(false),
+                                       FacetEntryMatcher.subjectFacet(false),
+                                       FacetEntryMatcher.dateIssuedFacet(false),
+                                       FacetEntryMatcher.hasContentInOriginalBundleFacet(false),
+                                       FacetEntryMatcher.entityTypeFacet(false),
+                                       FacetEntryMatcher.anyFacet("language", "text")
                               ))
                    );
     }
@@ -664,11 +672,15 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
+                                      FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                      FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
+                                      FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
                                       FacetEntryMatcher.authorFacet(false),
                                       FacetEntryMatcher.subjectFacet(false),
                                       FacetEntryMatcher.dateIssuedFacet(false),
                                       FacetEntryMatcher.hasContentInOriginalBundleFacet(false),
-                                      FacetEntryMatcher.entityTypeFacet(false)
+                                      FacetEntryMatcher.entityTypeFacet(false),
+                                      FacetEntryMatcher.anyFacet("language", "text")
                               ))
                    );
     }
