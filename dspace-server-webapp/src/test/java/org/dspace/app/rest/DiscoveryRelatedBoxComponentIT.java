@@ -247,7 +247,7 @@ public class DiscoveryRelatedBoxComponentIT extends AbstractControllerIntegratio
                         FacetEntryMatcher.anyFacet("editor", "text"),
                         FacetEntryMatcher.anyFacet("organization", "text"),
                         FacetEntryMatcher.anyFacet("funding", "text"),
-                        FacetEntryMatcher.anyFacet("itemtype", "text"),
+                        FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                         FacetEntryMatcher.subjectFacet(false),
                         FacetEntryMatcher.dateIssuedFacet(false),
                         FacetEntryMatcher.hasContentInOriginalBundleFacet(false)
@@ -287,7 +287,7 @@ public class DiscoveryRelatedBoxComponentIT extends AbstractControllerIntegratio
                     FacetEntryMatcher.anyFacet("editor", "text"),
                     FacetEntryMatcher.anyFacet("organization", "text"),
                     FacetEntryMatcher.anyFacet("funding", "text"),
-                    FacetEntryMatcher.anyFacet("itemtype", "text"),
+                    FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                     FacetEntryMatcher.subjectFacet(false),
                     FacetEntryMatcher.dateIssuedFacet(false),
                     FacetEntryMatcher.hasContentInOriginalBundleFacet(false)
@@ -329,7 +329,7 @@ public class DiscoveryRelatedBoxComponentIT extends AbstractControllerIntegratio
                     FacetEntryMatcher.anyFacet("editor", "text"),
                     FacetEntryMatcher.anyFacet("organization", "text"),
                     FacetEntryMatcher.anyFacet("funding", "text"),
-                    FacetEntryMatcher.anyFacet("itemtype", "text"),
+                    FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                     FacetEntryMatcher.subjectFacet(false),
                     FacetEntryMatcher.dateIssuedFacet(false),
                     FacetEntryMatcher.hasContentInOriginalBundleFacet(false)
