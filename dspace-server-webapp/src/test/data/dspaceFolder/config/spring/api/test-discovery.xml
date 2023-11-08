@@ -3736,6 +3736,7 @@
         </property>
     </bean>
 
+    <!-- variant of common configuration having types facet in its multilanguage version -->
     <bean id="multilanguage-types" class="org.dspace.discovery.configuration.DiscoveryConfiguration" parent="commonConfiguration">
         <property name="sidebarFacets">
             <list>
