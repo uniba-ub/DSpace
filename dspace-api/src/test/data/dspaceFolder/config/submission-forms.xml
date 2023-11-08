@@ -1765,13 +1765,15 @@ You can leave out the day and/or month if they aren't applicable.</hint>
       <row>
         <field>
           <dc-schema>dc</dc-schema>
-          <dc-element>type</dc-element>
-          <label>Type</label>
-          <input-type>onebox</input-type>
-          <repeatable>false</repeatable>
+          <dc-element>subject</dc-element>
+          <dc-qualifier></dc-qualifier>
+          <!-- An input-type of twobox MUST be marked as repeatable -->
+          <repeatable>true</repeatable>
+          <label>Subject Keywords</label>
+          <input-type>twobox</input-type>
+          <hint>Enter appropriate subject keywords or phrases. </hint>
+          <required></required>
           <vocabulary>srsc</vocabulary>
-          <required />
-          <hint>Select a subject from the vocabulary.</hint>
         </field>
       </row>
    </form>

@@ -13,11 +13,14 @@ import static org.dspace.app.rest.model.BrowseIndexRest.BROWSE_TYPE_VALUE_LIST;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.dspace.app.rest.model.BrowseIndexRest;
 import org.dspace.app.rest.projection.Projection;
 import org.dspace.browse.BrowseIndex;
+import org.dspace.content.authority.DSpaceControlledVocabulary;
 import org.dspace.content.authority.DSpaceControlledVocabularyIndex;
+import org.dspace.discovery.configuration.DiscoverySearchFilter;
 import org.dspace.sort.SortException;
 import org.dspace.sort.SortOption;
 import org.springframework.stereotype.Component;
@@ -37,7 +40,7 @@ public class BrowseIndexConverter implements DSpaceConverter<BrowseIndex, Browse
         bir.setProjection(projection);
         List<String> metadataList = new ArrayList<String>();
         String id = obj.getName();
-        if (obj instanceof DSpaceControlledVocabularyIndex) {
+        if (isValidControlledVocabularyIndex(obj)) {
             DSpaceControlledVocabularyIndex vocObj = (DSpaceControlledVocabularyIndex) obj;
             metadataList = new ArrayList<>(vocObj.getMetadataFields());
             id = vocObj.getVocabulary().getPluginInstanceName();
@@ -72,6 +75,26 @@ public class BrowseIndexConverter implements DSpaceConverter<BrowseIndex, Browse
             bir.setSortOptions(sortOptionsList);
         }
         return bir;
+    }
+
+    private static boolean isValidControlledVocabularyIndex(BrowseIndex obj) {
+        return obj instanceof DSpaceControlledVocabularyIndex &&
+            hasIndexFieldName((DSpaceControlledVocabularyIndex) obj) &&
+            hasIndexPluginInstanceName((DSpaceControlledVocabularyIndex) obj);
+    }
+
+    private static boolean hasIndexFieldName(DSpaceControlledVocabularyIndex obj) {
+        return Optional.ofNullable(obj)
+                       .map(DSpaceControlledVocabularyIndex::getFacetConfig)
+                       .map(DiscoverySearchFilter::getIndexFieldName)
+                       .isPresent();
+    }
+
+    private static boolean hasIndexPluginInstanceName(DSpaceControlledVocabularyIndex obj) {
+        return Optional.ofNullable(obj)
+                       .map(DSpaceControlledVocabularyIndex::getVocabulary)
+                       .map(DSpaceControlledVocabulary::getPluginInstanceName)
+                       .isPresent();
     }
 
     @Override
