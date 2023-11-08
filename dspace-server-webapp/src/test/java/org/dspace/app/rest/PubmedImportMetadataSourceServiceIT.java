@@ -210,7 +210,8 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
         MetadatumDTO author2 = createMetadatumDTO("dc", "contributor", "author", "Baxevanis, Andreas D");
         MetadatumDTO date = createMetadatumDTO("dc", "date", "issued", "2011-10");
         MetadatumDTO language = createMetadatumDTO("dc", "language", "iso", "en");
-        MetadatumDTO relationIsPartOf = createMetadatumDTO("dc", "relation", "ispartof", "Current protocols in human genetics");
+        MetadatumDTO relationIsPartOf =
+            createMetadatumDTO("dc", "relation", "ispartof", "Current protocols in human genetics");
         MetadatumDTO relationIssn = createMetadatumDTO("dc", "relation", "issn", "1934-8258");
         MetadatumDTO relationCitVolume = createMetadatumDTO("oaire", "citation", "volume", "Chapter 6");
         MetadatumDTO doiIdentifier = createMetadatumDTO("dc", "identifier", "doi", "10.1002/0471142905.hg0610s71");

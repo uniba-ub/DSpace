@@ -150,7 +150,12 @@ public class BrowsesResourceControllerIT extends AbstractControllerIntegrationTe
                    //We expect the content type to be "application/hal+json;charset=UTF-8"
                    .andExpect(content().contentType(contentType))
                    //Check that the JSON root matches the expected browse index
-                   .andExpect(jsonPath("$", BrowseIndexMatcher.hierarchicalBrowseIndex("srsc", "subject", "dc.subject")))
+                   .andExpect(
+                       jsonPath(
+                           "$",
+                            BrowseIndexMatcher.hierarchicalBrowseIndex("srsc", "subject", "dc.subject")
+                       )
+                   )
         ;
     }
 
