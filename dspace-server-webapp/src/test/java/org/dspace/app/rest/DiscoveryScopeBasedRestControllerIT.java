@@ -502,7 +502,7 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
-                                       FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                       FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                                        FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
                                        FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
                                        FacetEntryMatcher.authorFacet(false),
@@ -618,7 +618,7 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
-                                       FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                       FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                                        FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
                                        FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
                                        FacetEntryMatcher.authorFacet(false),
@@ -672,7 +672,7 @@ public class DiscoveryScopeBasedRestControllerIT extends AbstractControllerInteg
                    .andExpect(jsonPath("$.type", is("discover")))
                    .andExpect(jsonPath("$._links.self.href", containsString("api/discover/facets")))
                    .andExpect(jsonPath("$._embedded.facets", containsInAnyOrder(
-                                      FacetEntryMatcher.anyFacet("itemtype", "text"),
+                                      FacetEntryMatcher.anyFacet("itemtype", "hierarchical"),
                                       FacetEntryMatcher.anyFacet("graphitemtype", "chart.pie"),
                                       FacetEntryMatcher.anyFacet("graphpubldate", "chart.bar"),
                                       FacetEntryMatcher.authorFacet(false),
