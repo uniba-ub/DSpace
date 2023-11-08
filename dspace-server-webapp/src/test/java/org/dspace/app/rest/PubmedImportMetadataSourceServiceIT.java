@@ -30,6 +30,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * Integration tests for {@link PubmedImportMetadataSourceServiceImpl}
+ * <br/>
+ * Metadata configuration in {@code pubmed-integration.xml}
  *
  * @author Francesco Pio Scognamiglio (francescopio.scognamiglio at 4science.com)
  */
@@ -130,7 +132,7 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
                 + " demonstrate which methodology is more effective in obtaining the learning outcomes necessary to"
                 + " acquire an adequate level of judgment and critical thinking. Therefore, it will be"
                 + " necessary to relate teaching methodologies with the skills developed.");
-        MetadatumDTO identifierOther = createMetadatumDTO("dc", "identifier", "other", "36708638");
+        MetadatumDTO identifierOther = createMetadatumDTO("dc", "identifier", "pmid", "36708638");
         MetadatumDTO author1 = createMetadatumDTO("dc", "contributor", "author", "Giuffrida, Silvia");
         MetadatumDTO author2 = createMetadatumDTO("dc", "contributor", "author", "Silano, Verdiana");
         MetadatumDTO author3 = createMetadatumDTO("dc", "contributor", "author", "Ramacciati, Nicola");
@@ -145,6 +147,12 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
         MetadatumDTO subject4 = createMetadatumDTO("dc", "subject", null, "Educational strategies");
         MetadatumDTO subject5 = createMetadatumDTO("dc", "subject", null, "Nursing education");
         MetadatumDTO subject6 = createMetadatumDTO("dc", "subject", null, "Teaching methodology");
+        MetadatumDTO relationIsPartOf = createMetadatumDTO("dc", "relation", "ispartof", "Nurse education in practice");
+        MetadatumDTO relationIssn = createMetadatumDTO("dc", "relation", "issn", "1873-5223");
+        MetadatumDTO relationCitVolume = createMetadatumDTO("oaire", "citation", "volume", "67");
+        MetadatumDTO doiIdentifier = createMetadatumDTO("dc", "identifier", "doi", "10.1016/j.nepr.2023.103548");
+        MetadatumDTO dcType = createMetadatumDTO("dc", "type", null, "text::journal::journal article");
+        MetadatumDTO dcType2 = createMetadatumDTO("dc", "type", null, "text::review");
 
         metadatums.add(title);
         metadatums.add(description1);
@@ -168,6 +176,12 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
         metadatums.add(subject4);
         metadatums.add(subject5);
         metadatums.add(subject6);
+        metadatums.add(relationIsPartOf);
+        metadatums.add(relationIssn);
+        metadatums.add(relationCitVolume);
+        metadatums.add(doiIdentifier);
+        metadatums.add(dcType);
+        metadatums.add(dcType2);
         ImportRecord record = new ImportRecord(metadatums);
 
         records.add(record);
@@ -191,11 +205,16 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
                 + " built-in features of the Entrez system, and providing alternative ways to issue the initial query."
                 + " The support protocol reviews how to save frequently issued queries. Finally, Cn3D, a structure"
                 + " visualization tool, is also discussed.");
-        MetadatumDTO identifierOther = createMetadatumDTO("dc", "identifier", "other", "21975942");
+        MetadatumDTO identifierOther = createMetadatumDTO("dc", "identifier", "pmid", "21975942");
         MetadatumDTO author1 = createMetadatumDTO("dc", "contributor", "author", "Gibney, Gretchen");
         MetadatumDTO author2 = createMetadatumDTO("dc", "contributor", "author", "Baxevanis, Andreas D");
         MetadatumDTO date = createMetadatumDTO("dc", "date", "issued", "2011-10");
         MetadatumDTO language = createMetadatumDTO("dc", "language", "iso", "en");
+        MetadatumDTO relationIsPartOf = createMetadatumDTO("dc", "relation", "ispartof", "Current protocols in human genetics");
+        MetadatumDTO relationIssn = createMetadatumDTO("dc", "relation", "issn", "1934-8258");
+        MetadatumDTO relationCitVolume = createMetadatumDTO("oaire", "citation", "volume", "Chapter 6");
+        MetadatumDTO doiIdentifier = createMetadatumDTO("dc", "identifier", "doi", "10.1002/0471142905.hg0610s71");
+        MetadatumDTO dcType = createMetadatumDTO("dc", "type", null, "text::journal::journal article");
 
         metadatums.add(title);
         metadatums.add(description);
@@ -204,6 +223,11 @@ public class PubmedImportMetadataSourceServiceIT extends AbstractLiveImportInteg
         metadatums.add(author2);
         metadatums.add(date);
         metadatums.add(language);
+        metadatums.add(relationIsPartOf);
+        metadatums.add(relationIssn);
+        metadatums.add(relationCitVolume);
+        metadatums.add(doiIdentifier);
+        metadatums.add(dcType);
         ImportRecord record = new ImportRecord(metadatums);
 
         records.add(record);

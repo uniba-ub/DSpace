@@ -14,13 +14,17 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.dspace.core.I18nUtil;
 import org.dspace.importer.external.metadatamapping.MetadataFieldConfig;
 import org.dspace.importer.external.metadatamapping.MetadataFieldMapping;
 import org.dspace.importer.external.metadatamapping.MetadatumDTO;
 import org.dspace.importer.external.metadatamapping.contributor.MetadataContributor;
+import org.dspace.services.ConfigurationService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -99,7 +103,7 @@ public class PubmedDateMetadatumContributor<T> implements MetadataContributor<T>
     @Override
     public Collection<MetadatumDTO> contributeMetadata(T t) {
         List<MetadatumDTO> values = new LinkedList<>();
-
+        final Locale defaultLocale = I18nUtil.getDefaultLocale();
 
         try {
             LinkedList<MetadatumDTO> yearList = (LinkedList<MetadatumDTO>) year.contributeMetadata(t);
@@ -114,13 +118,13 @@ public class PubmedDateMetadatumContributor<T> implements MetadataContributor<T>
                 if (monthList.size() > i && dayList.size() > i) {
                     dateString = yearList.get(i).getValue() + "-" + monthList.get(i).getValue() +
                         "-" + dayList.get(i).getValue();
-                    resultFormatter = new SimpleDateFormat("yyyy-MM-dd");
+                    resultFormatter = new SimpleDateFormat("yyyy-MM-dd", defaultLocale);
                 } else if (monthList.size() > i) {
                     dateString = yearList.get(i).getValue() + "-" + monthList.get(i).getValue();
-                    resultFormatter = new SimpleDateFormat("yyyy-MM");
+                    resultFormatter = new SimpleDateFormat("yyyy-MM", defaultLocale);
                 } else {
                     dateString = yearList.get(i).getValue();
-                    resultFormatter = new SimpleDateFormat("yyyy");
+                    resultFormatter = new SimpleDateFormat("yyyy", defaultLocale);
                 }
 
                 int j = 0;
@@ -128,7 +132,7 @@ public class PubmedDateMetadatumContributor<T> implements MetadataContributor<T>
                 while (j < dateFormatsToAttempt.size() && StringUtils.isBlank(resultDateString)) {
                     String dateFormat = dateFormatsToAttempt.get(j);
                     try {
-                        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat);
+                        SimpleDateFormat formatter = new SimpleDateFormat(dateFormat, defaultLocale);
                         Date date = formatter.parse(dateString);
                         resultDateString = resultFormatter.format(date);
                     } catch (ParseException e) {
