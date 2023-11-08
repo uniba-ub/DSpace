@@ -185,7 +185,7 @@ public class Application extends SpringBootServletInitializer {
                 // Get allowed origins for api and iiif endpoints.
                 // The actuator endpoints are configured using management.endpoints.web.cors.* properties
                 String[] corsAllowedOrigins = configuration
-                        .getCorsAllowedOrigins(configuration.getCorsAllowedOriginsConfig());
+                    .getCorsAllowedOrigins(configuration.getCorsAllowedOriginsConfig());
                 String[] iiifAllowedOrigins = configuration
                     .getCorsAllowedOrigins(configuration.getIiifAllowedOriginsConfig());
                 String[] bitstreamAllowedOrigins = configuration

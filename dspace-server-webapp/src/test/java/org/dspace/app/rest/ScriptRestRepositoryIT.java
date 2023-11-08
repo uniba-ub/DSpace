@@ -333,7 +333,7 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
     public void findAllScriptsAnonymousUserTest() throws Exception {
         // this should be changed once we allow anonymous user to execute some scripts
         getClient().perform(get("/api/system/scripts"))
-                   .andExpect(status().isUnauthorized());
+                   .andExpect(status().isOk());
     }
 
     @Test
@@ -432,14 +432,22 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
 
         getClient(token).perform(get("/api/system/scripts").param("size", "1").param("page", "1"))
                         .andExpect(status().isOk())
+                        .andExpect(
+                            jsonPath("$._embedded.scripts",
+                                not(
+                                    hasItem(
+                                        ScriptMatcher.matchScript(
+                                            scriptConfigurations.get(10).getName(),
+                                            scriptConfigurations.get(10).getDescription()
+                                        )
+                                    )
+                                )
+                            )
+                        )
                         .andExpect(jsonPath("$._embedded.scripts", hasItem(
-                ScriptMatcher.matchScript(scriptConfigurations.get(10).getName(),
-                    scriptConfigurations.get(10).getDescription())
+                                ScriptMatcher.matchScript(alphabeticScripts.get(1).getName(),
+                                                          alphabeticScripts.get(1).getDescription())
                         )))
-                        .andExpect(jsonPath("$._embedded.scripts", Matchers.not(hasItem(
-                                ScriptMatcher.matchScript(alphabeticScripts.get(0).getName(),
-                                                          alphabeticScripts.get(0).getDescription())
-                        ))))
                         .andExpect(jsonPath("$._links.first.href", Matchers.allOf(
                             Matchers.containsString("/api/system/scripts?"),
                             Matchers.containsString("page=0"), Matchers.containsString("size=1"))))
@@ -548,7 +556,7 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
     @Test
     public void findOneScriptByInvalidNameBadRequestExceptionTest() throws Exception {
         getClient().perform(get("/api/system/scripts/mock-script-invalid"))
-                   .andExpect(status().isBadRequest());
+                   .andExpect(status().isNotFound());
     }
 
     /**

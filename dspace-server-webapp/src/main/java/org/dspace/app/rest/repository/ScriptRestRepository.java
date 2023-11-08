@@ -54,8 +54,7 @@ public class ScriptRestRepository extends DSpaceRestRepository<ScriptRest, Strin
     private DSpaceRunnableParameterConverter dSpaceRunnableParameterConverter;
 
     @Override
-    // authorization is verified inside the method
-    @PreAuthorize("hasAuthority('AUTHENTICATED')")
+    @PreAuthorize("permitAll()")
     public ScriptRest findOne(Context context, String name) {
         ScriptConfiguration scriptConfiguration = scriptService.getScriptConfiguration(name);
         if (scriptConfiguration != null) {
@@ -69,8 +68,6 @@ public class ScriptRestRepository extends DSpaceRestRepository<ScriptRest, Strin
     }
 
     @Override
-    // authorization check is performed inside the script service
-    @PreAuthorize("hasAuthority('AUTHENTICATED')")
     public Page<ScriptRest> findAll(Context context, Pageable pageable) {
         List<ScriptConfiguration> scriptConfigurations =
             scriptService.getScriptConfigurations(context)
@@ -104,7 +101,7 @@ public class ScriptRestRepository extends DSpaceRestRepository<ScriptRest, Strin
             throw new ResourceNotFoundException("The script for name: " + scriptName + " wasn't found");
         }
         try {
-            if (!scriptToExecute.isAllowedToExecute(context, dSpaceCommandLineParameters)) {
+            if (!scriptToExecute.isAllowedToExecute(context)) {
                 throw new AuthorizeException("Current user is not eligible to execute script with name: " + scriptName
                         + " and the specified parameters " + StringUtils.join(dSpaceCommandLineParameters, ", "));
             }
