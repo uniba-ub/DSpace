@@ -199,8 +199,5 @@
 
     <bean class="org.dspace.supervision.SupervisionOrderServiceImpl"/>
 
-    <bean class="org.dspace.ror.client.RORApiClientImpl" />
-    <bean class="org.dspace.ror.service.RORApiServiceImpl" />
-
 </beans>
 
