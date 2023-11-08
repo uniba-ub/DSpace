@@ -48,6 +48,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.dspace.app.rest.converter.DSpaceRunnableParameterConverter;
 import org.dspace.app.rest.matcher.BitstreamMatcher;
+import org.dspace.app.rest.matcher.PageMatcher;
 import org.dspace.app.rest.matcher.ProcessMatcher;
 import org.dspace.app.rest.matcher.ScriptMatcher;
 import org.dspace.app.rest.model.ParameterValueRest;
@@ -326,7 +327,8 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
 
         getClient(token).perform(get("/api/system/scripts"))
                         .andExpect(status().isOk())
-                        .andExpect(jsonPath("$.page.totalElements", is(0)));
+                        .andExpect(jsonPath("$.page",
+                                            is(PageMatcher.pageEntryWithTotalPagesAndElements(0, 20, 1, 2))));
     }
 
     @Test

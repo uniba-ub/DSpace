@@ -101,7 +101,7 @@ public class ScriptRestRepository extends DSpaceRestRepository<ScriptRest, Strin
             throw new ResourceNotFoundException("The script for name: " + scriptName + " wasn't found");
         }
         try {
-            if (!scriptToExecute.isAllowedToExecute(context)) {
+            if (!scriptToExecute.isAllowedToExecute(context, dSpaceCommandLineParameters)) {
                 throw new AuthorizeException("Current user is not eligible to execute script with name: " + scriptName
                         + " and the specified parameters " + StringUtils.join(dSpaceCommandLineParameters, ", "));
             }
