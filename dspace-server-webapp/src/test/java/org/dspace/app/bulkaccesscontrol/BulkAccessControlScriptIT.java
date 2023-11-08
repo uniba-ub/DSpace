@@ -496,7 +496,7 @@ public class BulkAccessControlScriptIT extends AbstractEntityIntegrationTest {
                 multipart(CURATE_SCRIPT_ENDPOINT)
                     .file(bitstreamFile)
                     .param("properties", new ObjectMapper().writeValueAsString(list)))
-            .andExpect(status().isForbidden());
+            .andExpect(status().isAccepted());
     }
 
 }
