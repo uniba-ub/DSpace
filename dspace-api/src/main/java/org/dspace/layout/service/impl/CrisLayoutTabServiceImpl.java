@@ -218,6 +218,10 @@ public class CrisLayoutTabServiceImpl implements CrisLayoutTabService {
     }
 
     private String getSubmissionDefinitionName(Item item) {
+        if (submissionConfigReader == null) {
+            return "";
+        }
+
         return submissionConfigReader.getSubmissionConfigByCollection(item.getOwningCollection()).getSubmissionName();
     }
 
