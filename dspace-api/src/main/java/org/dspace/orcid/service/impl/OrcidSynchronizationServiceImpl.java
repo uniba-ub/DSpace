@@ -28,7 +28,6 @@ import org.apache.commons.codec.binary.StringUtils;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
-import org.dspace.content.Relationship;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.RelationshipService;
 import org.dspace.core.Context;
@@ -200,28 +199,34 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
             Optional<OrcidEntitySyncPreference> option;
             option = getEntityPreference(profile, OrcidEntityType.fromEntityType(entityType));
             if (option.isPresent()) {
-                switch (option.get()) {
-                    case DISABLED:
-                        return false;
-                    case ALL:
-                        return true;
-                    case MINE:
-                    case MY_SELECTED:
-                        String relationname = configurationService.getProperty(
-                            "orcid.relation." + entityType + "." + option.get().name());
-                        boolean exclusion = configurationService.getBooleanProperty("orcid.relation."
-                            + entityType + "." + option.get().name() + ".exclusion", false);
-                        if (isBlank(relationname)) {
+                try {
+                    switch (option.get()) {
+                        case DISABLED:
                             return false;
-                        }
-                        Iterator<Item> entities = checkRelation(context, profile, item, relationname, exclusion);
-                        if (entities.hasNext()) {
+                        case ALL:
                             return true;
-                        } else {
+                        case MINE:
+                        case MY_SELECTED:
+                            String relationname = configurationService.getProperty("orcid.relation." + entityType + "."
+                                + option.get().name());
+                            if (isBlank(relationname)) {
+                                return false;
+                            }
+                            if (configurationService.getBooleanProperty("orcid.relation." + entityType + "."
+                                + option.get().name() + ".exclusion", false)) {
+                                //check if no relationship exists between profile and item (e.g. MINE)
+                                return relationShipMatchForOrcidSync(context, profile, item, relationname, false);
+                            } else {
+                                //check, if any relationship exists between profile and item(e.g. MY_SELECTED)
+
+                                return relationShipMatchForOrcidSync(context, profile, item, relationname, true);
+
+                            }
+                        default:
                             return false;
-                        }
-                    default:
-                        return false;
+                    }
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
                 }
             } else {
                 return false;
@@ -249,30 +254,20 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
                 switch (option.get()) {
                     case MINE:
                     case MY_SELECTED:
-                        // Consider MINE and MY_SELECTED Settings
-                        String relationname = configurationService.getProperty(
-                            "orcid.relation." + entityType + "." + option.get().name());
+                        String relationname = configurationService.getProperty("orcid.relation." + entityType + "."
+                            + option.get().name());
                         if (isBlank(relationname)) {
                             return false;
                         }
-                        boolean exclusion = configurationService.getBooleanProperty("orcid.relation."
-                            + entityType + "." + option.get().name() + ".exclusion", false);
-                        if (exclusion) {
-                            //check, if relationship exists
-                            List<Relationship> rels = relationshipService.findByItem(context, profile);
-                            boolean val = rels.stream()
-                                .anyMatch(relationship ->
-                                    relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
-                                        relationship.getLeftwardValue().contentEquals(relationname));
-                            return val;
+
+                        //because we check the criteria is not valid we have to check the opposite
+                        if (configurationService.getBooleanProperty("orcid.relation." + entityType + "."
+                            + option.get().name() + ".exclusion", false)) {
+                            //check, if any relationship exists between profile and item (e.g. MINE)
+                            return relationShipMatchForOrcidSync(context, profile, item, relationname, true);
                         } else {
-                            //check if no relationship exists
-                            List<Relationship> rels = relationshipService.findByItem(context, profile);
-                            boolean val = rels.stream()
-                                .noneMatch(relationship ->
-                                    relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
-                                        relationship.getLeftwardValue().contentEquals(relationname));
-                            return val;
+                            //check if none relationship exist between profile and item (e.g. MY_SELECT)
+                            return relationShipMatchForOrcidSync(context, profile, item, relationname, false);
                         }
 
                     default:
@@ -285,21 +280,17 @@ public class OrcidSynchronizationServiceImpl implements OrcidSynchronizationServ
         return false;
     }
 
-    private Iterator<Item> checkRelation(Context context, Item profile, Item item, String filterrelationname,
-                                         boolean exclusion) {
-        StringBuilder sb = new StringBuilder();
-        if (exclusion) {
-            sb.append("-");
+    protected boolean relationShipMatchForOrcidSync(Context context, Item profile, Item item, String relationname,
+                                                    boolean any) throws SQLException {
+        if (any) {
+            return relationshipService.findByItem(context, profile).stream().anyMatch(relationship ->
+                relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
+                    relationship.getLeftwardValue().contentEquals(relationname));
+        } else {
+            return relationshipService.findByItem(context, profile).stream().noneMatch(relationship ->
+                relationship.getLeftItem().getID().toString().equals(item.getID().toString()) &&
+                    relationship.getLeftwardValue().contentEquals(relationname));
         }
-        sb.append("relation." + filterrelationname + ":");
-        sb.append(profile.getID().toString());
-
-        DiscoverQuery discoverQuery = new DiscoverQuery();
-        discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
-        discoverQuery.addFilterQueries("search.resourceid:" + item.getID());
-        discoverQuery.addFilterQueries(sb.toString());
-        discoverQuery.setMaxResults(1);
-        return new DiscoverResultItemIterator(context, discoverQuery);
     }
 
     @Override
