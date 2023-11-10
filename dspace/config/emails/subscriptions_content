@@ -9,15 +9,15 @@ This email is sent from DSpace-CRIS based on the chosen subscription preferences
 You can manage your subscription preferences from ${params[0]}
 
 Communities
------------
+-------------------
 ${params[1]}
 
 
 Collections
------------
+-------------------
 ${params[2]}
 
 
 Entities
------
+-------------------
 ${params[3]}
