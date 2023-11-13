@@ -125,7 +125,7 @@ public abstract class AbstractVersionProvider {
         this.ignoredMetadataFields = ignoredMetadataFields;
     }
 
-    public Set getIgnoredMetadataFields() {
+    public Set<String> getIgnoredMetadataFields() {
         if (ignoredMetadataFields == null) {
             return new HashSet<>();
         }

@@ -23,6 +23,14 @@
 				<value>dspace.entity.type</value>
             </set>
         </property>
+        <property name="ignoredMetadataFieldsOfCreation" >
+            <set>
+            </set>
+        </property>
+        <property name="ignoredMetadataFieldsOfMerging" >
+            <set>
+            </set>
+        </property>
 		<property name="bundles" >
 			<set>
 				<value>ORIGINAL</value>
