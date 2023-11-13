@@ -488,14 +488,15 @@ public class Curator {
      * @throws SQLException
      */
     protected boolean doCommunity(TaskRunner tr, Community comm) throws IOException, SQLException {
-        if (!tr.run(comm)) {
-            return false;
-        }
         UUIDIterator<Community> subComIter = new UUIDIterator<Community>(curationContext(), comm.getSubcommunities(),
             Community.class);
         UUIDIterator<Collection> collectionsIter = new UUIDIterator<Collection>(curationContext(),
             comm.getCollections(),
             Collection.class);
+        
+        if (!tr.run(comm)) {
+            return false;
+        }
 
         while (subComIter.hasNext()) {
             if (!doCommunity(tr, subComIter.next())) {
@@ -530,9 +531,6 @@ public class Curator {
                 Item item = iter.next();
                 boolean shouldContinue = tr.run(item);
                 context.uncacheEntity(item);
-                if (txScope.equals(TxScope.OBJECT) && context.isValid()) {
-                    context.commit();
-                }
                 if (!shouldContinue) {
                     return false;
                 }
@@ -554,7 +552,7 @@ public class Curator {
     protected void visit(DSpaceObject dso) throws IOException, SQLException {
         Context curCtx = curationContext();
         if (curCtx != null && txScope.equals(TxScope.OBJECT)) {
-            curCtx.dispatchEvents();
+            curCtx.commit();
         }
     }
 
