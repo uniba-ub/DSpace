@@ -493,7 +493,7 @@ public class Curator {
         UUIDIterator<Collection> collectionsIter = new UUIDIterator<Collection>(curationContext(),
             comm.getCollections(),
             Collection.class);
-        
+
         if (!tr.run(comm)) {
             return false;
         }
