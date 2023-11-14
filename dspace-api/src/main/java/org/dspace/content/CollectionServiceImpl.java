@@ -1217,4 +1217,8 @@ public class CollectionServiceImpl extends DSpaceObjectServiceImpl<Collection> i
                 discoverQuery, query, entityType).getTotalSearchResults();
     }
 
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.collectionDAO.exists(context, Collection.class, id);
+    }
+
 }

@@ -10,6 +10,9 @@ package org.dspace.services.events;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.function.Supplier;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -41,6 +44,8 @@ public final class SystemEventService implements EventService {
 
     private final RequestService requestService;
     private EventRequestInterceptor requestInterceptor;
+
+    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Autowired(required = true)
     public SystemEventService(RequestService requestService) {
@@ -81,6 +86,10 @@ public final class SystemEventService implements EventService {
         if (external) {
             fireExternalEvent(event);
         }
+    }
+
+    public void handleObjectEvent(Supplier<? extends Event> eventSupplier) {
+        this.executorService.submit(() -> this.fireEvent(eventSupplier.get()));
     }
 
     /* (non-Javadoc)

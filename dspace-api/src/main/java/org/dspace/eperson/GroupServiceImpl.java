@@ -840,4 +840,8 @@ public class GroupServiceImpl extends DSpaceObjectServiceImpl<Group> implements 
     public String getName(Group dso) {
         return dso.getName();
     }
+
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.groupDAO.exists(context, Group.class, id);
+    }
 }

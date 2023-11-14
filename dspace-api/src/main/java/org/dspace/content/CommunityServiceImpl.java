@@ -712,4 +712,9 @@ public class CommunityServiceImpl extends DSpaceObjectServiceImpl<Community> imp
     public int countTotal(Context context) throws SQLException {
         return communityDAO.countRows(context);
     }
+
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.communityDAO.exists(context, Community.class, id);
+    }
+
 }
