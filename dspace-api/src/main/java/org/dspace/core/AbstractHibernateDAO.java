@@ -41,14 +41,8 @@ import org.hibernate.Session;
  */
 public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
 
-    private Class<T> entityTypeClass;
-
     protected AbstractHibernateDAO() {
-        Type type = getClass().getGenericSuperclass();
-        if (type instanceof ParameterizedType) {
-            ParameterizedType paramType = (ParameterizedType) type;
-            entityTypeClass = (Class<T>) paramType.getActualTypeArguments()[0];
-        }
+
     }
 
     @Override
