@@ -7,8 +7,6 @@
  */
 package org.dspace.core;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
