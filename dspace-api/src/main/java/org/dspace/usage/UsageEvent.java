@@ -24,10 +24,13 @@ public class UsageEvent extends Event {
 
     public static final UsageEvent createUsageEvent(
         final Context context, final HttpServletRequest req,
-        final DSpaceObjectService dSpaceObjectService, final UUID targetId
+        final DSpaceObjectService dSpaceObjectService, final UUID targetId,
+        final String referrer
     ) {
         try {
-            return new UsageEvent(UsageEvent.Action.VIEW, req, context, dSpaceObjectService.find(context, targetId));
+            return new UsageEvent(
+                UsageEvent.Action.VIEW, req, context, dSpaceObjectService.find(context, targetId), referrer
+            );
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -78,6 +81,8 @@ public class UsageEvent extends Event {
     private DSpaceObject object;
 
     private Action action;
+
+    private String referrer;
 
     private static String checkParams(Action action, HttpServletRequest request, Context context, DSpaceObject object) {
         StringBuilder eventName = new StringBuilder();
@@ -201,6 +206,12 @@ public class UsageEvent extends Event {
         this.object = object;
     }
 
+    public UsageEvent(Action action, HttpServletRequest request, Context context, DSpaceObject object,
+                      String referrer) {
+        this(action, request, context, object);
+        setReferrer(referrer);
+    }
+
 
     public HttpServletRequest getRequest() {
         return request;
@@ -254,4 +265,11 @@ public class UsageEvent extends Event {
         return this.action;
     }
 
+    public String getReferrer() {
+        return referrer;
+    }
+
+    public void setReferrer(String referrer) {
+        this.referrer = referrer;
+    }
 }
