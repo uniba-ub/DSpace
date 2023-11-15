@@ -111,14 +111,13 @@ public class GenerateSitemaps {
         }
 
         /*
-         * Sanity check -- if no sitemap generation or pinging to do, or deletion, print usage
+         * Sanity check -- if no sitemap generation or deletion, print usage
          */
         if (line.getArgs().length != 0 || line.hasOption('d') || line.hasOption('b')
             && line.hasOption('s') && !line.hasOption('g')
-            && !line.hasOption('m') && !line.hasOption('y')
-            && !line.hasOption('p')) {
+            && !line.hasOption('m') && !line.hasOption('y')) {
             System.err
-                .println("Nothing to do (no sitemap to generate, no search engines to ping)");
+                .println("Nothing to do (no sitemap to generate)");
             hf.printHelp(usage, options);
             System.exit(1);
         }
@@ -184,7 +183,10 @@ public class GenerateSitemaps {
      */
     public static void generateSitemaps(boolean makeHTMLMap, boolean makeSitemapOrg) throws SQLException, IOException {
         String uiURLStem = configurationService.getProperty("dspace.ui.url");
-        String sitemapStem = uiURLStem + "/sitemap";
+        if (!uiURLStem.endsWith("/")) {
+            uiURLStem = uiURLStem + '/';
+        }
+        String sitemapStem = uiURLStem + "sitemap";
 
         File outputDir = new File(configurationService.getProperty("sitemap.dir"));
         if (!outputDir.exists() && !outputDir.mkdir()) {
