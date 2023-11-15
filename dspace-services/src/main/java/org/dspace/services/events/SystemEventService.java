@@ -38,14 +38,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 public final class SystemEventService implements EventService {
 
     private static final int DEFAULT_THREAD_SIZE =  2;
-    private static final ConfigurationService configurationService =
-        DSpaceServicesFactory.getInstance().getConfigurationService();
-
-    private static final int threadSize;
-
-    static {
-        threadSize = configurationService.getIntProperty("system-event.thread.size", DEFAULT_THREAD_SIZE);
-    }
 
     private final Logger log = LoggerFactory.getLogger(SystemEventService.class);
 
@@ -57,7 +49,7 @@ public final class SystemEventService implements EventService {
     private final RequestService requestService;
     private EventRequestInterceptor requestInterceptor;
 
-    private final ExecutorService executorService = Executors.newFixedThreadPool(2);
+    private ExecutorService executorService;
 
     @Autowired(required = true)
     public SystemEventService(RequestService requestService) {
@@ -102,7 +94,17 @@ public final class SystemEventService implements EventService {
 
     @Override
     public void fireAsyncEvent(Supplier<? extends Event> eventSupplier) {
+        initExecutor();
         this.executorService.submit(() -> this.fireEvent(eventSupplier.get()));
+    }
+
+    private void initExecutor() {
+        if (this.executorService != null) {
+            return;
+        }
+        ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
+        int threadSize = configurationService.getIntProperty("system-event.thread.size", DEFAULT_THREAD_SIZE);
+        this.executorService = Executors.newFixedThreadPool(threadSize);
     }
 
     /* (non-Javadoc)
