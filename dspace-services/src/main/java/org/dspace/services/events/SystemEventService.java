@@ -16,8 +16,10 @@ import java.util.function.Supplier;
 import javax.annotation.PreDestroy;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.dspace.services.ConfigurationService;
 import org.dspace.services.EventService;
 import org.dspace.services.RequestService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.services.model.Event;
 import org.dspace.services.model.Event.Scope;
 import org.dspace.services.model.EventListener;
@@ -34,6 +36,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Aaron Zeckoski (azeckoski@gmail.com) - azeckoski - 4:02:31 PM Nov 19, 2008
  */
 public final class SystemEventService implements EventService {
+
+    private static final int DEFAULT_THREAD_SIZE =  2;
+    private static final ConfigurationService configurationService =
+        DSpaceServicesFactory.getInstance().getConfigurationService();
+
+    private static final int threadSize;
+
+    static {
+        threadSize = configurationService.getIntProperty("system-event.thread.size", DEFAULT_THREAD_SIZE);
+    }
 
     private final Logger log = LoggerFactory.getLogger(SystemEventService.class);
 
@@ -88,7 +100,8 @@ public final class SystemEventService implements EventService {
         }
     }
 
-    public void handleObjectEvent(Supplier<? extends Event> eventSupplier) {
+    @Override
+    public void fireAsyncEvent(Supplier<? extends Event> eventSupplier) {
         this.executorService.submit(() -> this.fireEvent(eventSupplier.get()));
     }
 

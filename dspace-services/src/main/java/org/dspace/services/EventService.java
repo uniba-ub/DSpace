@@ -36,6 +36,11 @@ public interface EventService {
      */
     public void registerEventListener(EventListener listener);
 
-    void handleObjectEvent(Supplier<? extends Event> eventSupplier);
+    /**
+     * Fires an event asynchronously by retrieving it from the given supplier
+     *
+     * @param eventSupplier
+     */
+    void fireAsyncEvent(Supplier<? extends Event> eventSupplier);
 
 }

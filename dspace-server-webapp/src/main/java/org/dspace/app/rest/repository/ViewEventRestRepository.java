@@ -65,7 +65,7 @@ public class ViewEventRestRepository extends AbstractDSpaceRestRepository {
                 "The given targetId does not resolve to a DSpaceObject: " + targetId);
         }
         final String referrer = viewEventRest.getReferrer();
-        eventService.handleObjectEvent(
+        eventService.fireAsyncEvent(
             () -> UsageEvent.createUsageEvent(context, req, dSpaceObjectService, targetId, referrer)
         );
         return viewEventRest;
