@@ -5,7 +5,7 @@
 ##             {2} Communities updates block
 ##             {3} Entity updates block
 
-This email is sent from DSpace-CRIS based on the chosen subscription preferences.
+This email is sent from ${config.get('dspace.name')} based on the chosen subscription preferences.
 You can manage your subscription preferences from ${params[0]}
 
 Communities
