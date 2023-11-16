@@ -42,8 +42,6 @@ public class OrcidSimpleValueObjectFactory extends AbstractOrcidProfileSectionFa
 
     private List<String> metadataFields = new ArrayList<String>();
 
-    private boolean isAllowedMetadataVisibility = false;
-
     public OrcidSimpleValueObjectFactory(OrcidProfileSectionType sectionType, OrcidProfileSyncPreference preference) {
         super(sectionType, preference);
     }
@@ -78,7 +76,7 @@ public class OrcidSimpleValueObjectFactory extends AbstractOrcidProfileSectionFa
     public List<String> getMetadataSignatures(Context context, Item item) {
         return metadataFields.stream()
             .flatMap(metadataField -> getMetadataValues(item, metadataField).stream())
-            .filter(metadataValue -> getAllowedMetadataVisibility(metadataValue))
+            .filter(metadataValue -> isAllowedMetadataByVisibility(metadataValue))
             .map(metadataValue -> metadataSignatureGenerator.generate(context, List.of(metadataValue)))
             .collect(Collectors.toList());
     }
@@ -140,13 +138,6 @@ public class OrcidSimpleValueObjectFactory extends AbstractOrcidProfileSectionFa
         return address;
     }
 
-    private boolean getAllowedMetadataVisibility(MetadataValue metadataValue) {
-        if (isAllowedMetadataVisibility()) {
-            return metadataValue.getSecurityLevel() == null || metadataValue.getSecurityLevel() == 0;
-        }
-        return true;
-    }
-
     public void setMetadataFields(String metadataFields) {
         this.metadataFields = metadataFields != null ? asList(metadataFields.split(",")) : emptyList();
     }
@@ -156,11 +147,4 @@ public class OrcidSimpleValueObjectFactory extends AbstractOrcidProfileSectionFa
         return metadataFields;
     }
 
-    public boolean isAllowedMetadataVisibility() {
-        return isAllowedMetadataVisibility;
-    }
-
-    public void setAllowedMetadataVisibility(boolean allowedMetadataVisibility) {
-        isAllowedMetadataVisibility = allowedMetadataVisibility;
-    }
 }

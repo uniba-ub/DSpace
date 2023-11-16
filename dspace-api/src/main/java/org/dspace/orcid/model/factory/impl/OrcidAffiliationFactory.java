@@ -50,8 +50,6 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
 
     private String endDateField;
 
-    private boolean isAllowedMetadataVisibility = false;
-
     public OrcidAffiliationFactory(OrcidProfileSectionType sectionType, OrcidProfileSyncPreference preference) {
         super(sectionType, preference);
     }
@@ -97,7 +95,7 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
             List<MetadataValue> metadataValues = getMetadataValueByPlace(metadataGroups, currentGroupIndex);
             //only "visible" metadatavalues within this group
             metadataValues = metadataValues.stream()
-                .filter(metadataValue -> getAllowedMetadataVisibility(metadataValue))
+                .filter(metadataValue -> isAllowedMetadataByVisibility(metadataValue))
                 .collect(Collectors.toList());
             if (!metadataValues.isEmpty()) {
                 signatures.add(metadataSignatureGenerator.generate(context, metadataValues));
@@ -160,13 +158,6 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
         return value == null || isBlank(value.getValue()) || value.getValue().equals(PLACEHOLDER_PARENT_METADATA_VALUE);
     }
 
-    private boolean getAllowedMetadataVisibility(MetadataValue metadataValue) {
-        if (isAllowedMetadataVisibility()) {
-            return metadataValue.getSecurityLevel() == null || metadataValue.getSecurityLevel() == 0;
-        }
-        return true;
-    }
-
     private Map<String, List<MetadataValue>> getMetadataGroups(Item item) {
         Map<String, List<MetadataValue>> metadataGroups = new HashMap<>();
         metadataGroups.put(organizationField, itemService.getMetadataByMetadataString(item, organizationField));
@@ -219,11 +210,4 @@ public class OrcidAffiliationFactory extends AbstractOrcidProfileSectionFactory 
         this.endDateField = endDateField;
     }
 
-    public boolean isAllowedMetadataVisibility() {
-        return isAllowedMetadataVisibility;
-    }
-
-    public void setAllowedMetadataVisibility(boolean allowedMetadataVisibility) {
-        isAllowedMetadataVisibility = allowedMetadataVisibility;
-    }
 }
