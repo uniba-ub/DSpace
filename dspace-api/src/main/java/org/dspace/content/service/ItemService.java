@@ -508,6 +508,26 @@ public interface ItemService
     public void adjustBundleBitstreamPolicies(Context context, Item item, Collection collection)
         throws SQLException, AuthorizeException;
 
+    /**
+     * Adjust the Bitstream policies to reflect what have been defined
+     * during the submission/workflow. The temporary SUBMISSION and WORKFLOW
+     * policies are removed and the policies defined at the item and collection
+     * level are copied and inherited as appropriate. Custom selected Item policies
+     * are copied to the bitstream only if no explicit custom policies were
+     * already applied to the bitstream. Collection's policies are inherited
+     * if there are no other policies defined or if the append mode is defined by
+     * the configuration via the core.authorization.installitem.inheritance-read.append-mode property
+     *
+     * @param context             DSpace context object
+     * @param item                Item to adjust policies on
+     * @param collection          Collection
+     * @param bitstream           Bitstream to adjust policies on
+     * @throws SQLException       If database error
+     * @throws AuthorizeException If authorization error
+     */
+    public void adjustBitstreamPolicies(Context context, Item item, Collection collection, Bitstream bitstream)
+        throws SQLException, AuthorizeException;
+
 
     /**
      * Adjust the Item's policies to reflect what have been defined during the
@@ -921,5 +941,18 @@ public interface ItemService
      * @return         true if the item is the latest version, false otherwise.
      */
     public boolean isLatestVersion(Context context, Item item) throws SQLException;
+
+    /**
+     * Adds a resource policy to the specified item for the given action and EPerson.
+     *
+     * @param  context   the DSpace context
+     * @param  item      the item to add the policy to
+     * @param  actionID  the ID of the action to add the policy for
+     * @param  eperson   the EPerson to add the policy for
+     * @throws SQLException        if a database error occurs
+     * @throws AuthorizeException  if the current user is not authorized to perform this action
+     */
+    void addResourcePolicy(Context context, Item item, int actionID, EPerson eperson)
+        throws SQLException, AuthorizeException;
 
 }
