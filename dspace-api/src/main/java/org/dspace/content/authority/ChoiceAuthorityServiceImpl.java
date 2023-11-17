@@ -574,7 +574,7 @@ public final class ChoiceAuthorityServiceImpl implements ChoiceAuthorityService 
             try {
                 configReaderService = SubmissionServiceFactory.getInstance().getSubmissionConfigService();
                 SubmissionConfig submissionName = configReaderService
-                        .getSubmissionConfigByCollection(collection.getHandle());
+                        .getSubmissionConfigByCollection(collection);
                 if (submissionName == null) {
                     log.warn("No submission name was found for object type " + dsoType + " in collection "
                                  + collection.getHandle());

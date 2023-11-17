@@ -169,7 +169,7 @@ public class DCInputsReader {
         SubmissionConfig config;
         try {
             config = SubmissionServiceFactory.getInstance().getSubmissionConfigService()
-                        .getSubmissionConfigByCollection(collection.getHandle());
+                        .getSubmissionConfigByCollection(collection);
             String formName = config.getSubmissionName();
             if (formName == null) {
                 throw new DCInputsReaderException("No form designated as default");
