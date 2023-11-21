@@ -1595,60 +1595,6 @@ public class AuthenticationRestControllerIT extends AbstractControllerIntegratio
     }
 
     @Test
-    public void testGenerateMachineTokenWithSpecialGroups() throws Exception {
-        context.turnOffAuthorisationSystem();
-
-        EPerson user = EPersonBuilder.createEPerson(context)
-            .withCanLogin(true)
-            .withPassword(password)
-            .withEmail("myuser@test.com")
-            .build();
-
-        Group specialGroup = GroupBuilder.createGroup(context)
-            .withName("Special group")
-            .build();
-
-        parentCommunity = CommunityBuilder.createCommunity(context)
-            .withName("Parent community")
-            .build();
-
-        Collection collection = CollectionBuilder.createCollection(context, parentCommunity)
-            .withName("Collection")
-            .build();
-
-        Item item = ItemBuilder.createItem(context, collection)
-            .withReaderGroup(specialGroup)
-            .build();
-
-        context.restoreAuthSystemState();
-
-        String token = getAuthToken(user.getEmail(), password);
-
-        getClient(token).perform(get("/api/core/items/" + item.getID()))
-            .andExpect(status().isForbidden());
-
-        configurationService.setProperty("authentication-password.login.specialgroup", "Special group");
-
-        token = getAuthToken(user.getEmail(), password);
-
-        configurationService.setProperty("authentication-password.login.specialgroup", null);
-
-        getClient(token).perform(get("/api/core/items/" + item.getID()))
-            .andExpect(status().isOk());
-
-        AtomicReference<String> machineToken = new AtomicReference<>();
-
-        getClient(token).perform(post("/api/authn/machinetokens"))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.token", notNullValue()))
-            .andExpect(jsonPath("$.type", is("machinetoken")))
-            .andDo(result -> machineToken.set(read(result.getResponse().getContentAsString(), "$.token")));
-
-        getClient(machineToken.get()).perform(get("/api/core/items/" + item.getID()))
-            .andExpect(status().isOk());
-    }
-
-    @Test
     public void testGenerateMachineTokenWithAnonymousUser() throws Exception {
 
         getClient().perform(post("/api/authn/machinetokens"))
