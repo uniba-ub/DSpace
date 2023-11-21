@@ -801,7 +801,10 @@ public class BitstreamRestControllerIT extends AbstractControllerIntegrationTest
             checkNumberOfStatsRecords(bitstream, 1);
 
         } finally {
-            configurationService.setProperty("plugin.sequence.org.dspace.authenticate.AuthenticationMethod", authenticationMethod);
+            configurationService.setProperty(
+                "plugin.sequence.org.dspace.authenticate.AuthenticationMethod",
+                authenticationMethod
+            );
         }
     }
 
