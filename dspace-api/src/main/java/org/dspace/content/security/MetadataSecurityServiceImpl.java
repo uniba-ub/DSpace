@@ -146,6 +146,9 @@ public class MetadataSecurityServiceImpl implements MetadataSecurityService {
     }
 
     private boolean canEditItem(Context context, Item item) {
+        if (context == null) {
+            return false;
+        }
         try {
             return this.itemService.canEdit(context, item);
         } catch (SQLException e) {
