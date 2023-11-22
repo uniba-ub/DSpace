@@ -36,6 +36,7 @@ import static org.springframework.data.rest.webmvc.RestMediaTypes.TEXT_URI_LIST_
 import static org.springframework.http.MediaType.parseMediaType;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.head;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
@@ -791,6 +792,8 @@ public class BitstreamRestControllerIT extends AbstractControllerIntegrationTest
             String authToken = getAuthToken(eperson.getEmail(), password);
             getClient(authToken).perform(get("/api/core/bitstreams/" + bitstream.getID() + "/content"))
                                 .andExpect(status().isForbidden());
+
+            getClient(authToken).perform(post("/api/authn/logout")).andExpect(status().isNoContent());
 
             configurationService.setProperty("authentication-password.login.specialgroup", "Restricted Group");
 

@@ -170,10 +170,6 @@ public class PasswordAuthentication
         return Collections.EMPTY_LIST;
     }
 
-    @Override
-    public boolean areSpecialGroupsApplicable(Context context, HttpServletRequest request) {
-        return true;
-    }
 
     /**
      * Check credentials: username must match the email address of an

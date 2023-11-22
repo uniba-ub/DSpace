@@ -665,6 +665,9 @@ public class Context implements AutoCloseable {
      */
     public void setSpecialGroup(UUID groupID) {
         specialGroups.add(groupID);
+        if (getCachedAllMemberGroupsSet(currentUser) != null) {
+            readOnlyCache.clearAllMembershipGroupCache(currentUser);
+        }
     }
 
     /**
