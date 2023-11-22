@@ -277,4 +277,19 @@ public class PasswordAuthentication
         }
         return ePersonService.checkPassword(context, ePerson, currentPassword);
     }
+
+    @Override
+    public boolean areSpecialGroupsApplicable(Context context, HttpServletRequest request) {
+        return isPasswordAuthenticationMethodInContext(context, request) ||
+            isPasswordAuthenticatedInRequest(context, request);
+    }
+
+    private boolean isPasswordAuthenticatedInRequest(Context context, HttpServletRequest request) {
+        return StringUtils.isBlank(context.getAuthenticationMethod()) &&
+            (Boolean) request.getAttribute(PASSWORD_AUTHENTICATED);
+    }
+
+    private boolean isPasswordAuthenticationMethodInContext(Context context, HttpServletRequest request) {
+        return AuthenticationMethod.super.areSpecialGroupsApplicable(context, request);
+    }
 }

@@ -665,7 +665,6 @@ public class Context implements AutoCloseable {
      */
     public void setSpecialGroup(UUID groupID) {
         specialGroups.add(groupID);
-        clearCachedGroups();
     }
 
     /**
@@ -954,11 +953,6 @@ public class Context implements AutoCloseable {
         }
     }
 
-    protected void clearCachedGroups() {
-        if (isReadOnly()) {
-            readOnlyCache.clearAllMembershipGroupCache(currentUser);
-        }
-    }
 
     public Set<Group> getCachedAllMemberGroupsSet(EPerson ePerson) {
         if (isReadOnly()) {
