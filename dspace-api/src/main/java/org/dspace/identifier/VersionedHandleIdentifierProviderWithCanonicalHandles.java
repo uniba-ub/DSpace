@@ -9,6 +9,7 @@ package org.dspace.identifier;
 
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -508,6 +509,7 @@ public class VersionedHandleIdentifierProviderWithCanonicalHandles extends Ident
         String handleref = handleService.getCanonicalForm(handle);
         List<MetadataValue> identifiers = itemService
             .getMetadata(item, MetadataSchemaEnum.DC.getName(), "identifier", "uri", Item.ANY);
+        List<MetadataValue> toRemove = new ArrayList<>();
         for (MetadataValue identifier : identifiers) {
             if (this.supports(identifier.getValue())) {
                 // ignore handles
@@ -515,9 +517,8 @@ public class VersionedHandleIdentifierProviderWithCanonicalHandles extends Ident
             }
 
             identifiers.remove(identifier);
+            toRemove.add(identifier);
             metadataValueService.delete(context, identifier);
-
-            context.uncacheEntity(identifier);
 
             itemService.addMetadata(context,
                                     item,
@@ -527,6 +528,10 @@ public class VersionedHandleIdentifierProviderWithCanonicalHandles extends Ident
                                     identifier.getAuthority(),
                                     identifier.getConfidence());
         }
+        itemService.removeMetadataValues(context, item, toRemove);
+
+        item = context.reloadEntity(item);
+
         if (!StringUtils.isEmpty(handleref)) {
             itemService.addMetadata(context, item, MetadataSchemaEnum.DC.getName(),
                                     "identifier", "uri", null, handleref);
