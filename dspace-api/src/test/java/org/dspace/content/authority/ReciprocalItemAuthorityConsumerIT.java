@@ -65,7 +65,7 @@ public class ReciprocalItemAuthorityConsumerIT extends AbstractIntegrationTestWi
                 .getConfigurationService();
         metadataAuthorityService = ContentAuthorityServiceFactory.getInstance()
                 .getMetadataAuthorityService();
-        eventService = EventServiceFactory.getInstance().getEventService()
+        eventService = EventServiceFactory.getInstance().getEventService();
 
         configurationService.setProperty("ItemAuthority.reciprocalMetadata.Publication.dc.relation.product",
                 "dc.relation.publication");

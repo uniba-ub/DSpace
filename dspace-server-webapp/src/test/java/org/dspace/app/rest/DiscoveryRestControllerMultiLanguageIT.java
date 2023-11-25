@@ -434,6 +434,7 @@ public class DiscoveryRestControllerMultiLanguageIT extends AbstractControllerIn
 
     @Test
     public void discoverFacetsTypesTestWithUnknownAuthorityName() throws Exception {
+        context.turnOffAuthorisationSystem();
         try {
             configurationService.setProperty("authority.controlled.dc.type", "true");
             metadataAuthorityService.clearCache();
