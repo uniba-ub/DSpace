@@ -3201,7 +3201,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
         return getListOfVisitsPerMonthsPoints(viewsLastMonth, nrOfMonthsBack);
     }
 
-    private static final class StatisticsEventListener implements EventListener {
+    public static final class StatisticsEventListener implements EventListener {
 
         public Queue<Consumer<Event>> consumers = new LinkedList<>();
 
