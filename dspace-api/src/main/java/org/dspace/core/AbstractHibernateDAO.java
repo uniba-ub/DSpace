@@ -136,7 +136,7 @@ public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
 
         org.hibernate.query.Query query = getHibernateSession(context).createQuery(criteriaQuery);
         query.setMaxResults(1);
-        return query.getSingleResult() != null;
+        return query.uniqueResult() != null;
     }
 
     @Override
