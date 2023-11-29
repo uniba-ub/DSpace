@@ -444,6 +444,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                 .andExpect(status().isCreated());
 
+        Thread.sleep(1000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -491,13 +492,6 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
 
     @Test
     public void totalVisitsReport_Item_Visited() throws Exception {
-        // ** WHEN **
-        // We visit an Item
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("item");
-        viewEventRest.setTargetId(itemVisited.getID());
-
-        Thread.sleep(1000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -516,6 +510,12 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         )
                     )));
             }));
+
+        // ** WHEN **
+        // We visit an Item
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("item");
+        viewEventRest.setTargetId(itemVisited.getID());
 
         ObjectMapper mapper = new ObjectMapper();
 
@@ -710,18 +710,6 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
 
     @Test
     public void totalVisitsPerMonthReport_Item_Visited() throws Exception {
-        // ** WHEN **
-        // We visit an Item
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("item");
-        viewEventRest.setTargetId(itemVisited.getID());
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -788,6 +776,19 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         )
                     )));
             }));
+
+        // ** WHEN **
+        // We visit an Item
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("item");
+        viewEventRest.setTargetId(itemVisited.getID());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -993,12 +994,6 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
         viewEventRest.setTargetType("collection");
         viewEventRest.setTargetId(collectionVisited.getID());
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 List<UsageReportPointRest> expectedPoints = List.of(
@@ -1053,6 +1048,11 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         )
                     )));
             }));
+        ObjectMapper mapper = new ObjectMapper();
+        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -1080,30 +1080,35 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                 .andExpect(status().isCreated());
 
-        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
         Thread.sleep(1000);
+
         UsageReportPointCountryRest expectedPoint = new UsageReportPointCountryRest();
         expectedPoint.addValue("views", 2);
         expectedPoint.setIdAndLabel(Locale.US.getCountry(),
             Locale.US.getDisplayCountry(context.getCurrentLocale()));
 
-        // And request that collection's TopCountries report
-        getClient(adminToken).perform(
-                get("/api/statistics/usagereports/" + communityVisited.getID() + "_" + TOP_COUNTRIES_REPORT_ID))
-            // ** THEN **
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$", Matchers.is(
-                UsageReportMatcher.matchUsageReport(
-                    communityVisited.getID() + "_" + TOP_COUNTRIES_REPORT_ID,
-                    TOP_COUNTRIES_REPORT_ID,
-                    List.of(
-                        getExpectedCountryViews("US", "United States", 2)
-                    )
-                )
-            )));
+        this.statisticsEventListener.addConsumer(
+            throwingConsumerWrapper((event) -> {
+                // And request that collection's TopCountries report
+                getClient(adminToken).perform(
+                        get("/api/statistics/usagereports/" + communityVisited.getID() + "_" + TOP_COUNTRIES_REPORT_ID))
+                    // ** THEN **
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$", Matchers.is(
+                        UsageReportMatcher.matchUsageReport(
+                            communityVisited.getID() + "_" + TOP_COUNTRIES_REPORT_ID,
+                            TOP_COUNTRIES_REPORT_ID,
+                            List.of(
+                                getExpectedCountryViews("US", "United States", 2)
+                            )
+                        )
+                    )));
+            }));
+
+        getClient(loggedInToken).perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     /**
@@ -1423,10 +1428,6 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
         viewEventRest4.setTargetType("item");
         viewEventRest4.setTargetId(item4.getID());
 
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest4))
-                .contentType(contentType))
-            .andExpect(status().isCreated());
 
         UsageReportPointDsoTotalVisitsRest expectedPoint1 = new UsageReportPointDsoTotalVisitsRest();
         expectedPoint1.addValue("views", 1);
@@ -1512,6 +1513,8 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
             projectCategory, productCategory, journalCategory,
             personCategory, orgUnitCategory,
             equipmentCategory, eventCategory);
+        Thread.sleep(1000);
+
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 // And request the sites global usage report (show top most popular items)
@@ -1538,6 +1541,11 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                             TOP_COUNTRIES_REPORT_ID,
                             List.of(pointCountry)))));
             }));
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest4))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -1761,18 +1769,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
 
     @Test
     public void usageReportsSearch_Item_Visited_FileNotVisited() throws Exception {
-        // ** WHEN **
-        // We visit an item
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("item");
-        viewEventRest.setTargetId(itemVisited.getID());
 
-        ObjectMapper mapper = new ObjectMapper();
-
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 UsageReportPointDsoTotalVisitsRest expectedPointTotalVisits =
@@ -1847,6 +1844,19 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         )
                     )));
             }));
+
+        // ** WHEN **
+        // We visit an item
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("item");
+        viewEventRest.setTargetId(itemVisited.getID());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -2073,16 +2083,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
         Site site = SiteBuilder.createSite(context).build();
         //create new item using ItemBuilder
         context.restoreAuthSystemState();
-        //visit first item now
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("item");
-        viewEventRest.setTargetId(itemVisited.getID());
-        ObjectMapper mapper = new ObjectMapper();
-        //add visit for first item
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
+
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 //create expected raport points
@@ -2170,23 +2171,22 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         matchUsageReport(site.getID() + "_" + TOP_COUNTRIES_REPORT_ID,
                             TOP_COUNTRIES_REPORT_ID, List.of()))));
             }));
+
+        //visit first item now
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("item");
+        viewEventRest.setTargetId(itemVisited.getID());
+        ObjectMapper mapper = new ObjectMapper();
+        //add visit for first item
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     // This test search for statistics one day after the moment in which community is visited
     @Test
     public void usageReportsSearch_Community_VisitedAtTime() throws Exception {
-        // ** WHEN **
-        // We visit a community
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("community");
-        viewEventRest.setTargetId(communityVisited.getID());
-
-        ObjectMapper mapper = new ObjectMapper();
-
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -2233,23 +2233,25 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                                                             Arrays.asList(expectedPointCountry))
                     )));
             }));
-    }
 
-    // filter bitstream only with  start date
-    @Test
-    public void usageReportsSearch_Bitstream_VisitedFromTime() throws Exception {
         // ** WHEN **
-        // We visit a bitstream
+        // We visit a community
         ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("bitstream");
-        viewEventRest.setTargetId(bitstreamVisited.getID());
+        viewEventRest.setTargetType("community");
+        viewEventRest.setTargetId(communityVisited.getID());
 
         ObjectMapper mapper = new ObjectMapper();
 
         getClient().perform(post("/api/statistics/viewevents")
                 .content(mapper.writeValueAsBytes(viewEventRest))
                 .contentType(contentType))
-                .andExpect(status().isCreated());
+            .andExpect(status().isCreated());
+    }
+
+    // filter bitstream only with  start date
+    @Test
+    public void usageReportsSearch_Bitstream_VisitedFromTime() throws Exception {
+
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 UsageReportPointDsoTotalVisitsRest expectedPointTotalVisits =
@@ -2310,6 +2312,19 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                                                             Arrays.asList(expectedPointTotalVisits))
                     )));
             }));
+
+        // ** WHEN **
+        // We visit a bitstream
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("bitstream");
+        viewEventRest.setTargetId(bitstreamVisited.getID());
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     //test for inverse relation between person and publication
@@ -2539,10 +2554,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                 .andExpect(status().isCreated());
 
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRestSecondPublicationBitstream))
-                .contentType(contentType))
-                .andExpect(status().isCreated());
+        Thread.sleep(1000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -2608,33 +2620,38 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                     .andExpect(jsonPath("$._embedded.usagereports", not(empty())))
                     .andExpect(jsonPath("$._embedded.usagereports", Matchers.hasItems(
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOTAL_VISITS_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOTAL_VISITS_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOTAL_VISITS_REPORT_ID,
                             List.of(totalVisitRelation)),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOTAL_VISITS_PER_MONTH_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOTAL_VISITS_PER_MONTH_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOTAL_VISITS_PER_MONTH_REPORT_ID,
                             getLastMonthVisitPoints(3)),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOP_CITIES_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOP_CITIES_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOP_CITIES_REPORT_ID,
                             List.of(expectedPointCityWithRelation)),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOP_COUNTRIES_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOP_COUNTRIES_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOP_COUNTRIES_REPORT_ID,
                             List.of(expectedPointCountryWithRelation)),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOP_ITEMS_REPORT_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOP_ITEMS_REPORT_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOP_ITEMS_REPORT_ID, points),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOTAL_DOWNLOADS_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOTAL_DOWNLOADS_REPORT_ID_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOTAL_DOWNLOADS_REPORT_ID, totalDownloadsPoints),
                         UsageReportMatcher.matchUsageReport(orgUnit.getID() + "_" +
-                                        TOTAL_VISITS_TOTAL_DOWNLOADS_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
+                                TOTAL_VISITS_TOTAL_DOWNLOADS_RELATION_ORGUNIT_RP_RESEARCHOUTPUTS,
                             TOTAL_VISITS_TOTAL_DOWNLOADS,
                             totalDownloadsAndViewsPoints)
                     )));
             }));
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRestSecondPublicationBitstream))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -2699,14 +2716,11 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                    .andExpect(status().isCreated());
 
+        Thread.sleep(1000);
+
         ViewEventRest viewEventRest4 = new ViewEventRest();
         viewEventRest4.setTargetType("item");
         viewEventRest4.setTargetId(item4.getID());
-
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest4))
-                .contentType(contentType))
-                   .andExpect(status().isCreated());
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -2801,6 +2815,11 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         matchUsageReport(collectionNotVisited.getID() + "_" + TOP_ITEMS_COUNTRIES_REPORT_ID,
                             TOP_COUNTRIES_REPORT_ID, List.of(pointCountry)))));
             }));
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest4))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
@@ -2962,14 +2981,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                    .andExpect(status().isCreated());
 
-        ViewEventRest viewEventRest4 = new ViewEventRest();
-        viewEventRest4.setTargetType("item");
-        viewEventRest4.setTargetId(item4.getID());
-
-        getClient().perform(post("/api/statistics/viewevents")
-                .content(mapper.writeValueAsBytes(viewEventRest4))
-                .contentType(contentType))
-                   .andExpect(status().isCreated());
+        Thread.sleep(1000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -3081,6 +3093,15 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         matchUsageReport(community.getID() + "_" + TOP_ITEMS_COUNTRIES_REPORT_ID,
                             TOP_COUNTRIES_REPORT_ID, List.of(pointCountry)))));
             }));
+
+        ViewEventRest viewEventRest4 = new ViewEventRest();
+        viewEventRest4.setTargetType("item");
+        viewEventRest4.setTargetId(item4.getID());
+
+        getClient().perform(post("/api/statistics/viewevents")
+                .content(mapper.writeValueAsBytes(viewEventRest4))
+                .contentType(contentType))
+            .andExpect(status().isCreated());
     }
 
     @Test
