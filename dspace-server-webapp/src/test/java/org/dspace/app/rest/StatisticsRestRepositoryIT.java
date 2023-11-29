@@ -493,6 +493,8 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
     @Test
     public void totalVisitsReport_Item_Visited() throws Exception {
 
+        Thread.sleep(1000);
+
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
                 // And request that collection's TotalVisits stat report
@@ -825,7 +827,7 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                 .contentType(contentType))
                 .andExpect(status().isCreated());
 
-        Thread.sleep(1000);
+        Thread.sleep(3000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -921,12 +923,8 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
 
     @Test
     public void TotalDownloadsReport_Item() throws Exception {
-        // ** WHEN **
-        // We visit an Item's bitstream
-        ViewEventRest viewEventRest = new ViewEventRest();
-        viewEventRest.setTargetType("bitstream");
-        viewEventRest.setTargetId(bitstreamVisited.getID());
 
+        Thread.sleep(1000);
 
         this.statisticsEventListener.addConsumer(
             throwingConsumerWrapper((event) -> {
@@ -955,6 +953,12 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                         )
                     )));
             }));
+
+        // ** WHEN **
+        // We visit an Item's bitstream
+        ViewEventRest viewEventRest = new ViewEventRest();
+        viewEventRest.setTargetType("bitstream");
+        viewEventRest.setTargetId(bitstreamVisited.getID());
 
         ObjectMapper mapper = new ObjectMapper();
 
