@@ -191,17 +191,23 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
 
         for (String header : mainSheet.getHeaders()) {
 
-            if (header.equals(ID_HEADER)) {
+            if (header.equals(ID_HEADER) && item != null ) {
                 mainSheet.setValueOnLastRow(header, item.getId().toString());
                 continue;
             }
 
-            if (header.equals(DISCOVERABLE_HEADER)) {
+            if (header.equals(DISCOVERABLE_HEADER) && item != null ) {
                 mainSheet.setValueOnLastRow(header, item.isDiscoverable() ? "Y" : "N");
                 continue;
             }
 
-            item.getMetadataValues(header).forEach(value -> writeMetadataValue(mainSheet, header, value));
+            if (item != null) {
+                List<MetadataValueDTO> metadataValues = item.getMetadataValues(header);
+
+                if (metadataValues != null) {
+                    metadataValues.forEach(value -> writeMetadataValue(mainSheet, header, value));
+                }
+            }
         }
 
     }
@@ -243,8 +249,10 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     }
 
     private void writeBitstreamSheet(ItemDTO item, BulkImportSheet sheet) {
-        for (BitstreamDTO bitstream : item.getBitstreams()) {
-            writeBitstreamRow(sheet, item, bitstream);
+        if (item != null) {
+            for (BitstreamDTO bitstream : item.getBitstreams()) {
+                writeBitstreamRow(sheet, item, bitstream);
+            }
         }
     }
 
@@ -434,10 +442,10 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     }
 
     private ItemDTO convertItem(Context context, Collection collection, Item item) {
-
         if (isNotInCollection(context, item, collection)) {
-            throw new IllegalArgumentException("It is not possible to export items from two different collections: "
-                + "item " + item.getID() + " is not in collection " + collection.getID());
+            System.out.println("Skipping item " + item.getID() +
+                    " because it is mapped from collection " + collection.getID());
+            return null;
         }
 
         ItemDTO itemDTO = itemToItemDTOConverter.convert(context, item);
