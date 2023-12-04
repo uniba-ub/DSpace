@@ -186,30 +186,29 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     }
 
     private void writeMainSheet(ItemDTO item, BulkImportSheet mainSheet) {
+        if (item == null) {
+            return;
+        }
 
         mainSheet.appendRow();
 
         for (String header : mainSheet.getHeaders()) {
-
-            if (header.equals(ID_HEADER) && item != null ) {
+            if (header.equals(ID_HEADER)) {
                 mainSheet.setValueOnLastRow(header, item.getId().toString());
                 continue;
             }
 
-            if (header.equals(DISCOVERABLE_HEADER) && item != null ) {
+            if (header.equals(DISCOVERABLE_HEADER)) {
                 mainSheet.setValueOnLastRow(header, item.isDiscoverable() ? "Y" : "N");
                 continue;
             }
 
-            if (item != null) {
-                List<MetadataValueDTO> metadataValues = item.getMetadataValues(header);
+            List<MetadataValueDTO> metadataValues = item.getMetadataValues(header);
 
-                if (metadataValues != null) {
-                    metadataValues.forEach(value -> writeMetadataValue(mainSheet, header, value));
-                }
+            if (metadataValues != null) {
+                metadataValues.forEach(value -> writeMetadataValue(mainSheet, header, value));
             }
         }
-
     }
 
     private void writeNestedMetadataSheet(ItemDTO item, BulkImportSheet nestedMetadataSheet) {
