@@ -408,6 +408,13 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
     }
 
     @Override
+    public List<Bitstream> getBitstreamByBundleName(Item item, String bundleName) throws SQLException {
+        return itemService.getBundles(item, bundleName).stream()
+            .flatMap(bundle -> bundle.getBitstreams().stream())
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public Bitstream getFirstBitstream(Item item, String bundleName) throws SQLException {
         List<Bundle> bundles = itemService.getBundles(item, bundleName);
         if (CollectionUtils.isNotEmpty(bundles)) {
@@ -543,6 +550,10 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
             throw new SQLRuntimeException(ex);
         }
 
+    }
+
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.bitstreamDAO.exists(context, Bitstream.class, id);
     }
 
     private boolean isContainedInBundleNamed(Bitstream bitstream, String name) {
