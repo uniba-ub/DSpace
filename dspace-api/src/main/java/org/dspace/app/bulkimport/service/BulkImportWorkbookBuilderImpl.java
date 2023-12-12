@@ -28,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
@@ -55,11 +56,13 @@ import org.dspace.content.dto.BitstreamDTO;
 import org.dspace.content.dto.ItemDTO;
 import org.dspace.content.dto.MetadataValueDTO;
 import org.dspace.content.dto.ResourcePolicyDTO;
+import org.dspace.content.integration.crosswalks.XlsCollectionCrosswalk;
 import org.dspace.content.service.CollectionService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.CrisConstants;
 import org.dspace.core.exception.SQLRuntimeException;
+import org.dspace.scripts.handler.DSpaceRunnableHandler;
 import org.dspace.submit.model.AccessConditionOption;
 import org.dspace.submit.model.UploadConfiguration;
 import org.dspace.submit.model.UploadConfigurationService;
@@ -87,7 +90,11 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     @Autowired
     private CollectionService collectionService;
 
+    @Autowired
+    private XlsCollectionCrosswalk xlsCollectionCrosswalk;
+
     private DCInputsReader reader;
+    private DSpaceRunnableHandler handler;
 
     @PostConstruct
     private void postConstruct() {
@@ -439,10 +446,13 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     private void autoSizeColumns(List<BulkImportSheet> sheets) {
         sheets.forEach(sheet -> autoSizeColumns(sheet.getSheet()));
     }
-
     private ItemDTO convertItem(Context context, Collection collection, Item item) {
+        return convertItem(context, collection, item, LOGGER::info);
+    }
+
+    private ItemDTO convertItem(Context context, Collection collection, Item item, Consumer<String> logHandler) {
         if (isNotInCollection(context, item, collection)) {
-            System.out.println("Skipping item " + item.getID() +
+            logHandler.accept("Skipping item " + item.getID() +
                     " because it is mapped from collection " + collection.getID());
             return null;
         }

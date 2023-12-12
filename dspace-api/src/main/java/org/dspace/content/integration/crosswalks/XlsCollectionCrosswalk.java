@@ -16,6 +16,9 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.apache.commons.collections4.IteratorUtils;
+import org.dspace.app.bulkimport.service.BulkImportWorkbookBuilderImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.dspace.app.bulkedit.BulkImport;
 import org.dspace.app.bulkimport.service.BulkImportWorkbookBuilder;
@@ -31,6 +34,7 @@ import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
+import org.dspace.scripts.handler.DSpaceRunnableHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -46,11 +50,14 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     @Autowired
     private ItemService itemService;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(XlsCollectionCrosswalk.class);
+
     @Autowired
     private CollectionService collectionService;
 
     @Autowired
     private BulkImportWorkbookBuilder bulkImportWorkbookBuilder;
+    private DSpaceRunnableHandler handler;
 
     @Override
     public boolean canDisseminate(Context context, DSpaceObject dso) {
@@ -73,7 +80,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
 
     @Override
     public void disseminate(Context context, DSpaceObject dso, OutputStream out)
-        throws CrosswalkException, IOException, SQLException, AuthorizeException {
+            throws CrosswalkException, IOException, SQLException, AuthorizeException {
 
         if (!canDisseminate(context, dso)) {
             throw new CrosswalkObjectNotSupported("Can only crosswalk a Collection");
@@ -89,7 +96,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
 
     @Override
     public void disseminate(Context context, Iterator<? extends DSpaceObject> dsoIterator, OutputStream out)
-        throws CrosswalkException, IOException, SQLException, AuthorizeException {
+            throws CrosswalkException, IOException, SQLException, AuthorizeException {
 
         if (!dsoIterator.hasNext()) {
             throw new IllegalArgumentException("At least one object must be provided to perform xsl export");
@@ -105,7 +112,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     }
 
     private void writeWorkbook(Context context, Collection collection, Iterator<Item> itemIterator, OutputStream out)
-        throws IOException {
+            throws IOException {
 
         try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator)) {
             workbook.write(out);
@@ -120,7 +127,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     private Item convertToItem(DSpaceObject dso) {
         if (dso.getType() != Constants.ITEM) {
             throw new IllegalArgumentException("The xsl export supports only items. "
-                + "Found object with type " + dso.getType() + " and id " + dso.getID());
+                    + "Found object with type " + dso.getType() + " and id " + dso.getID());
         }
         return (Item) dso;
     }
@@ -131,6 +138,20 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
             throw new IllegalArgumentException("No collection found for item with id: " + item.getID());
         }
         return collection;
+    }
+
+
+    public void logInfo(String message) {
+        setHandler(handler);
+        if (handler != null) {
+            handler.logInfo(message);
+        } else {
+            LOGGER.info(message);
+        }
+    }
+
+    public void setHandler(DSpaceRunnableHandler handler) {
+        this.handler = handler;
     }
 
 }
