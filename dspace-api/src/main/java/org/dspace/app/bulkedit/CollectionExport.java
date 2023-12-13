@@ -13,6 +13,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dspace.app.bulkimport.exception.BulkImportException;
 import org.dspace.authorize.factory.AuthorizeServiceFactory;
 import org.dspace.authorize.service.AuthorizeService;
@@ -84,20 +85,26 @@ public class CollectionExport extends DSpaceRunnable<CollectionExportScriptConfi
 
     }
 
-    private void performExport(Collection collection) throws Exception {
+    private void performExport(Collection collection) {
+        try {
+            xlsCollectionCrosswalk.setHandler(handler);
+            String fileName = xlsCollectionCrosswalk.getFileName();
 
-        String fileName = xlsCollectionCrosswalk.getFileName();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            xlsCollectionCrosswalk.disseminate(context, collection, out);
 
-        ByteArrayOutputStream out = new ByteArrayOutputStream();
-        xlsCollectionCrosswalk.disseminate(context, collection, out);
+            ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
+            context.setMode(Context.Mode.READ_WRITE);
+            handler.writeFilestream(context, fileName, in, xlsCollectionCrosswalk.getMIMEType());
 
-        ByteArrayInputStream in = new ByteArrayInputStream(out.toByteArray());
-        context.setMode(Context.Mode.READ_WRITE);
-        handler.writeFilestream(context, fileName, in, xlsCollectionCrosswalk.getMIMEType());
-
-        handler.logInfo("Items exported successfully into file named " + fileName);
-
+            handler.logInfo("Items exported successfully into file named " + fileName);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            xlsCollectionCrosswalk.setHandler(null);
+        }
     }
+
 
     private void assignCurrentUserInContext() throws SQLException {
         UUID uuid = getEpersonIdentifier();

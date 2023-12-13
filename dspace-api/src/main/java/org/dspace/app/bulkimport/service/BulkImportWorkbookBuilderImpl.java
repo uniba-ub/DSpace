@@ -35,8 +35,8 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -77,7 +77,7 @@ import org.springframework.format.datetime.DateFormatter;
  */
 public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder {
 
-    private static final Logger LOGGER = LogManager.getLogger(BulkImportWorkbookBuilderImpl.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BulkImportWorkbookBuilderImpl.class);
 
     private static final DateFormatter DATE_FORMATTER = new DateFormatter("yyyy-MM-dd");
 
@@ -112,8 +112,9 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     }
 
     @Override
-    public Workbook buildForItems(Context context, Collection collection, Iterator<Item> items) {
-        Iterator<ItemDTO> itemIterator = transform(items, item -> convertItem(context, collection, item));
+    public Workbook buildForItems(Context context, Collection collection, Iterator<Item> items,
+                                  Consumer<String> logHandler) {
+        Iterator<ItemDTO> itemIterator = transform(items, item -> convertItem(context, collection, item, logHandler));
         return build(context, collection, itemIterator);
     }
 

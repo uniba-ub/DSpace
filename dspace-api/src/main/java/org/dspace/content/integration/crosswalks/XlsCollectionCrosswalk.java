@@ -16,7 +16,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.dspace.app.bulkimport.service.BulkImportWorkbookBuilderImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
@@ -57,6 +56,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
 
     @Autowired
     private BulkImportWorkbookBuilder bulkImportWorkbookBuilder;
+
     private DSpaceRunnableHandler handler;
 
     @Override
@@ -113,8 +113,8 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
 
     private void writeWorkbook(Context context, Collection collection, Iterator<Item> itemIterator, OutputStream out)
             throws IOException {
-
-        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator)) {
+        this.setHandler(this.handler);
+        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator, this::logInfo)) {
             workbook.write(out);
         }
 
