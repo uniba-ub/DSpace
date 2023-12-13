@@ -17,8 +17,6 @@ import java.util.Iterator;
 import java.util.logging.Level;
 
 import org.apache.commons.collections4.IteratorUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.dspace.app.bulkedit.BulkImport;
 import org.dspace.app.bulkimport.service.BulkImportWorkbookBuilder;
@@ -35,6 +33,8 @@ import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.scripts.handler.DSpaceRunnableHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -115,7 +115,8 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     private void writeWorkbook(Context context, Collection collection, Iterator<Item> itemIterator, OutputStream out)
             throws IOException {
         this.setHandler(this.handler);
-        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator, this::logMessage)) {
+        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(
+                context, collection, itemIterator, this::logMessage)) {
             workbook.write(out);
         }
 

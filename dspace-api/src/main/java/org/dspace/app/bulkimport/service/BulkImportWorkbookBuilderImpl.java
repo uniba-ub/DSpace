@@ -36,8 +36,6 @@ import javax.annotation.PostConstruct;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
@@ -67,6 +65,8 @@ import org.dspace.scripts.handler.DSpaceRunnableHandler;
 import org.dspace.submit.model.AccessConditionOption;
 import org.dspace.submit.model.UploadConfiguration;
 import org.dspace.submit.model.UploadConfigurationService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.datetime.DateFormatter;
 
@@ -448,7 +448,8 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     private void autoSizeColumns(List<BulkImportSheet> sheets) {
         sheets.forEach(sheet -> autoSizeColumns(sheet.getSheet()));
     }
-    private ItemDTO convertItem(Context context, Collection collection, Item item, BiConsumer<Level, String> logHandler) {
+    private ItemDTO convertItem(
+            Context context, Collection collection, Item item, BiConsumer<Level, String> logHandler) {
         if (isNotInCollection(context, item, collection)) {
             logHandler.accept(Level.WARNING, "Skipping item " + item.getID() +
                     " because it is mapped from collection " + collection.getID());

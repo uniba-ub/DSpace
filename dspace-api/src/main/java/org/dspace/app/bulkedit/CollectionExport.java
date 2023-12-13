@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import org.apache.commons.cli.ParseException;
-import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.dspace.app.bulkimport.exception.BulkImportException;
 import org.dspace.authorize.factory.AuthorizeServiceFactory;
 import org.dspace.authorize.service.AuthorizeService;
