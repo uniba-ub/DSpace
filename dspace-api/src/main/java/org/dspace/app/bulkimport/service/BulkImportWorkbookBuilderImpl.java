@@ -28,7 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.function.BiConsumer;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
@@ -113,7 +114,7 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
 
     @Override
     public Workbook buildForItems(Context context, Collection collection, Iterator<Item> items,
-                                  Consumer<String> logHandler) {
+                                  BiConsumer<Level, String> logHandler) {
         Iterator<ItemDTO> itemIterator = transform(items, item -> convertItem(context, collection, item, logHandler));
         return build(context, collection, itemIterator);
     }
@@ -447,13 +448,9 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
     private void autoSizeColumns(List<BulkImportSheet> sheets) {
         sheets.forEach(sheet -> autoSizeColumns(sheet.getSheet()));
     }
-    private ItemDTO convertItem(Context context, Collection collection, Item item) {
-        return convertItem(context, collection, item, LOGGER::info);
-    }
-
-    private ItemDTO convertItem(Context context, Collection collection, Item item, Consumer<String> logHandler) {
+    private ItemDTO convertItem(Context context, Collection collection, Item item, BiConsumer<Level, String> logHandler) {
         if (isNotInCollection(context, item, collection)) {
-            logHandler.accept("Skipping item " + item.getID() +
+            logHandler.accept(Level.WARNING, "Skipping item " + item.getID() +
                     " because it is mapped from collection " + collection.getID());
             return null;
         }

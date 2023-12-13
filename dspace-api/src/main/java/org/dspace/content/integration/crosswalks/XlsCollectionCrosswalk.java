@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
+import java.util.logging.Level;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.slf4j.Logger;
@@ -114,7 +115,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     private void writeWorkbook(Context context, Collection collection, Iterator<Item> itemIterator, OutputStream out)
             throws IOException {
         this.setHandler(this.handler);
-        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator, this::logInfo)) {
+        try (Workbook workbook = bulkImportWorkbookBuilder.buildForItems(context, collection, itemIterator, this::logMessage)) {
             workbook.write(out);
         }
 
@@ -141,17 +142,34 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     }
 
 
-    public void logInfo(String message) {
-        setHandler(handler);
+    public void logMessage(Level level, String message) {
+
         if (handler != null) {
-            handler.logInfo(message);
-        } else {
-            LOGGER.info(message);
+            switch (level.getName()) {
+                case "OFF":
+                    LOGGER.info(message);
+                    break;
+                case "SEVERE":
+                    handler.logError(message);
+                    break;
+                case "WARNING":
+                    handler.logWarning(message);
+                    break;
+                case "INFO":
+                case "CONFIG":
+                case "FINE":
+                    handler.logInfo(message);
+                    break;
+                case "FINER":
+                case "FINEST":
+                case "ALL":
+                default:
+                    handler.logDebug(message);
+                    break;
+            }
         }
     }
-
     public void setHandler(DSpaceRunnableHandler handler) {
         this.handler = handler;
     }
-
 }
