@@ -238,6 +238,7 @@ public class OrcidQueueServiceImpl implements OrcidQueueService {
                 create(context, profileItem, entities.next());
             }
         } else {
+            deleteByProfileItemAndRecordType(context, profileItem, entityType);
             Iterator<Item> entities = findAllEntitiesLinkableWith(context, profileItem, entityType);
             while (entities.hasNext()) {
                 create(context, profileItem, entities.next());
