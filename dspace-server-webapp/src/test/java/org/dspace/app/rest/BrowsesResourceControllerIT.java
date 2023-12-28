@@ -21,6 +21,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.Period;
+
 import org.dspace.app.rest.matcher.BrowseEntryResourceMatcher;
 import org.dspace.app.rest.matcher.BrowseIndexMatcher;
 import org.dspace.app.rest.matcher.ItemMatcher;
@@ -566,7 +568,7 @@ public class BrowsesResourceControllerIT extends AbstractControllerIntegrationTe
                                         .withIssueDate("2017-08-10")
                                         .withAuthor("Mouse, Mickey")
                                         .withSubject("Cartoons").withSubject("Mice")
-                                        .withEmbargoPeriod("12 months")
+                                        .withEmbargoPeriod(Period.ofMonths(12))
                                         .build();
 
         //5. An item that is only readable for an internal groups
@@ -652,6 +654,135 @@ public class BrowsesResourceControllerIT extends AbstractControllerIntegrationTe
                    .andExpect(jsonPath("$._embedded.items[*].metadata", Matchers.allOf(
                            not(matchMetadata("dc.title", "This is a private item")),
                            not(matchMetadata("dc.title", "Internal publication")))));
+    }
+
+    @Test
+    public void findBrowseByTitleItemsWithScope() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        //** GIVEN **
+        //1. A community-collection structure with one parent community with sub-community and two collections.
+        parentCommunity = CommunityBuilder.createCommunity(context)
+                                          .withName("Parent Community")
+                                          .build();
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                                           .withName("Sub Community")
+                                           .build();
+        Collection col1 = CollectionBuilder.createCollection(context, child1).withName("Collection 1").build();
+        Collection col2 = CollectionBuilder.createCollection(context, child1).withName("Collection 2").build();
+
+        //2. Two public items that are readable by Anonymous
+        Item publicItem1 = ItemBuilder.createItem(context, col1)
+                                      .withTitle("Public item 1")
+                                      .withIssueDate("2017-10-17")
+                                      .withAuthor("Smith, Donald").withAuthor("Doe, John")
+                                      .withSubject("Java").withSubject("Unit Testing")
+                                      .build();
+
+        Item publicItem2 = ItemBuilder.createItem(context, col2)
+                                      .withTitle("Public item 2")
+                                      .withIssueDate("2016-02-13")
+                                      .withAuthor("Smith, Maria").withAuthor("Doe, Jane")
+                                      .withSubject("Angular").withSubject("Unit Testing")
+                                      .build();
+
+        //3. An item that has been made private
+        Item privateItem = ItemBuilder.createItem(context, col2)
+                                      .withTitle("This is a private item")
+                                      .withIssueDate("2015-03-12")
+                                      .withAuthor("Duck, Donald")
+                                      .withSubject("Cartoons").withSubject("Ducks")
+                                      .makeUnDiscoverable()
+                                      .build();
+
+        //4. An item with an item-level embargo
+        Item embargoedItem = ItemBuilder.createItem(context, col2)
+                                        .withTitle("An embargoed publication")
+                                        .withIssueDate("2017-08-10")
+                                        .withAuthor("Mouse, Mickey")
+                                        .withSubject("Cartoons").withSubject("Mice")
+                                        .withEmbargoPeriod(Period.ofMonths(12))
+                                        .build();
+
+        //5. An item that is only readable for an internal groups
+        Group internalGroup = GroupBuilder.createGroup(context)
+                                          .withName("Internal Group")
+                                          .build();
+
+        Item internalItem = ItemBuilder.createItem(context, col2)
+                                       .withTitle("Internal publication")
+                                       .withIssueDate("2016-09-19")
+                                       .withAuthor("Doe, John")
+                                       .withSubject("Unknown")
+                                       .withReaderGroup(internalGroup)
+                                       .build();
+
+        context.restoreAuthSystemState();
+
+        //** WHEN **
+        //An anonymous user browses the items in the Browse by item endpoint
+        //sorted descending by tile
+        getClient().perform(get("/api/discover/browses/title/items")
+                                .param("scope", String.valueOf(col2.getID()))
+                                .param("sort", "title,desc"))
+
+                   //** THEN **
+                   //The status has to be 200 OK
+                   .andExpect(status().isOk())
+                   //We expect the content type to be "application/hal+json;charset=UTF-8"
+                   .andExpect(content().contentType(contentType))
+
+                   .andExpect(jsonPath("$.page.size", is(20)))
+                   .andExpect(jsonPath("$.page.totalElements", is(1)))
+                   .andExpect(jsonPath("$.page.totalPages", is(1)))
+                   .andExpect(jsonPath("$.page.number", is(0)))
+
+                   .andExpect(jsonPath("$._embedded.items",
+                                       contains(ItemMatcher.matchItemWithTitleAndDateIssued(publicItem2,
+                                                                                            "Public item 2",
+                                                                                            "2016-02-13"))))
+
+                   //The private and internal items must not be present
+                   .andExpect(jsonPath("$._embedded.items[*].metadata", Matchers.allOf(
+                           not(matchMetadata("dc.title", "This is a private item")),
+                           not(matchMetadata("dc.title", "Internal publication")))));
+
+        String adminToken = getAuthToken(admin.getEmail(), password);
+        //** WHEN **
+        //An admin user browses the items in the Browse by item endpoint
+        //sorted descending by tile
+        getClient(adminToken).perform(get("/api/discover/browses/title/items")
+                                .param("scope", String.valueOf(col2.getID()))
+                                .param("sort", "title,desc"))
+
+                   //** THEN **
+                   //The status has to be 200 OK
+                   .andExpect(status().isOk())
+                   //We expect the content type to be "application/hal+json;charset=UTF-8"
+                   .andExpect(content().contentType(contentType))
+
+                   .andExpect(jsonPath("$.page.size", is(20)))
+                   .andExpect(jsonPath("$.page.totalElements", is(3)))
+                   .andExpect(jsonPath("$.page.totalPages", is(1)))
+                   .andExpect(jsonPath("$.page.number", is(0)))
+                     .andExpect(jsonPath("$._embedded.items", contains(
+                                 ItemMatcher.matchItemWithTitleAndDateIssued(publicItem2,
+                                                                             "Public item 2",
+                                                                             "2016-02-13"),
+                                 ItemMatcher.matchItemWithTitleAndDateIssued(internalItem,
+                                                                             "Internal publication",
+                                                                             "2016-09-19"),
+                                 ItemMatcher.matchItemWithTitleAndDateIssued(embargoedItem,
+                                                                             "An embargoed publication",
+                                                                             "2017-08-10")
+
+                         )))
+
+
+                             //The private and internal items must not be present
+                   .andExpect(jsonPath("$._embedded.items[*].metadata", Matchers.allOf(
+                           not(matchMetadata("dc.title", "This is a private item"))
+                           )));
     }
 
     @Test

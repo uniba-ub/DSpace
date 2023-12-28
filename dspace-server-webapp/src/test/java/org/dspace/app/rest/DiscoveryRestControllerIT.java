@@ -27,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.io.InputStream;
+import java.time.Period;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -2413,7 +2414,7 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                 .withAuthor("test2, test2").withAuthor("Maybe, Maybe")
                 .withSubject("AnotherTest").withSubject("TestingForMore")
                 .withSubject("ExtraEntry")
-                .withEmbargoPeriod("12 months")
+                .withEmbargoPeriod(Period.ofMonths(12))
                 .build();
 
         //Turn on the authorization again
@@ -2727,7 +2728,9 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
     /**
      * This test verifies that
      * {@link org.dspace.discovery.indexobject.InprogressSubmissionIndexFactoryImpl#storeInprogressItemFields}
-     * indexes the owning collection of workspace items
+     * indexes the owning collection of workspace items.
+     *
+     * @throws java.lang.Exception passed through.
      */
     @Test
     public void discoverSearchObjectsTestForWorkspaceItemInCollectionScope() throws Exception {
@@ -2778,7 +2781,8 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
     /**
      * This test verifies that
      * {@link org.dspace.discovery.indexobject.InprogressSubmissionIndexFactoryImpl#storeInprogressItemFields}
-     * indexes the owning collection of workflow items
+     * indexes the owning collection of workflow items.
+     * @throws java.lang.Exception passed through.
      */
     @Test
     public void discoverSearchObjectsTestForWorkflowItemInCollectionScope() throws Exception {
@@ -3181,7 +3185,6 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
 
         context.restoreAuthSystemState();
 
-        UUID scope = col2.getID();
         //** WHEN **
         //An anonymous user browses this endpoint to find the objects in the system
         //With the given search filter
@@ -4921,7 +4924,7 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                 .withSubject("ExtraEntry")
                 .build();
 
-        //3. three inprogress submission from a normal user (2 ws, 1 wf that will produce also a pooltask)
+        //3. three in progress submission from a normal user (2 ws, 1 wf that will produce also a pooltask)
         context.setCurrentUser(eperson);
         WorkspaceItem wsItem1 = WorkspaceItemBuilder.createWorkspaceItem(context, col1).withTitle("Workspace Item 1")
                 .withIssueDate("2010-07-23")

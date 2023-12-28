@@ -57,11 +57,20 @@ public class ExternalSourcesRestControllerIT extends AbstractControllerIntegrati
             .andExpect(jsonPath("$._embedded.externalsources", Matchers.hasItems(
                 ExternalSourceMatcher.matchExternalSource("mock", "mock", false),
                 ExternalSourceMatcher.matchExternalSource("orcid", "orcid", false),
-                ExternalSourceMatcher.matchExternalSource("sherpaJournalIssn", "sherpaJournalIssn", false),
-                ExternalSourceMatcher.matchExternalSource("sherpaJournal", "sherpaJournal", false),
-                ExternalSourceMatcher.matchExternalSource("sherpaPublisher", "sherpaPublisher", false),
-                ExternalSourceMatcher.matchExternalSource("pubmed", "pubmed", false))));
-    }
+                ExternalSourceMatcher.matchExternalSource("scopus", "scopus", false),
+                ExternalSourceMatcher.matchExternalSource(
+                    "sherpaJournalIssn", "sherpaJournalIssn", false),
+                ExternalSourceMatcher.matchExternalSource(
+                    "sherpaJournal", "sherpaJournal", false),
+                ExternalSourceMatcher.matchExternalSource(
+                    "sherpaPublisher", "sherpaPublisher", false),
+                ExternalSourceMatcher.matchExternalSource(
+                    "pubmed", "pubmed", false),
+                ExternalSourceMatcher.matchExternalSource(
+                    "openaireFunding", "openaireFunding", false)
+            )))
+            .andExpect(jsonPath("$.page.totalElements", Matchers.is(10)));
+     }
 
     @Test
     public void findOneExternalSourcesExistingSources() throws Exception {

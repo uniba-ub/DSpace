@@ -68,4 +68,6 @@
 
     <bean id="submissionServiceFactory" class="org.dspace.submit.factory.SubmissionServiceFactoryImpl"/>
 
+    <bean id="submissionServiceFactory" class="org.dspace.submit.factory.SubmissionServiceFactoryImpl"/>
+
 </beans>

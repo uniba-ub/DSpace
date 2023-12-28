@@ -97,6 +97,7 @@ import org.dspace.orcid.service.OrcidQueueService;
 import org.dspace.orcid.service.OrcidSynchronizationService;
 import org.dspace.orcid.service.OrcidTokenService;
 import org.dspace.profile.service.ResearcherProfileService;
+import org.dspace.qaevent.dao.QAEventsDAO;
 import org.dspace.services.ConfigurationService;
 import org.dspace.versioning.Version;
 import org.dspace.versioning.VersionHistory;
@@ -204,6 +205,9 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
     @Autowired
     private List<ItemSearcherByMetadata> itemSearcherByMetadata;
+
+    @Autowired
+    private QAEventsDAO qaEventsDao;
 
     protected ItemServiceImpl() {
         super();
@@ -993,6 +997,11 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
             orcidToken.setProfileItem(null);
         }
 
+        List<QAEventProcessed> qaEvents = qaEventsDao.findByItem(context, item);
+        for (QAEventProcessed qaEvent : qaEvents) {
+            qaEventsDao.delete(context, qaEvent);
+        }
+
         //Only clear collections after we have removed everything else from the item
         item.clearCollections();
         item.setOwningCollection(null);
@@ -1323,6 +1332,11 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         // read collection's default READ policies
         List<ResourcePolicy> defaultCollectionPolicies = authorizeService
                 .getPoliciesActionFilter(context, collection, Constants.DEFAULT_ITEM_READ);
+
+        // If collection has defaultREAD policies, remove the item's READ policies.
+        if (replaceReadRPWithCollectionRP && defaultCollectionPolicies.size() > 0) {
+            authorizeService.removePoliciesActionFilter(context, item, Constants.READ);
+        }
 
         // If collection has defaultREAD policies, remove the item's READ policies.
         if (replaceReadRPWithCollectionRP && defaultCollectionPolicies.size() > 0) {

@@ -16,7 +16,6 @@ import org.apache.logging.log4j.Logger;
 import org.dspace.alerts.service.SystemWideAlertService;
 import org.dspace.app.audit.AuditService;
 import org.dspace.app.metrics.service.CrisMetricsService;
-import org.dspace.app.nbevent.service.NBEventService;
 import org.dspace.app.requestitem.factory.RequestItemServiceFactory;
 import org.dspace.app.requestitem.service.RequestItemService;
 import org.dspace.app.suggestion.SolrSuggestionStorageService;
@@ -62,6 +61,7 @@ import org.dspace.orcid.factory.OrcidServiceFactory;
 import org.dspace.orcid.service.OrcidHistoryService;
 import org.dspace.orcid.service.OrcidQueueService;
 import org.dspace.orcid.service.OrcidTokenService;
+import org.dspace.qaevent.service.QAEventService;
 import org.dspace.scripts.factory.ScriptServiceFactory;
 import org.dspace.scripts.service.ProcessService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -126,7 +126,6 @@ public abstract class AbstractBuilder<T, S> {
     static CrisMetricsService crisMetricsService;
     static CrisLayoutMetric2BoxService crisLayoutMetric2BoxService;
     static HarvestedCollectionService harvestedCollectionService;
-    static NBEventService nbEventService;
     static SolrSuggestionStorageService solrSuggestionService;
     static SubscribeService subscribeService;
     static RequestItemService requestItemService;
@@ -137,7 +136,7 @@ public abstract class AbstractBuilder<T, S> {
     static SystemWideAlertService systemWideAlertService;
     static SubmissionConfigService submissionConfigService;
     static SupervisionOrderService supervisionOrderService;
-
+    static QAEventService qaEventService;
 
     protected Context context;
 
@@ -202,7 +201,6 @@ public abstract class AbstractBuilder<T, S> {
         crisMetricsService = CrisMetricsServiceFactory.getInstance().getCrisMetricsService();
         harvestedCollectionService = HarvestServiceFactory.getInstance().getHarvestedCollectionService();
         crisLayoutMetric2BoxService = CrisLayoutServiceFactory.getInstance().getMetric2BoxService();
-        nbEventService = new DSpace().getSingletonService(NBEventService.class);
         solrSuggestionService = new DSpace().getSingletonService(SolrSuggestionStorageService.class);
         subscribeService = ContentServiceFactory.getInstance().getSubscribeService();
         orcidHistoryService = OrcidServiceFactory.getInstance().getOrcidHistoryService();
@@ -217,6 +215,7 @@ public abstract class AbstractBuilder<T, S> {
         }
         subscribeService = ContentServiceFactory.getInstance().getSubscribeService();
         supervisionOrderService = SupervisionOrderServiceFactory.getInstance().getSupervisionOrderService();
+        qaEventService = new DSpace().getSingletonService(QAEventService.class);
     }
 
 
@@ -255,12 +254,16 @@ public abstract class AbstractBuilder<T, S> {
         orcidHistoryService = null;
         crisMetricsService = null;
         crisLayoutMetric2BoxService = null;
-        nbEventService = null;
         harvestedCollectionService = null;
         subscribeService = null;
         requestItemService = null;
         versioningService = null;
         orcidTokenService = null;
+        systemWideAlertService = null;
+        submissionConfigService = null;
+        subscribeService = null;
+        supervisionOrderService = null;
+        qaEventService = null;
         systemWideAlertService = null;
         submissionConfigService = null;
         subscribeService = null;

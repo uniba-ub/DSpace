@@ -3233,7 +3233,6 @@ public class EPersonRestRepositoryIT extends AbstractControllerIntegrationTest {
         }
     }
 
-
     @Test
     public void postEpersonFromOrcidRegistrationToken() throws Exception {
 
@@ -3910,7 +3909,6 @@ public class EPersonRestRepositoryIT extends AbstractControllerIntegrationTest {
             .contentType(MediaType.APPLICATION_JSON_PATCH_JSON))
             .andExpect(status().isForbidden());
     }
-
 
     private String buildPasswordAddOperationPatchBody(String password, String currentPassword) {
 

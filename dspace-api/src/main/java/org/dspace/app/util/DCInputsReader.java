@@ -7,8 +7,6 @@
  */
 package org.dspace.app.util;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -949,7 +947,7 @@ public class DCInputsReader {
         }
 
         return dcInput.getAllStoredValues().stream()
-            .map(value -> isNotBlank(value) ? dcInput.getFieldName() + '.' + value : dcInput.getFieldName())
+            .map(value -> StringUtils.isNotBlank(value) ? dcInput.getFieldName() + '.' + value : dcInput.getFieldName())
             .collect(Collectors.toList());
     }
 
