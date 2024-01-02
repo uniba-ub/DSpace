@@ -12,5 +12,5 @@ CREATE TABLE qaevent_processed (
   eperson_uuid UUID NULL REFERENCES eperson(uuid),
   item_uuid uuid NOT NULL REFERENCES item(uuid)
 );
-
+DROP INDEX IF EXISTS item_uuid_idx;
 CREATE INDEX item_uuid_idx ON qaevent_processed(item_uuid);
