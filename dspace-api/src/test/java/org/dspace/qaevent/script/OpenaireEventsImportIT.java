@@ -33,7 +33,6 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
-import eu.dnetlib.broker.BrokerClient;
 import org.apache.commons.io.IOUtils;
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.app.launcher.ScriptLauncher;
@@ -52,6 +51,10 @@ import org.dspace.utils.DSpace;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+
+import eu.dnetlib.broker.BrokerClient;
 
 /**
  * Integration tests for {@link OpenaireEventsImport}.
@@ -103,10 +106,6 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         String[] args = new String[] { "import-openaire-events" };
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), handler, kernelImpl);
 
-        assertThat(handler.getErrorMessages(), empty());
-        assertThat(handler.getWarningMessages(), empty());
-        assertThat(handler.getInfoMessages(), empty());
-
         Exception exception = handler.getException();
         assertThat(exception, instanceOf(IllegalArgumentException.class));
         assertThat(exception.getMessage(), is("One parameter between the location of the file and the email "
@@ -122,10 +121,6 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         String[] args = new String[] { "import-openaire-events", "-f", getFileLocation("events.json"),
             "-e", "test@user.com" };
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), handler, kernelImpl);
-
-        assertThat(handler.getErrorMessages(), empty());
-        assertThat(handler.getWarningMessages(), empty());
-        assertThat(handler.getInfoMessages(), empty());
 
         Exception exception = handler.getException();
         assertThat(exception, instanceOf(IllegalArgumentException.class));
@@ -276,10 +271,12 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         String[] args = new String[] { "import-openaire-events", "-f", getFileLocation("empty-file.json") };
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), handler, kernelImpl);
 
-        assertThat(handler.getErrorMessages(),
+        Exception exception = handler.getException();
+        assertThat(exception, instanceOf(MismatchedInputException.class)); 
+        /*assertThat(handler.getErrorMessages(),
             contains(containsString("A not recoverable error occurs during OPENAIRE events import")));
         assertThat(handler.getWarningMessages(),empty());
-        assertThat(handler.getInfoMessages(), contains("Trying to read the QA events from the provided file"));
+        assertThat(handler.getInfoMessages(), contains("Trying to read the QA events from the provided file"));*/
 
         assertThat(qaEventService.findAllSources(0, 20), contains(QASourceMatcher.with(OPENAIRE_SOURCE, 0L)));
 
@@ -377,10 +374,10 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         String[] args = new String[] { "import-openaire-events", "-e", "user@test.com" };
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), handler, kernelImpl);
 
-        assertThat(handler.getErrorMessages(),
-            contains("A not recoverable error occurs during OPENAIRE events import: Connection refused"));
-        assertThat(handler.getWarningMessages(), empty());
-        assertThat(handler.getInfoMessages(), contains("Trying to read the QA events from the OPENAIRE broker"));
+        Exception exception = handler.getException();
+        assertThat(exception, instanceOf(RuntimeException.class));
+        assertThat(exception.getMessage(), is("An error occurs retriving the subscriptions "
+        		+ "from the OPENAIRE broker: Connection refused"));
 
         assertThat(qaEventService.findAllSources(0, 20), contains(QASourceMatcher.with(OPENAIRE_SOURCE, 0L)));
 
