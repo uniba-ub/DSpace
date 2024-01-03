@@ -6,6 +6,9 @@
 -- http://www.dspace.org/license/
 --
 
+-----------------------------------------------------------------------------------
+-- Create QA Event Processed table.
+-----------------------------------------------------------------------------------
 CREATE TABLE qaevent_processed (
   qaevent_id VARCHAR(255) NOT NULL,
   qaevent_timestamp TIMESTAMP NULL,

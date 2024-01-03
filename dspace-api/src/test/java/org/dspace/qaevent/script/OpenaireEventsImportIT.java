@@ -13,7 +13,6 @@ import static org.dspace.matcher.QAEventMatcher.pendingOpenaireEventWith;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
@@ -33,6 +32,8 @@ import java.io.FileInputStream;
 import java.io.OutputStream;
 import java.net.URL;
 
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import eu.dnetlib.broker.BrokerClient;
 import org.apache.commons.io.IOUtils;
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.app.launcher.ScriptLauncher;
@@ -51,10 +52,6 @@ import org.dspace.utils.DSpace;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-
-import com.fasterxml.jackson.databind.exc.MismatchedInputException;
-
-import eu.dnetlib.broker.BrokerClient;
 
 /**
  * Integration tests for {@link OpenaireEventsImport}.
@@ -272,7 +269,7 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), handler, kernelImpl);
 
         Exception exception = handler.getException();
-        assertThat(exception, instanceOf(MismatchedInputException.class)); 
+        assertThat(exception, instanceOf(MismatchedInputException.class));
         /*assertThat(handler.getErrorMessages(),
             contains(containsString("A not recoverable error occurs during OPENAIRE events import")));
         assertThat(handler.getWarningMessages(),empty());
@@ -377,7 +374,7 @@ public class OpenaireEventsImportIT extends AbstractIntegrationTestWithDatabase 
         Exception exception = handler.getException();
         assertThat(exception, instanceOf(RuntimeException.class));
         assertThat(exception.getMessage(), is("An error occurs retriving the subscriptions "
-        		+ "from the OPENAIRE broker: Connection refused"));
+            + "from the OPENAIRE broker: Connection refused"));
 
         assertThat(qaEventService.findAllSources(0, 20), contains(QASourceMatcher.with(OPENAIRE_SOURCE, 0L)));
 
