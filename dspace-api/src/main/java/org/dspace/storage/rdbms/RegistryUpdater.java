@@ -69,8 +69,9 @@ public class RegistryUpdater implements Callback {
                 + "registries" + File.separator;
 
             // Load updates to Bitstream format registry (if any)
-            log.info("Updating Bitstream Format Registry based on {}bitstream-formats.xml", base);
-            RegistryLoader.loadBitstreamFormats(context, base + "bitstream-formats.xml");
+            String bitstreamFormat = config.getProperty("registry.bitstream-formats.load");
+            log.info("Updating Bitstream Format Registry based on {}{}", base, bitstreamFormat);
+            RegistryLoader.loadBitstreamFormats(context, base + bitstreamFormat);
 
             // Load updates to Metadata schema registries (if any)
             log.info("Updating Metadata Registries based on metadata type configs in {}", base);

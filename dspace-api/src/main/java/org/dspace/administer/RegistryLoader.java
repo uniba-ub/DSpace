@@ -33,6 +33,8 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+
+
 /**
  * Loads the bitstream format and Dublin Core type registries into the database.
  * Intended for use as a command-line tool.
@@ -84,7 +86,13 @@ public class RegistryLoader {
                 RegistryLoader.loadBitstreamFormats(context, argv[1]);
             } else if (argv[0].equalsIgnoreCase("-metadata")) {
                 // Call MetadataImporter, as it handles Metadata schema updates
-                MetadataImporter.loadRegistry(argv[1], true);
+                if (argv.length == 1) {
+                    for (String file : MetadataImporter.getAllRegistryFiles()) {
+                        MetadataImporter.loadRegistry(file, true);
+                    }
+                } else {
+                    MetadataImporter.loadRegistry(argv[1], true);
+                }
             } else {
                 System.err.println(usage);
             }

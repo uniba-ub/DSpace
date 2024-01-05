@@ -7,8 +7,13 @@
  */
 package org.dspace.administer;
 
+import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPath;
@@ -100,16 +105,37 @@ public class MetadataImporter {
         Options options = new Options();
         options.addOption("f", "file", true, "source xml file for DC fields");
         options.addOption("u", "update", false, "update an existing schema");
+        options.addOption("h", "help", false, "help message");
         CommandLine line = parser.parse(options, args);
 
-        if (line.hasOption('f')) {
+        if (line.hasOption('h')) {
+            usage();
+            System.exit(1);
+        } else if (line.hasOption('f')) {
             String file = line.getOptionValue('f');
             boolean forceUpdate = line.hasOption('u');
             loadRegistry(file, forceUpdate);
         } else {
-            usage();
-            System.exit(1);
+            boolean forceUpdate = line.hasOption('u');
+            for (String file : getAllRegistryFiles()) {
+                loadRegistry(file, forceUpdate);
+            }
         }
+    }
+
+    public static List<String> getAllRegistryFiles() {
+        File folder = new File("config/registries");
+
+        if (folder.exists() && folder.isDirectory()) {
+            File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
+
+            if (files != null) {
+                return  Arrays.stream(files)
+                        .map(file -> "config/registries/" + file.getName())
+                        .collect(Collectors.toList());
+            }
+        }
+        return Collections.emptyList();
     }
 
     /**
@@ -285,7 +311,10 @@ public class MetadataImporter {
     public static void usage() {
         String usage = "Use this class with the following option:\n" +
             " -f <xml source file> : specify which xml source file " +
-            "contains the DC fields to import.\n";
+            "contains the DC fields to import.\n" +
+            "If you use the script without the -f parameter, then all" +
+            " registries will be loaded from the config/registries folder\n";
+
         System.out.println(usage);
     }
 }
