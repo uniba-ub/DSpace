@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE item-submission SYSTEM "item-submission.dtd">
-
 <item-submission>
 
   <!-- The process-map maps collection handles to a particular Item -->
@@ -172,8 +171,8 @@
       <type>cclicense</type>
     </step-definition>
     <!-- This optional step may allow the user to select access conditions on the item -->
-    <step-definition id="itemAccessConditions">
-      <heading>submit.progressbar.accessCondition</heading>
+    <step-definition id="itemAccessConditions" mandatory="true">
+      <heading>submit.progressbar.itemAccessConditions</heading>
       <processing-class>org.dspace.app.rest.submit.step.AccessConditionStep</processing-class>
       <type>accessCondition</type>
     </step-definition>
@@ -192,12 +191,12 @@
       <scope visibility="hidden" visibilityOutside="hidden">submission</scope>
     </step-definition>
     <step-definition id="custom-url" mandatory="false">
-      <heading>submit.progressbar.CustomUrlStep</heading>
+      <heading>submit.progressbar.custom-url</heading>
       <processing-class>org.dspace.app.rest.submit.step.CustomUrlStep</processing-class>
       <type>custom-url</type>
     </step-definition>
     <step-definition id="correction" mandatory="true">
-      <heading>submit.progressbar.correction-step</heading>
+      <heading>submit.progressbar.correction</heading>
       <processing-class>org.dspace.app.rest.submit.step.CorrectionStep</processing-class>
       <type>correction</type>
       <scope visibilityOutside="hidden">workflow</scope>
@@ -212,6 +211,7 @@
       <step id="correction" />
       <step id="detect-duplicate" />
       <step id="upload" />
+      <step id="cclicense" />
       <step id="license" />
     </submission-process>
     <submission-process name="product-edit">
@@ -352,4 +352,3 @@
     </submission-process>
   </submission-definitions>
 </item-submission>
-
