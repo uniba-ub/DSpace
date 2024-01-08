@@ -118,7 +118,7 @@ public class TotalVisitGenerator extends AbstractUsageReportGenerator {
             } else {
                 hasValidRelation = true;
                 query = statisticsDatasetDisplay.composeQueryWithInverseRelation(
-                    dso, discoveryConfiguration.getDefaultFilterQueries());
+                    dso, discoveryConfiguration.getDefaultFilterQueries(), dso.getType());
                 type_of_dso = dso.getType();
             }
         }
@@ -195,6 +195,8 @@ public class TotalVisitGenerator extends AbstractUsageReportGenerator {
         String query = "type: " + Constants.BITSTREAM;
         query += " AND ";
         query += "(owningItem:" + uuid + " OR " + "owningColl:" + uuid + " OR " + "owningComm:" + uuid + ")";
+        query += " AND -bundleName:LICENSE AND -bundleName:THUMBNAIL AND -bundleName:SWORD AND -bundleName:TEXT";
         return query;
     }
+
 }

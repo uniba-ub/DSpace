@@ -193,7 +193,7 @@ public class CrisConsumer implements Consumer {
             return true;
         }
 
-        if (isBlank(authority) && isMetadataWithEmptyAuthoritySkippable(metadata)) {
+        if (isBlank(authority) && (isBlank(metadata.getValue()) || isMetadataWithEmptyAuthoritySkippable(metadata))) {
             return true;
         }
 
@@ -219,16 +219,22 @@ public class CrisConsumer implements Consumer {
 
     private boolean isMetadataWithEmptyAuthoritySkippable(MetadataValue metadata) {
 
-        if (configurationService.getBooleanProperty("cris-consumer.skip-empty-authority")) {
-            return true;
-        }
+        boolean skipEmptyAuthority = configurationService.getBooleanProperty("cris-consumer.skip-empty-authority");
 
-        String[] skippableMetadataFields = getSkippableMetadataFieldsWithEmptyAuthority();
-        return ArrayUtils.contains(skippableMetadataFields, metadata.getMetadataField().toString('.'));
+        if (isMetadataFieldConfiguredToReverseSkipEmptyAuthorityCondition(metadata)) {
+            return !skipEmptyAuthority;
+        } else {
+            return skipEmptyAuthority;
+        }
 
     }
 
-    private String[] getSkippableMetadataFieldsWithEmptyAuthority() {
+    public boolean isMetadataFieldConfiguredToReverseSkipEmptyAuthorityCondition(MetadataValue metadata) {
+        String metadataField = metadata.getMetadataField().toString('.');
+        return ArrayUtils.contains(getSkipEmptyAuthorityMetadataFields(), metadataField);
+    }
+
+    private String[] getSkipEmptyAuthorityMetadataFields() {
         return configurationService.getArrayProperty("cris-consumer.skip-empty-authority.metadata", new String[] {});
     }
 
@@ -249,7 +255,7 @@ public class CrisConsumer implements Consumer {
     private Item buildRelatedItem(Context context, Item item, Collection collection, MetadataValue metadata,
         String entityType, String crisSourceId) throws Exception {
 
-        WorkspaceItem workspaceItem = workspaceItemService.create(context, collection, false);
+        WorkspaceItem workspaceItem = workspaceItemService.create(context, collection, useOfTemplate(metadata));
         Item relatedItem = workspaceItem.getItem();
         itemService.addMetadata(context, relatedItem, CRIS.getName(), "sourceId", null, null, crisSourceId);
         if (!hasEntityType(relatedItem, entityType)) {
@@ -291,6 +297,17 @@ public class CrisConsumer implements Consumer {
         } else {
             return configurationService.getBooleanProperty(property, true);
         }
+    }
+
+    private boolean useOfTemplate(MetadataValue value) {
+
+        String useOfTemplateByMetadata = "cris.import.submission.enabled.entity."
+                + getFieldKey(value) + ".use-template";
+        if (configurationService.hasProperty(useOfTemplateByMetadata)) {
+            return configurationService.getBooleanProperty(useOfTemplateByMetadata);
+        }
+
+        return configurationService.getBooleanProperty("cris.import.submission.enabled.entity.use-template");
     }
 
     private void fillRelatedItem(Context context, MetadataValue metadata, Item relatedItem, boolean alreadyPresent)

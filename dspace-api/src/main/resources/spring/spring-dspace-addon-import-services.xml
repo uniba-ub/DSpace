@@ -42,6 +42,14 @@
          </property>
     </bean>
 
+    <bean id="DataCiteImportService"
+          class="org.dspace.importer.external.datacite.DataCiteImportMetadataSourceServiceImpl" scope="singleton">
+        <property name="metadataFieldMapping" ref="DataCiteMetadataFieldMapping"/>
+    </bean>
+    <bean id="DataCiteMetadataFieldMapping"
+          class="org.dspace.importer.external.datacite.DataCiteFieldMapping">
+    </bean>
+
     <bean id="ArXivImportService"
           class="org.dspace.importer.external.arxiv.service.ArXivImportMetadataSourceServiceImpl" scope="singleton">
         <property name="metadataFieldMapping" ref="ArXivMetadataFieldMapping"/>
@@ -57,6 +65,7 @@
         <property name="urlFetch" value="${pubmed.url.fetch}"/>
         <property name="urlSearch" value="${pubmed.url.search}"/>
         <property name="generateQueryForItem" ref="pubmedService"></property>
+        <property name="interRequestTime" value="500"/>
         <property name="supportedExtensions">
             <list>
                  <value>xml</value>
@@ -136,7 +145,7 @@
         <property name="authUrl" value="${epo.authUrl}" />
         <property name="searchUrl" value="${epo.searchUrl}" />
         <!-- date filed mapped metadata, see epo-integration.xml -->
-        <property name="dateFiled" ref="epo.dc.date.filed" />
+        <property name="dateFilled" ref="epo.dcterms.dateSubmitted" />
         <property name="applicationNumber" ref="epo.dc.identifier" />
     </bean>
     <bean id="epoMetadataFieldMapping" class="org.dspace.importer.external.epo.service.EpoFieldMapping"/>
@@ -149,6 +158,12 @@
         <property name="viewMode" value="${scopus.search-api.viewMode}"/>
     </bean>
     <bean id="scopusMetadataFieldMapping" class="org.dspace.importer.external.scopus.service.ScopusFieldMapping"/>
+
+    <bean id="rorImportService" class="org.dspace.importer.external.ror.service.RorImportMetadataSourceServiceImpl">
+          <property name="metadataFieldMapping" ref="rorMetadataFieldMapping"/>
+          <property name="url" value="${ror.orgunit-import.api-url}"/>
+    </bean>
+    <bean id="rorMetadataFieldMapping" class="org.dspace.importer.external.ror.service.RorFieldMapping"/>
 
     <bean id="vufindImportService" class="org.dspace.importer.external.vufind.VuFindImportMetadataSourceServiceImpl" scope="singleton">
           <!-- Set to empty to use the default set of fields  -->

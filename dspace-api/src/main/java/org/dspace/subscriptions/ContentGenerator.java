@@ -5,86 +5,106 @@
  *
  * http://www.dspace.org/license/
  */
-
 package org.dspace.subscriptions;
 
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static org.apache.commons.lang.StringUtils.EMPTY;
+
 import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.annotation.Resource;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dspace.content.Item;
 import org.dspace.content.crosswalk.StreamDisseminationCrosswalk;
-import org.dspace.content.service.ItemService;
-import org.dspace.core.Context;
 import org.dspace.core.Email;
 import org.dspace.core.I18nUtil;
-import org.dspace.discovery.IndexableObject;
 import org.dspace.eperson.EPerson;
-import org.dspace.subscriptions.service.SubscriptionGenerator;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.dspace.services.ConfigurationService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 
 
 /**
  * Implementation class of SubscriptionGenerator
  * which will handle the logic of sending the emails
- * in case of content subscriptions
- *
- * @author Alba Aliu
+ * in case of 'content' subscriptionType
  */
+public class ContentGenerator {
 
-public class ContentGenerator implements SubscriptionGenerator<IndexableObject> {
-    private final Logger log = org.apache.logging.log4j.LogManager.getLogger(ContentGenerator.class);
-    @Resource(name = "entityDissemination")
-    private Map<String, StreamDisseminationCrosswalk> mapEntityDisseminatorProperty = new HashMap();
-    @Autowired
-    private ItemService itemService;
+    private final Logger log = LogManager.getLogger(ContentGenerator.class);
+    private final ConfigurationService configurationService = DSpaceServicesFactory.getInstance()
+                                                                                   .getConfigurationService();
 
-    @Override
-    public void notifyForSubscriptions(Context c, EPerson ePerson, List<IndexableObject> indexableComm,
-                                       List<IndexableObject> indexableColl,
-                                       List<IndexableObject> indexableItems) {
+    private Map<String, StreamDisseminationCrosswalk> entityType2Disseminator;
+
+    public void notifyForSubscriptions(EPerson ePerson,
+                                       List<SubscriptionItem> indexableComm,
+                                       List<SubscriptionItem> indexableColl,
+                                       Map<String, List<SubscriptionItem>> indexableEntityByType) {
         try {
-            // send the notification to the user
-            if (ePerson != null) {
+            if (Objects.nonNull(ePerson)) {
                 Locale supportedLocale = I18nUtil.getEPersonLocale(ePerson);
                 Email email = Email.getEmail(I18nUtil.getEmailFilename(supportedLocale, "subscriptions_content"));
                 email.addRecipient(ePerson.getEmail());
-                email.addArgument(generateHtmlBodyMail(c, indexableComm));
-                email.addArgument(generateHtmlBodyMail(c, indexableColl));
-                email.addArgument(generateHtmlBodyMail(c, indexableItems));
+
+                String bodyCommunities = generateBodyMail("Community", indexableComm);
+                String bodyCollections = generateBodyMail("Collection", indexableColl);
+                if (bodyCommunities.equals(EMPTY) && bodyCollections.equals(EMPTY)) {
+                    log.debug("subscription(s) of eperson {} do(es) not match any new items: nothing to send" +
+                                  " - exit silently", ePerson::getID);
+                    return;
+                }
+                email.addArgument(configurationService.getProperty("subscription.url"));
+                email.addArgument(bodyCommunities);
+                email.addArgument(bodyCollections);
+                email.addArgument(
+                    indexableEntityByType.entrySet().stream()
+                                         .map(entry -> generateBodyMail(entry.getKey(), entry.getValue()))
+                                         .collect(Collectors.joining("\n\n"))
+                );
                 email.send();
             }
-        } catch (Exception ex) {
-            // log this email error
-            log.warn("cannot email user" + " eperson_id" + ePerson.getID()
-                    + " eperson_email" + ePerson.getEmail());
+        } catch (Exception e) {
+            log.error(e.getMessage(), e);
+            log.warn("Cannot email user eperson_id: {} eperson_email: {}", ePerson::getID, ePerson::getEmail);
         }
     }
 
-    private String generateHtmlBodyMail(Context context, List<IndexableObject> indexableObjects) {
+    private String generateBodyMail(String type, List<SubscriptionItem> subscriptionItems) {
+        if (subscriptionItems == null || subscriptionItems.isEmpty()) {
+            return EMPTY;
+        }
         try {
             ByteArrayOutputStream out = new ByteArrayOutputStream();
-            out.write("\n".getBytes(StandardCharsets.UTF_8));
-            if (indexableObjects.size() > 0) {
-                for (IndexableObject indexableObject : indexableObjects) {
-                    out.write("\n".getBytes(StandardCharsets.UTF_8));
-                    Item item = (Item) indexableObject.getIndexedObject();
-                    mapEntityDisseminatorProperty.get(itemService.getEntityTypeLabel(item)).disseminate(context, item,
-                        out);
+            out.write(("\nYou have " + subscriptionItems.size() + " subscription(s) active to type " + type + "\n")
+                          .getBytes(UTF_8));
+            for (SubscriptionItem item : subscriptionItems) {
+                out.write("\n".getBytes(UTF_8));
+                out.write("List of new content for the\n".getBytes(UTF_8));
+                out.write((type + " " + item.getName() + " - " + item.getUrl() + "\n")
+                              .getBytes(UTF_8));
+
+                for (Entry<String, String> entry : item.getItemUrlsByItemName().entrySet()) {
+                    out.write("\n".getBytes(UTF_8));
+                    out.write((entry.getKey() + " - " + entry.getValue()).getBytes(UTF_8));
                 }
-                return out.toString();
-            } else {
-                out.write("No items".getBytes(StandardCharsets.UTF_8));
+                //Optional.ofNullable(entityType2Disseminator.get(type))
+                //        .orElseGet(() -> entityType2Disseminator.get("Item"))
+                //        .disseminate(context, item, out);
             }
             return out.toString();
         } catch (Exception e) {
-            log.error(e.getMessage());
-            return null;
+            log.error(e.getMessage(), e);
         }
+        return EMPTY;
     }
+
+    public void setEntityType2Disseminator(Map<String, StreamDisseminationCrosswalk> entityType2Disseminator) {
+        this.entityType2Disseminator = entityType2Disseminator;
+    }
+
 }

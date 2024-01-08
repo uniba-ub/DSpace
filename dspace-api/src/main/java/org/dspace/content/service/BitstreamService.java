@@ -12,7 +12,7 @@ import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 import java.util.UUID;
 import javax.annotation.Nullable;
 
@@ -22,6 +22,7 @@ import org.dspace.content.BitstreamFormat;
 import org.dspace.content.Bundle;
 import org.dspace.content.Collection;
 import org.dspace.content.Community;
+import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
 import org.dspace.core.Context;
 
@@ -209,6 +210,8 @@ public interface BitstreamService extends DSpaceObjectService<Bitstream>, DSpace
 
     public Bitstream getBitstreamByName(Item item, String bundleName, String bitstreamName) throws SQLException;
 
+    List<Bitstream> getBitstreamByBundleName(Item item, String bundleName) throws SQLException;
+
     public Bitstream getFirstBitstream(Item item, String bundleName) throws SQLException;
 
     public Bitstream getThumbnail(Context context, Bitstream bitstream) throws SQLException;
@@ -237,7 +240,14 @@ public interface BitstreamService extends DSpaceObjectService<Bitstream>, DSpace
     @Nullable
     Long getLastModified(Bitstream bitstream) throws IOException;
 
-    public Iterator<Bitstream> findShowableByItem(Context context, UUID itemId, Optional<String> bundleName)
-        throws SQLException;
+    List<Bitstream> findShowableByItem(Context context, UUID itemId, String bundleName,
+        Map<String, String> filterMetadata) throws SQLException;
+
+    List<Bitstream> findByItemAndBundleAndMetadata(Context context, Item item, String bundleName,
+        Map<String, String> filterMetadata);
+
+    boolean isOriginalBitstream(DSpaceObject dso) throws SQLException;
+
+    void updateThumbnailResourcePolicies(Context context, Bitstream bitstream) throws SQLException;
 
 }

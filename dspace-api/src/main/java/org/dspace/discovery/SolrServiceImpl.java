@@ -119,6 +119,10 @@ public class SolrServiceImpl implements SearchService, IndexingService {
 
     private static final Logger log = org.apache.logging.log4j.LogManager.getLogger(SolrServiceImpl.class);
 
+    // Suffix of the solr field used to index the facet/filter so that the facet search can search all word in a
+    // facet by indexing "each word to end of value' partial value
+    public static final String SOLR_FIELD_SUFFIX_FACET_PREFIXES = "_prefix";
+
     @Autowired
     protected ContentServiceFactory contentServiceFactory;
     @Autowired
@@ -268,7 +272,12 @@ public class SolrServiceImpl implements SearchService, IndexingService {
 
         try {
             if (solrSearchCore.getSolr() != null) {
-                indexObjectServiceFactory.getIndexableObjectFactory(searchUniqueID).delete(searchUniqueID);
+                IndexFactory index = indexObjectServiceFactory.getIndexableObjectFactory(searchUniqueID);
+                if (index != null) {
+                    index.delete(searchUniqueID);
+                } else {
+                    log.warn("Object not found in Solr index: " + searchUniqueID);
+                }
                 if (commit) {
                     solrSearchCore.getSolr().commit();
                 }
@@ -923,6 +932,9 @@ public class SolrServiceImpl implements SearchService, IndexingService {
             //Only add facet information if there are any facets
             for (DiscoverFacetField facetFieldConfig : facetFields) {
                 String field = transformFacetField(facetFieldConfig, facetFieldConfig.getField(), false);
+                if (facetFieldConfig.getPrefix() != null) {
+                    field = transformPrefixFacetField(facetFieldConfig, facetFieldConfig.getField(), false);
+                }
                 solrQuery.addFacetField(field);
 
                 if (!facetFieldConfig.fillGaps() && !facetFieldConfig.inverseDirection()) {
@@ -1048,9 +1060,8 @@ public class SolrServiceImpl implements SearchService, IndexingService {
                         //Add information about our search fields
                         for (String field : searchFields) {
                             List<String> valuesAsString = new ArrayList<>();
-                            for (Object o : doc.getFieldValues(field)) {
-                                valuesAsString.add(String.valueOf(o));
-                            }
+                            Optional.ofNullable(doc.getFieldValues(field))
+                                    .ifPresent(l -> l.forEach(o -> valuesAsString.add(String.valueOf(o))));
                             resultDoc.addSearchField(field, valuesAsString.toArray(new String[valuesAsString.size()]));
                         }
                         result.addSearchDocument(indexableObject, resultDoc);
@@ -1459,7 +1470,31 @@ public class SolrServiceImpl implements SearchService, IndexingService {
         }
     }
 
+    /**
+     * Gets the solr field that contains the facet value split on each word break to the end, so can be searched
+     * on each word in the value, see {@link org.dspace.discovery.indexobject.ItemIndexFactoryImpl
+     * #saveFacetPrefixParts(SolrInputDocument, DiscoverySearchFilter, String, String)}
+     * Ony applicable to facets of type {@link DiscoveryConfigurationParameters.TYPE_TEXT}, otherwise uses the regular
+     * facet filter field
+     */
+    protected String transformPrefixFacetField(DiscoverFacetField facetFieldConfig, String field,
+        boolean removePostfix) {
+        if (facetFieldConfig.getType().equals(DiscoveryConfigurationParameters.TYPE_TEXT) ||
+            facetFieldConfig.getType().equals(DiscoveryConfigurationParameters.TYPE_HIERARCHICAL)) {
+            if (removePostfix) {
+                return field.substring(0, field.lastIndexOf(SOLR_FIELD_SUFFIX_FACET_PREFIXES));
+            } else {
+                return field + SOLR_FIELD_SUFFIX_FACET_PREFIXES;
+            }
+        } else {
+            return this.transformFacetField(facetFieldConfig, field, removePostfix);
+        }
+    }
+
     protected String transformFacetField(DiscoverFacetField facetFieldConfig, String field, boolean removePostfix) {
+        if (field.contains(SOLR_FIELD_SUFFIX_FACET_PREFIXES)) {
+            return this.transformPrefixFacetField(facetFieldConfig, field, removePostfix);
+        }
         if (facetFieldConfig.getType().equals(DiscoveryConfigurationParameters.TYPE_TEXT)) {
             if (removePostfix) {
                 return field.substring(0, field.lastIndexOf("_filter"));
@@ -1511,7 +1546,7 @@ public class SolrServiceImpl implements SearchService, IndexingService {
         if (field.equals("location.comm") || field.equals("location.coll")) {
             value = locationToName(context, field, value);
         } else if (field.endsWith("_filter") || field.endsWith("_ac")
-            || field.endsWith("_acid")) {
+            || field.endsWith("_acid") || field.endsWith(SOLR_FIELD_SUFFIX_FACET_PREFIXES)) {
             //We have a filter make sure we split !
             String separator = DSpaceServicesFactory.getInstance().getConfigurationService()
                                                     .getProperty("discovery.solr.facets.split.char");
@@ -1543,7 +1578,7 @@ public class SolrServiceImpl implements SearchService, IndexingService {
             return value;
         }
         if (field.endsWith("_filter") || field.endsWith("_ac")
-            || field.endsWith("_acid")) {
+            || field.endsWith("_acid") || field.endsWith(SOLR_FIELD_SUFFIX_FACET_PREFIXES)) {
             //We have a filter make sure we split !
             String separator = DSpaceServicesFactory.getInstance().getConfigurationService()
                                                     .getProperty("discovery.solr.facets.split.char");

@@ -7,6 +7,7 @@
  */
 package org.dspace.statistics;
 
+import static org.apache.commons.lang3.StringUtils.isNotBlank;
 import static org.dspace.discovery.DiscoverResult.FacetPivotResult.fromPivotFields;
 
 import java.io.File;
@@ -19,9 +20,12 @@ import java.io.UnsupportedEncodingException;
 import java.net.Inet4Address;
 import java.net.Inet6Address;
 import java.net.InetAddress;
+import java.net.URI;
 import java.net.URLEncoder;
 import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -179,6 +183,19 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
 
     @Override
     public void afterPropertiesSet() throws Exception {
+        statisticsCoreURL = configurationService.getProperty("solr-statistics.server");
+
+        if (null != statisticsCoreURL) {
+            Path statisticsPath = Paths.get(new URI(statisticsCoreURL).getPath());
+            statisticsCoreBase = statisticsPath
+                .getName(statisticsPath.getNameCount() - 1)
+                .toString();
+        } else {
+            log.warn("Unable to find solr-statistics.server parameter in DSpace configuration. This is required for " +
+                     "sharding statistics.");
+            statisticsCoreBase = null;
+        }
+
         solr = solrStatisticsCore.getSolr();
 
         // Read in the file so we don't have to do it all the time
@@ -200,16 +217,29 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     }
 
     @Override
+    public void postView(DSpaceObject dspaceObject, HttpServletRequest request, EPerson currentUser) {
+        postView(dspaceObject, request, currentUser, new Date());
+    }
+
+    @Override
     public void postView(DSpaceObject dspaceObject, HttpServletRequest request,
-                         EPerson currentUser) {
-        if (solr == null || locationService == null) {
+                         EPerson currentUser, Date time) {
+        postView(dspaceObject, request, currentUser, null, time);
+    }
+
+    @Override
+    public void postView(DSpaceObject dspaceObject, HttpServletRequest request,
+        EPerson currentUser, String referrer, Date time) {
+
+
+        if (solr == null) {
             return;
         }
         initSolrYearCores();
 
 
         try {
-            SolrInputDocument doc1 = getCommonSolrDoc(dspaceObject, request, currentUser);
+            SolrInputDocument doc1 = getCommonSolrDoc(dspaceObject, request, currentUser, referrer, time);
             if (doc1 == null) {
                 return;
             }
@@ -243,14 +273,20 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     @Override
     public void postView(DSpaceObject dspaceObject,
                          String ip, String userAgent, String xforwardedfor, EPerson currentUser) {
-        if (solr == null || locationService == null) {
+        postView(dspaceObject, ip, userAgent, xforwardedfor, currentUser, null);
+    }
+
+    @Override
+    public void postView(DSpaceObject dspaceObject,
+                         String ip, String userAgent, String xforwardedfor, EPerson currentUser, String referrer) {
+        if (solr == null) {
             return;
         }
         initSolrYearCores();
 
         try {
             SolrInputDocument doc1 = getCommonSolrDoc(dspaceObject, ip, userAgent, xforwardedfor,
-                                                      currentUser);
+                                                      currentUser, referrer);
             if (doc1 == null) {
                 return;
             }
@@ -288,7 +324,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
 
         try {
 
-            SolrInputDocument document = getCommonSolrDoc(dspaceObject, request, currentUser);
+            SolrInputDocument document = getCommonSolrDoc(dspaceObject, request, currentUser, null, new Date());
 
             if (document == null) {
                 return;
@@ -325,6 +361,22 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
      */
     protected SolrInputDocument getCommonSolrDoc(DSpaceObject dspaceObject, HttpServletRequest request,
                                                  EPerson currentUser) throws SQLException {
+        return getCommonSolrDoc(dspaceObject, request, currentUser, null, null);
+    }
+
+    /**
+     * Returns a solr input document containing common information about the statistics
+     * regardless if we are logging a search or a view of a DSpace object
+     *
+     * @param dspaceObject the object used.
+     * @param request      the current request context.
+     * @param currentUser  the current session's user.
+     * @param referrer     the optional referrer.
+     * @return a solr input document
+     * @throws SQLException in case of a database exception
+     */
+    protected SolrInputDocument getCommonSolrDoc(DSpaceObject dspaceObject, HttpServletRequest request,
+                                                 EPerson currentUser, String referrer, Date time) throws SQLException {
         boolean isSpiderBot = request != null && SpiderDetector.isSpider(request);
         if (isSpiderBot &&
             !configurationService.getBooleanProperty("usage-statistics.logBots", true)) {
@@ -347,7 +399,9 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
             }
 
             //Also store the referrer
-            if (request.getHeader("referer") != null) {
+            if (referrer != null) {
+                doc1.addField("referrer", referrer);
+            } else if (request.getHeader("referer") != null) {
                 doc1.addField("referrer", request.getHeader("referer"));
             }
 
@@ -407,7 +461,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
             storeParents(doc1, dspaceObject);
         }
         // Save the current time
-        doc1.addField("time", DateFormatUtils.format(new Date(), DATE_FORMAT_8601));
+        doc1.addField("time", DateFormatUtils.format(time, DATE_FORMAT_8601));
         if (currentUser != null) {
             doc1.addField("epersonid", currentUser.getID().toString());
         }
@@ -416,7 +470,8 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     }
 
     protected SolrInputDocument getCommonSolrDoc(DSpaceObject dspaceObject, String ip, String userAgent,
-                                                 String xforwardedfor, EPerson currentUser) throws SQLException {
+                                                 String xforwardedfor, EPerson currentUser,
+                                                 String referrer) throws SQLException {
         boolean isSpiderBot = SpiderDetector.isSpider(ip);
         if (isSpiderBot &&
             !configurationService.getBooleanProperty("usage-statistics.logBots", true)) {
@@ -435,6 +490,11 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
             }
         } else {
             doc1.addField("ip", ip);
+        }
+
+        // Add the referrer, if present
+        if (referrer != null) {
+            doc1.addField("referrer", referrer);
         }
 
         InetAddress ipAddress = null;
@@ -506,7 +566,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     public void postSearch(DSpaceObject resultObject, HttpServletRequest request, EPerson currentUser,
                            List<String> queries, int rpp, String sortBy, String order, int page, DSpaceObject scope) {
         try {
-            SolrInputDocument solrDoc = getCommonSolrDoc(resultObject, request, currentUser);
+            SolrInputDocument solrDoc = getCommonSolrDoc(resultObject, request, currentUser, null, new Date());
             if (solrDoc == null) {
                 return;
             }
@@ -556,7 +616,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     public void postWorkflow(UsageWorkflowEvent usageWorkflowEvent) throws SQLException {
         initSolrYearCores();
         try {
-            SolrInputDocument solrDoc = getCommonSolrDoc(usageWorkflowEvent.getObject(), null, null);
+            SolrInputDocument solrDoc = getCommonSolrDoc(usageWorkflowEvent.getObject(), null, null, null, new Date());
 
             //Log the current collection & the scope !
             solrDoc.addField("owningColl", usageWorkflowEvent.getScope().getID().toString());
@@ -966,7 +1026,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
         boolean showTotal, List<String> facetQueries, int facetMinCount) throws SolrServerException, IOException {
 
         QueryResponse queryResponse = query(query, filterQuery, null,
-            0, max, null, null, null, facetQueries, null, false, facetMinCount, true, pivotField, null);
+            0, max, null, null, null, 1, facetQueries, null, false, facetMinCount, true, pivotField, null);
 
         if (queryResponse == null) {
             return new FacetPivotResult[0];
@@ -988,10 +1048,11 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
             String dateEnd,
             boolean showTotal,
             int facetMinCount,
-            int max
+            int increment
     ) throws SolrServerException, IOException  {
 
-        QueryResponse queryResponse = query(query, filterQuery, facetField, 0, max, dateType, dateStart, dateEnd, null,
+        QueryResponse queryResponse = query(query, filterQuery, facetField, 0, -1, dateType, dateStart, dateEnd,
+            increment, null,
                 null, false, facetMinCount, false, null, fieldList);
 
         ObjectCount[] found = Optional.ofNullable(queryResponse)
@@ -1110,7 +1171,7 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     public QueryResponse query(String query, String filterQuery, String facetField, int rows, int max, String dateType,
         String dateStart, String dateEnd, List<String> facetQueries, String sort, boolean ascending, int facetMinCount)
         throws SolrServerException, IOException {
-        return query(query, filterQuery, facetField, rows, max, dateType, dateStart, dateEnd, facetQueries, sort,
+        return query(query, filterQuery, facetField, rows, max, dateType, dateStart, dateEnd, 1, facetQueries, sort,
             ascending, facetMinCount, false, null, null);
     }
 
@@ -1118,15 +1179,15 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
     public QueryResponse query(String query, String filterQuery, String facetField, int rows, int max, String dateType,
         String dateStart, String dateEnd, List<String> facetQueries, String sort, boolean ascending, int facetMinCount,
         boolean defaultFilterQueries) throws SolrServerException, IOException {
-        return query(query, filterQuery, facetField, rows, max, dateType, dateStart, dateEnd, facetQueries, sort,
+        return query(query, filterQuery, facetField, rows, max, dateType, dateStart, dateEnd, 1, facetQueries, sort,
             ascending, facetMinCount, defaultFilterQueries, null, null);
     }
 
     @Override
     public QueryResponse query(String query, String filterQuery, String facetField, int rows,
-        int max, String dateType, String dateStart, String dateEnd, List<String> facetQueries, String sort,
-        boolean ascending, int facetMinCount, boolean defaultFilterQueries, String pivotField, String fieldList)
-        throws SolrServerException, IOException {
+        int max, String dateType, String dateStart, String dateEnd, int increment, List<String> facetQueries,
+        String sort, boolean ascending, int facetMinCount, boolean defaultFilterQueries, String pivotField,
+        String fieldList) throws SolrServerException, IOException {
 
         if (solr == null) {
             return null;
@@ -1139,17 +1200,16 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
 
         // Set the date facet if present
         if (dateType != null) {
+
+            String start = isNotBlank(dateStart) ? dateStart + dateType : "";
+            String end = isNotBlank(dateEnd) ? dateEnd + dateType : "";
+
             solrQuery.setParam("facet.range", "time")
-                .
-                // EXAMPLE: NOW/MONTH+1MONTH
-                    setParam("f.time.facet.range.end",
-                             "NOW/" + dateType + dateEnd + dateType).setParam(
-                "f.time.facet.range.gap", "+1" + dateType)
-                .
-                // EXAMPLE: NOW/MONTH-" + nbMonths + "MONTHS
-                    setParam("f.time.facet.range.start",
-                             "NOW/" + dateType + dateStart + dateType + "S")
+                .setParam("f.time.facet.range.start", "NOW/" + dateType + start) // EXAMPLE: NOW/MONTH-2MONTHS
+                .setParam("f.time.facet.range.end", "NOW/" + dateType + end) // EXAMPLE: NOW/MONTH+1MONTH
+                .setParam("f.time.facet.range.gap", "+" + increment + dateType)
                 .setFacet(true);
+
         }
         if (facetQueries != null) {
             for (int i = 0; i < facetQueries.size(); i++) {
@@ -1755,11 +1815,14 @@ public class SolrLoggerServiceImpl implements SolrLoggerService, InitializingBea
                 statisticYearCores
                     .add(baseSolrUrl.replace("http://", "").replace("https://", "") + statCoreName);
             }
-            //Also add the core containing the current year !
-            statisticYearCores.add(((HttpSolrClient) solr)
+            var baseCore = ((HttpSolrClient) solr)
                     .getBaseURL()
                     .replace("http://", "")
-                    .replace("https://", ""));
+                    .replace("https://", "");
+            if (!statisticYearCores.contains(baseCore)) {
+                //Also add the core containing the current year, if it hasn't been added already
+                statisticYearCores.add(baseCore);
+            }
         } catch (IOException | SolrServerException e) {
             log.error(e.getMessage(), e);
         }

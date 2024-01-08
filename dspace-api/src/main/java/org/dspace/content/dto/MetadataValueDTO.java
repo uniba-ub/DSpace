@@ -8,6 +8,7 @@
 package org.dspace.content.dto;
 
 import org.dspace.content.MetadataField;
+import org.dspace.content.MetadataFieldName;
 import org.dspace.content.MetadataSchema;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.authority.Choices;
@@ -68,13 +69,35 @@ public class MetadataValueDTO {
         this.confidence = confidence;
     }
 
+    public MetadataValueDTO(String metadataField, String value) {
+        MetadataFieldName fieldName = new MetadataFieldName(metadataField);
+        this.schema = fieldName.schema;
+        this.element = fieldName.element;
+        this.qualifier = fieldName.qualifier;
+        this.value = value;
+    }
+
     /**
      * Constructor for the MetadataValueDTO class
-     * @param schema        The schema to be assigned to this MetadataValueDTO object
-     * @param element       The element to be assigned to this MetadataValueDTO object
-     * @param qualifier     The qualifier to be assigned to this MetadataValueDTO object
-     * @param language      The language to be assigend to this MetadataValueDTO object
-     * @param value         The value to be assigned to this MetadataValueDTO object
+     * @param schema    The schema to be assigned to this MetadataValueDTO object
+     * @param element   The element to be assigned to this MetadataValueDTO object
+     * @param qualifier The qualifier to be assigned to this MetadataValueDTO object
+     * @param value     The value to be assigned to this MetadataValueDTO object
+     */
+    public MetadataValueDTO(String schema, String element, String qualifier, String value) {
+        this.schema = schema;
+        this.element = element;
+        this.qualifier = qualifier;
+        this.value = value;
+    }
+
+    /**
+     * Constructor for the MetadataValueDTO class
+     * @param schema    The schema to be assigned to this MetadataValueDTO object
+     * @param element   The element to be assigned to this MetadataValueDTO object
+     * @param qualifier The qualifier to be assigned to this MetadataValueDTO object
+     * @param language  The language to be assigend to this MetadataValueDTO object
+     * @param value     The value to be assigned to this MetadataValueDTO object
      */
     public MetadataValueDTO(String schema, String element, String qualifier, String language, String value) {
         this.schema = schema;
@@ -89,6 +112,10 @@ public class MetadataValueDTO {
         this.element = metadata.getElement();
         this.qualifier = metadata.getQualifier();
         this.value = metadata.getValue();
+    }
+
+    public String getMetadataField() {
+        return new MetadataFieldName(schema, element, qualifier).toString();
     }
 
     public String getSchema() {

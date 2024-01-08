@@ -10,12 +10,14 @@ package org.dspace.content.authority.service;
 import java.util.List;
 import java.util.Set;
 
+import org.dspace.app.util.SubmissionConfigReaderException;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.authority.Choice;
 import org.dspace.content.authority.ChoiceAuthority;
 import org.dspace.content.authority.Choices;
+import org.dspace.content.authority.DSpaceControlledVocabularyIndex;
 import org.dspace.core.Constants;
 
 /**
@@ -56,6 +58,17 @@ public interface ChoiceAuthorityService {
      */
     public String getChoiceAuthorityName(String schema, String element, String qualifier, int dsoType,
             Collection collection);
+
+    /**
+     * @param schema    schema of metadata field
+     * @param element   element of metadata field
+     * @param qualifier qualifier of metadata field
+     * @param formName  the form name to retrieve the specific authority
+     * @return the name of the choice authority associated with the specified
+     * metadata. Throw IllegalArgumentException if the supplied metadata
+     * is not associated with an authority choice
+     */
+    public String getChoiceAuthorityName(String schema, String element, String qualifier, String formName);
 
     /**
      * Wrapper that calls getBestMatch method of the plugin corresponding to
@@ -124,6 +137,17 @@ public interface ChoiceAuthorityService {
     public boolean isChoicesConfigured(String fieldKey, int dsoType, Collection collection);
 
     /**
+     * Predicate, is there a Choices configuration of any kind for the
+     * given metadata field?
+     *
+     * @param fieldKey single string identifying metadata field
+     * @param dsoType   the dspace object type as defined in the {@link Constants}
+     * @param formname the formname used by the collection
+     * @return true if choices are configured for this field.
+     */
+    public boolean isChoicesConfigured(String fieldKey, int dsoType, String formname);
+
+    /**
      * Get the presentation keyword (should be "lookup", "select" or "suggest", but this
      * is an informal convention so it can be easily extended) for this field.
      *
@@ -161,12 +185,11 @@ public interface ChoiceAuthorityService {
     /**
      * This method has been created to have a way of clearing the cache kept inside the service
      */
-    public void clearCache();
+    public void clearCache() throws SubmissionConfigReaderException;
 
     /**
      * Get the entity type starting from the metadata field.
      *
-     * @param  field single string identifying metadata field
      * @return       the entity type as a String
      */
     String getLinkedEntityType(String fieldKey);
@@ -221,4 +244,7 @@ public interface ChoiceAuthorityService {
      * @param item          the item to be linked to the metadata value
      */
     void setReferenceWithAuthority(MetadataValue metadataValue, Item item);
+
+    public DSpaceControlledVocabularyIndex getVocabularyIndex(String nameVocab);
+
 }

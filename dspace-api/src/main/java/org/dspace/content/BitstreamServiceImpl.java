@@ -7,14 +7,21 @@
  */
 package org.dspace.content;
 
+import static org.apache.commons.lang.StringUtils.startsWith;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Spliterators;
 import java.util.UUID;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nullable;
 
 import org.apache.commons.collections4.CollectionUtils;
@@ -30,7 +37,7 @@ import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.LogHelper;
-import org.dspace.eperson.service.EPersonService;
+import org.dspace.core.exception.SQLRuntimeException;
 import org.dspace.event.Event;
 import org.dspace.services.ConfigurationService;
 import org.dspace.storage.bitstore.service.BitstreamStorageService;
@@ -69,9 +76,6 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
 
     @Autowired
     private ConfigurationService configurationService;
-
-    @Autowired
-    private EPersonService ePersonService;
 
     protected BitstreamServiceImpl() {
         super();
@@ -285,6 +289,11 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
         //Remove our bitstream from all our bundles
         final List<Bundle> bundles = bitstream.getBundles();
         for (Bundle bundle : bundles) {
+            authorizeService.authorizeAction(context, bundle, Constants.REMOVE);
+            //We also need to remove the bitstream id when it's set as bundle's primary bitstream
+            if (bitstream.equals(bundle.getPrimaryBitstream())) {
+                bundle.unsetPrimaryBitstreamID();
+            }
             bundle.removeBitstream(bitstream);
         }
 
@@ -399,6 +408,13 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
     }
 
     @Override
+    public List<Bitstream> getBitstreamByBundleName(Item item, String bundleName) throws SQLException {
+        return itemService.getBundles(item, bundleName).stream()
+            .flatMap(bundle -> bundle.getBitstreams().stream())
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public Bitstream getFirstBitstream(Item item, String bundleName) throws SQLException {
         List<Bundle> bundles = itemService.getBundles(item, bundleName);
         if (CollectionUtils.isNotEmpty(bundles)) {
@@ -412,7 +428,7 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
 
     @Override
     public Bitstream getThumbnail(Context context, Bitstream bitstream) throws SQLException {
-        Pattern pattern = Pattern.compile("^" + bitstream.getName() + ".([^.]+)$");
+        Pattern pattern = getBitstreamNamePattern(bitstream);
 
         for (Bundle bundle : bitstream.getBundles()) {
             for (Item item : bundle.getItems()) {
@@ -440,6 +456,13 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
         }
 
         return null;
+    }
+
+    protected Pattern getBitstreamNamePattern(Bitstream bitstream) {
+        if (bitstream.getName() != null) {
+            return Pattern.compile("^" + Pattern.quote(bitstream.getName()) + ".([^.]+)$");
+        }
+        return Pattern.compile("^" + bitstream.getName() + ".([^.]+)$");
     }
 
     @Override
@@ -503,16 +526,169 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
     }
 
     @Override
-    public Iterator<Bitstream> findShowableByItem(
-        Context context, UUID itemId, Optional<String> bundleName
-    ) throws SQLException {
-        return bitstreamDAO.findShowableByItem(
-            context,
-            itemId,
-            bundleName
-                .filter(StringUtils::isNotBlank)
-                .orElse(null)
-        );
+    public List<Bitstream> findShowableByItem(Context context, UUID itemId, String bundleName,
+            Map<String, String> filterMetadata) throws SQLException {
+
+        return streamOf(bitstreamDAO.findShowableByItem(context, itemId, bundleName))
+            .filter(bitstream -> hasAllMetadataValues(bitstream, filterMetadata))
+            .collect(Collectors.toList());
+
+    }
+
+    @Override
+    public List<Bitstream> findByItemAndBundleAndMetadata(Context context, Item item, String bundleName,
+        Map<String, String> filterMetadata) {
+
+        try {
+
+            return streamOf(getItemBitstreams(context, item))
+                .filter(bitstream -> isContainedInBundleNamed(bitstream, bundleName))
+                .filter(bitstream -> hasAllMetadataValues(bitstream, filterMetadata))
+                .collect(Collectors.toList());
+
+        } catch (SQLException ex) {
+            throw new SQLRuntimeException(ex);
+        }
+
+    }
+
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.bitstreamDAO.exists(context, Bitstream.class, id);
+    }
+
+    private boolean isContainedInBundleNamed(Bitstream bitstream, String name) {
+
+        if (StringUtils.isEmpty(name)) {
+            return true;
+        }
+
+        try {
+            return bitstream.getBundles().stream()
+                .anyMatch(bundle -> name.equals(bundle.getName()));
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
+        }
+
+    }
+
+    private boolean hasAllMetadataValues(Bitstream bitstream, Map<String, String> filterMetadata) {
+        return filterMetadata.keySet().stream()
+            .allMatch(metadataField -> hasMetadataValue(bitstream, metadataField, filterMetadata.get(metadataField)));
+    }
+
+    private boolean hasMetadataValue(Bitstream bitstream, String metadataField, String value) {
+        if (StringUtils.isEmpty(metadataField) || StringUtils.isEmpty(value)) {
+            return true;
+        }
+        List<MetadataValue> metadata = bitstream.getMetadata().stream()
+                .filter(metadataValue -> metadataValue.getMetadataField().toString('.').equals(metadataField))
+                .collect(Collectors.toList());
+        if (isNegativeMatch(value) && metadata.size() == 0) {
+            return true;
+        }
+        return metadata.stream().anyMatch(metadataValue -> matchesMetadataValue(metadataValue, value));
+    }
+
+    private boolean isNegativeMatch(String value) {
+        return StringUtils.startsWith(value, "!");
+    }
+
+    private boolean isRegexMatch(String value) {
+        String tmpValue = value;
+        if (isNegativeMatch(value)) {
+            tmpValue = value.substring(1);
+        }
+        return StringUtils.startsWith(tmpValue, "(") && StringUtils.endsWith(tmpValue, ")");
+    }
+
+    private String getMatchValue(String value) {
+        String tmpValue = value;
+        if (isNegativeMatch(value)) {
+            tmpValue = value.substring(1);
+        }
+        if (isRegexMatch(tmpValue)) {
+            return tmpValue.substring(1, tmpValue.length() - 1);
+        }
+        return tmpValue;
+    }
+
+
+    private boolean matchesMetadataValue(MetadataValue metadataValue, String value) {
+        boolean isNegative = isNegativeMatch(value);
+        boolean matchResult = false;
+        if (isRegexMatch(value)) {
+            matchResult = metadataValue.getValue().matches(getMatchValue(value));
+        } else {
+            matchResult = StringUtils.equals(metadataValue.getValue(), getMatchValue(value));
+        }
+        if (isNegative) {
+            return !matchResult;
+        } else {
+            return matchResult;
+        }
+    }
+
+    private Stream<Bitstream> streamOf(Iterator<Bitstream> iterator) {
+        return StreamSupport.stream(Spliterators.spliteratorUnknownSize(iterator, 0), false);
+    }
+
+    @Override
+    public boolean isOriginalBitstream(DSpaceObject dso) throws SQLException {
+
+        if (dso.getType() != Constants.BITSTREAM) {
+            return false;
+        }
+
+        Bitstream bitstream = (Bitstream) dso;
+
+        return bitstream.getBundles().stream()
+            .anyMatch(bundle -> "ORIGINAL".equals(bundle.getName()));
+
+    }
+
+    @Override
+    public void updateThumbnailResourcePolicies(Context context, Bitstream bitstream) throws SQLException {
+        getThumbnail(bitstream)
+            .ifPresent(thumbnail -> replacePolicies(context, bitstream, thumbnail));
+    }
+
+    private void replacePolicies(Context context, Bitstream bitstream, Bitstream thumbnail) {
+        try {
+            authorizeService.replaceAllPolicies(context, bitstream, thumbnail);
+        } catch (SQLException | AuthorizeException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private Optional<Bitstream> getThumbnail(Bitstream bitstream) throws SQLException {
+        return getItem(bitstream)
+            .flatMap(item -> getThumbnail(item, bitstream.getName()));
+    }
+
+    private Optional<Item> getItem(Bitstream bitstream) throws SQLException {
+        return bitstream.getBundles().stream()
+            .flatMap(bundle -> bundle.getItems().stream())
+            .findFirst();
+    }
+
+    private Optional<Bitstream> getThumbnail(Item item, String name) {
+        List<Bundle> bundles = getThumbnailBundles(item);
+        if (CollectionUtils.isEmpty(bundles)) {
+            return Optional.empty();
+        }
+
+        return bundles.stream()
+            .flatMap(bundle -> bundle.getBitstreams().stream())
+            .filter(bitstream -> startsWith(bitstream.getName(), name))
+            .findFirst();
+    }
+
+    private List<Bundle> getThumbnailBundles(Item item) {
+        try {
+            return itemService.getBundles(item, "THUMBNAIL");
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
 }

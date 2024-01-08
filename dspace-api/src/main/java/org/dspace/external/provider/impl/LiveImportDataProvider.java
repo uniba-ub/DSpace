@@ -9,6 +9,7 @@ package org.dspace.external.provider.impl;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -47,6 +48,14 @@ public class LiveImportDataProvider extends AbstractExternalDataProvider {
         return sourceIdentifier;
     }
 
+    public QuerySource getQuerySource() {
+        return querySource;
+    }
+
+    public void setQuerySource(QuerySource querySource) {
+        this.querySource = querySource;
+    }
+
     /**
      * This method set the SourceIdentifier for the ExternalDataProvider
      * @param sourceIdentifier   The UNIQUE sourceIdentifier to be set on any LiveImport data provider
@@ -57,7 +66,7 @@ public class LiveImportDataProvider extends AbstractExternalDataProvider {
 
     /**
      * This method set the MetadataSource for the ExternalDataProvider
-     * @param metadataSource {@link org.dspace.importer.external.service.components.MetadataSource} implementation used to process the input data
+     * @param querySource Source {@link org.dspace.importer.external.service.components.QuerySource} implementation used to process the input data
      */
     public void setMetadataSource(QuerySource querySource) {
         this.querySource = querySource;
@@ -82,9 +91,8 @@ public class LiveImportDataProvider extends AbstractExternalDataProvider {
     @Override
     public Optional<ExternalDataObject> getExternalDataObject(String id) {
         try {
-            ImportRecord record = querySource.getRecord(id);
-            ExternalDataObject externalDataObject = getExternalDataObject(record);
-            return Optional.ofNullable(externalDataObject);
+            ExternalDataObject externalDataObject = getExternalDataObject(querySource.getRecord(id));
+            return Optional.of(externalDataObject);
         } catch (MetadataSourceException e) {
             throw new RuntimeException(
                     "The live import provider " + querySource.getImportSource() + " throws an exception", e);
@@ -128,7 +136,7 @@ public class LiveImportDataProvider extends AbstractExternalDataProvider {
      * @return
      */
     private ExternalDataObject getExternalDataObject(ImportRecord record) {
-        if (record == null || getFirstValue(record, recordIdMetadata) == null) {
+        if (Objects.isNull(record)) {
             return null;
         }
         ExternalDataObject externalDataObject = new ExternalDataObject(sourceIdentifier);
@@ -159,7 +167,4 @@ public class LiveImportDataProvider extends AbstractExternalDataProvider {
         return id;
     }
 
-    public QuerySource getQuerySource() {
-        return querySource;
-    }
 }

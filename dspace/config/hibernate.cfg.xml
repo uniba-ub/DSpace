@@ -54,6 +54,7 @@
         <mapping class="org.dspace.content.EntityType"/>
 
         <mapping class="org.dspace.scripts.Process"/>
+        <mapping class="org.dspace.alerts.SystemWideAlert"/>
 
         <mapping class="org.dspace.content.MetadataField"/>
         <mapping class="org.dspace.content.MetadataSchema"/>
@@ -68,6 +69,7 @@
         <mapping class="org.dspace.eperson.Group"/>
         <mapping class="org.dspace.eperson.Group2GroupCache"/>
         <mapping class="org.dspace.eperson.RegistrationData"/>
+        <mapping class="org.dspace.eperson.RegistrationDataMetadata"/>
         <mapping class="org.dspace.eperson.Subscription"/>
         <mapping class="org.dspace.eperson.SubscriptionParameter"/>
         <mapping class="org.dspace.handle.Handle"/>
@@ -115,6 +117,7 @@
         <mapping class="org.dspace.orcid.OrcidToken"/>
 
         <mapping class="org.dspace.app.metrics.CrisMetrics"/>
+        <mapping class="org.dspace.supervision.SupervisionOrder"/>
 
     </session-factory>
 </hibernate-configuration>

@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.List;
 import javax.servlet.Filter;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.dspace.app.rest.filter.DSpaceRequestContextFilter;
 import org.dspace.app.rest.model.hateoas.DSpaceLinkRelationProvider;
 import org.dspace.app.rest.parameter.resolver.SearchFilterResolver;
@@ -157,9 +158,31 @@ public class WebApplication {
                     .getCorsAllowedOrigins(configuration.getCorsAllowedOriginsConfig());
                 String[] iiifAllowedOrigins = configuration
                     .getCorsAllowedOrigins(configuration.getIiifAllowedOriginsConfig());
+                String[] bitstreamAllowedOrigins = configuration
+                    .getCorsAllowedOrigins(configuration.getBitstreamAllowedOriginsConfig());
+                String[] signpostingAllowedOrigins = configuration
+                        .getCorsAllowedOrigins(configuration.getSignpostingAllowedOriginsConfig());
 
                 boolean corsAllowCredentials = configuration.getCorsAllowCredentials();
                 boolean iiifAllowCredentials = configuration.getIiifAllowCredentials();
+                boolean bitstreamAllowCredentials = configuration.getBitstreamsAllowCredentials();
+                boolean signpostingAllowCredentials = configuration.getSignpostingAllowCredentials();
+
+                if (ArrayUtils.isEmpty(bitstreamAllowedOrigins)) {
+                    bitstreamAllowedOrigins = corsAllowedOrigins;
+                }
+                if (!ArrayUtils.isEmpty(bitstreamAllowedOrigins)) {
+                    registry.addMapping("/api/core/bitstreams/**").allowedMethods(CorsConfiguration.ALL)
+                        // Set Access-Control-Allow-Credentials to "true" and specify which origins are valid
+                        // for our Access-Control-Allow-Origin header
+                        .allowCredentials(bitstreamAllowCredentials).allowedOrigins(bitstreamAllowedOrigins)
+                        // Allow list of request preflight headers allowed to be sent to us from the client
+                        .allowedHeaders("Accept", "Authorization", "Content-Type", "Origin", "X-On-Behalf-Of",
+                            "X-Requested-With", "X-XSRF-TOKEN", "X-CORRELATION-ID", "X-REFERRER",
+                            "x-recaptcha-token", "Access-Control-Allow-Origin")
+                        // Allow list of response headers allowed to be sent by us (the server) to the client
+                        .exposedHeaders("Authorization", "DSPACE-XSRF-TOKEN", "Location", "WWW-Authenticate");
+                }
                 if (corsAllowedOrigins != null) {
                     registry.addMapping("/api/**").allowedMethods(CorsConfiguration.ALL)
                             // Set Access-Control-Allow-Credentials to "true" and specify which origins are valid
@@ -182,6 +205,18 @@ public class WebApplication {
                             .allowedHeaders("Accept", "Authorization", "Content-Type", "Origin", "X-On-Behalf-Of",
                                 "X-Requested-With", "X-XSRF-TOKEN", "X-CORRELATION-ID", "X-REFERRER",
                                 "x-recaptcha-token")
+                            // Allow list of response headers allowed to be sent by us (the server) to the client
+                            .exposedHeaders("Authorization", "DSPACE-XSRF-TOKEN", "Location", "WWW-Authenticate");
+                }
+                if (signpostingAllowedOrigins != null) {
+                    registry.addMapping("/signposting/**").allowedMethods(CorsConfiguration.ALL)
+                            // Set Access-Control-Allow-Credentials to "true" and specify which origins are valid
+                            // for our Access-Control-Allow-Origin header
+                            .allowCredentials(signpostingAllowCredentials).allowedOrigins(signpostingAllowedOrigins)
+                            // Allow list of request preflight headers allowed to be sent to us from the client
+                            .allowedHeaders("Accept", "Authorization", "Content-Type", "Origin", "X-On-Behalf-Of",
+                                    "X-Requested-With", "X-XSRF-TOKEN", "X-CORRELATION-ID", "X-REFERRER",
+                                    "x-recaptcha-token", "access-control-allow-headers")
                             // Allow list of response headers allowed to be sent by us (the server) to the client
                             .exposedHeaders("Authorization", "DSPACE-XSRF-TOKEN", "Location", "WWW-Authenticate");
                 }

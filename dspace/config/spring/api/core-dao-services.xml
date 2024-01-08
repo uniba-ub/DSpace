@@ -35,11 +35,13 @@
     <bean class="org.dspace.content.dao.impl.ProcessDAOImpl"/>
 
     <bean class="org.dspace.deduplication.dao.impl.DeduplicationDAOImpl"/>
+    <bean class="org.dspace.alerts.dao.impl.SystemWideAlertDAOImpl"/>
 
     <bean class="org.dspace.eperson.dao.impl.EPersonDAOImpl"/>
     <bean class="org.dspace.eperson.dao.impl.Group2GroupCacheDAOImpl"/>
     <bean class="org.dspace.eperson.dao.impl.GroupDAOImpl"/>
     <bean class="org.dspace.eperson.dao.impl.RegistrationDataDAOImpl"/>
+    <bean class="org.dspace.eperson.dao.impl.RegistrationDataMetadataDAOImpl"/>
     <bean class="org.dspace.eperson.dao.impl.SubscriptionDAOImpl"/>
     <bean class="org.dspace.eperson.dao.impl.SubscriptionParameterDAOImpl"/>
 
@@ -82,6 +84,8 @@
     <bean class="org.dspace.orcid.dao.impl.OrcidQueueDAOImpl" />
     <bean class="org.dspace.orcid.dao.impl.OrcidHistoryDAOImpl" />
     <bean class="org.dspace.orcid.dao.impl.OrcidTokenDAOImpl" />
+
+    <bean class="org.dspace.supervision.dao.impl.SupervisionOrderDaoImpl"/>
 
 
 </beans>
