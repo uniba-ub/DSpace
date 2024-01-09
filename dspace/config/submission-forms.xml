@@ -784,18 +784,6 @@ it, please enter the types and the actual numbers or codes.</hint>
       </row>
       <row>
         <field>
-          <dc-schema>dc</dc-schema>
-          <dc-element>description</dc-element>
-          <dc-qualifier>sponsorship</dc-qualifier>
-          <label>Sponsors</label>
-          <input-type>onebox</input-type>
-          <repeatable>true</repeatable>
-          <required />
-          <hint>Enter the name of any sponsors.</hint>
-        </field>
-      </row>
-      <row>
-        <field>
           <dc-schema>oaire</dc-schema>
           <dc-element>citation</dc-element>
           <dc-qualifier>volume</dc-qualifier>
