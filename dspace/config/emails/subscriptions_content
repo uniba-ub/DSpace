@@ -4,20 +4,25 @@
 ##             {1} Collections updates block
 ##             {2} Communities updates block
 ##             {3} Entity updates block
+#set($subject = "${config.get('dspace.name')}: Statistics of updates on subscribed items")
 
-This email is sent from DSpace-CRIS based on the chosen subscription preferences.
+This email is sent from ${config.get('dspace.name')} based on the chosen subscription preferences.
 You can manage your subscription preferences from ${params[0]}
 
+#if( not( "$params[1]" == "" ))
 Communities
 -------------------
 ${params[1]}
 
-
+#end
+#if( not( "$params[2]" == "" ))
 Collections
 -------------------
 ${params[2]}
 
-
+#end
+#if( not( "$params[3]" == "" ))
 Entities
 -------------------
 ${params[3]}
+#end

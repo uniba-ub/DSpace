@@ -109,9 +109,9 @@
     <bean class="org.dspace.eperson.RegistrationDataServiceImpl"/>
     <bean class="org.dspace.eperson.RegistrationDataMetadataServiceImpl"/>
     <bean class="org.dspace.eperson.SubscribeServiceImpl"/>
-    
+
     <bean class="org.dspace.eperson.SubscribeParameterServiceImpl"/>
-    
+
     <bean class="org.dspace.eperson.CaptchaServiceImpl"/>
     <bean class="org.dspace.event.EventServiceImpl"/>
 
@@ -135,6 +135,8 @@
     <bean id="clientInfoService" class="org.dspace.service.impl.ClientInfoServiceImpl"/>
 
     <bean class="org.dspace.versioning.VersionHistoryServiceImpl"/>
+
+    <bean class="org.dspace.util.FrontendUrlService"/>
 
     <bean class="org.dspace.content.security.MetadataSecurityServiceImpl"/>
     <bean class="org.dspace.metricsSecurity.BoxMetricsLayoutConfigurationService"/>
@@ -198,6 +200,9 @@
     <bean class="org.dspace.authorize.RegexPasswordValidator" />
 
     <bean class="org.dspace.supervision.SupervisionOrderServiceImpl"/>
+
+    <!-- Submission Config Service -->
+    <bean class="org.dspace.submit.service.SubmissionConfigServiceImpl"/>
 
 </beans>
 
