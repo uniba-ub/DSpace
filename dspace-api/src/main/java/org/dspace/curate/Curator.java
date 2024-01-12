@@ -498,6 +498,8 @@ public class Curator {
                 return false;
             }
         }
+        Context context = curationContext();
+        context.uncacheEntity(comm);
         return true;
     }
 
@@ -524,6 +526,7 @@ public class Curator {
                     return false;
                 }
             }
+            context.uncacheEntity(coll);
         } catch (SQLException sqlE) {
             throw new IOException(sqlE.getMessage(), sqlE);
         }
@@ -542,6 +545,7 @@ public class Curator {
         Context curCtx = curationContext();
         if (curCtx != null && txScope.equals(TxScope.OBJECT)) {
             curCtx.commit();
+            curCtx.reloadEntity(dso);
         }
     }
 
