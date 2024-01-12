@@ -1032,40 +1032,6 @@
             </dependencyManagement>
         </profile>
 
-       <!-- REST Jersey (Deprecated REST API from DSpace 6.x or below) -->
-       <!-- As this module is deprecated, it only builds if you activate it via -Pdspace-rest -->
-       <profile>
-           <id>dspace-rest</id>
-           <activation>
-               <activeByDefault>false</activeByDefault>
-               <!-- Enable if we are doing a release (-Drelease), to tag/release this optional module -->
-               <property>
-                   <name>release</name>
-               </property>
-           </activation>
-           <modules>
-               <module>dspace-rest</module>
-           </modules>
-           <dependencyManagement>
-               <dependencies>
-                   <dependency>
-                       <groupId>org.dspace</groupId>
-                       <artifactId>dspace-rest</artifactId>
-                       <version>cris-2024.01.00-SNAPSHOT</version>
-                       <type>jar</type>
-                       <classifier>classes</classifier>
-                   </dependency>
-                   <dependency>
-                       <groupId>org.dspace</groupId>
-                       <artifactId>dspace-rest</artifactId>
-                       <version>cris-2024.01.00-SNAPSHOT</version>
-                       <type>war</type>
-                   </dependency>
-               </dependencies>
-           </dependencyManagement>
-       </profile>
-
-
         <!--
            Builds SWORD extension for DSpace
         -->
