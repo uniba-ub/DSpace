@@ -415,6 +415,8 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         getClient(token).perform(get("/api/core/items/search/findAllById")
                    .param("id",
                            publicItem1.getID().toString(),
+                           publicItem1.getID().toString(),
+                           UUID.randomUUID().toString(),
                            publicItem2.getID().toString(),
                            UUID.randomUUID().toString()
                            ))

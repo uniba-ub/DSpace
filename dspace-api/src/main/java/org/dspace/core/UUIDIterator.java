@@ -46,7 +46,16 @@ public class UUIDIterator<T extends DSpaceObject> extends AbstractIterator<T> {
     @Override
     protected T computeNext() {
         try {
-            return iterator.hasNext() ? dao.findByID(ctx, clazz, iterator.next()) : endOfData();
+            if (iterator.hasNext()) {
+                T item = dao.findByID(ctx, clazz, iterator.next());
+                if (item != null) {
+                    return item;
+                } else {
+                    return computeNext();
+                }
+            } else {
+                return endOfData();
+            }
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }
