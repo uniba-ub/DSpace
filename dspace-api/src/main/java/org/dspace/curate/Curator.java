@@ -464,6 +464,8 @@ public class Curator {
             //Then, perform this task for all Top-Level Communities in the Site
             // (this will recursively perform task for all objects in DSpace)
             for (Community subcomm : communityService.findAllTop(ctx)) {
+                // force a reload of the community in case a commit was performed
+                subcomm = ctx.reloadEntity(subcomm);
                 if (!doCommunity(tr, subcomm)) {
                     return false;
                 }
@@ -488,17 +490,22 @@ public class Curator {
         if (!tr.run(comm)) {
             return false;
         }
+        Context context = curationContext();
+        // force a reload in case we are committing after each object
+        comm = context.reloadEntity(comm);
         for (Community subcomm : comm.getSubcommunities()) {
             if (!doCommunity(tr, subcomm)) {
                 return false;
             }
         }
+        // force a reload in case we are committing after each object
+        comm = context.reloadEntity(comm);
         for (Collection coll : comm.getCollections()) {
+            context.reloadEntity(coll);
             if (!doCollection(tr, coll)) {
                 return false;
             }
         }
-        Context context = curationContext();
         context.uncacheEntity(comm);
         return true;
     }
@@ -545,7 +552,6 @@ public class Curator {
         Context curCtx = curationContext();
         if (curCtx != null && txScope.equals(TxScope.OBJECT)) {
             curCtx.commit();
-            curCtx.reloadEntity(dso);
         }
     }
 
