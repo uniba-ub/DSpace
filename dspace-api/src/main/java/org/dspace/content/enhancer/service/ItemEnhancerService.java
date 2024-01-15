@@ -28,8 +28,8 @@ public interface ItemEnhancerService {
     void enhance(Context context, Item item);
 
     /**
-     * Remove all the already calculated virtual metadata fields from the given item
-     * and perform a new enhancement.
+     * Force the computation of the enhanced values and, only if the result is different than the current state of the
+     * item update it.
      *
      * @param context the DSpace Context
      * @param item    the item to enhance
