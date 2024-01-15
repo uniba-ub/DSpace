@@ -411,7 +411,8 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         context.restoreAuthSystemState();
         String token = getAuthToken(admin.getEmail(), password);
 
-        // We want to test that only and exclusively existing items are returned.
+        // We want to test that only and exclusively existing items are returned
+        // and each item is returned just one time
         getClient(token).perform(get("/api/core/items/search/findAllById")
                    .param("id",
                            publicItem1.getID().toString(),
