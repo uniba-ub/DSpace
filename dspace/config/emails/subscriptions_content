@@ -5,6 +5,7 @@
 ##             {1} Collections updates block
 ##             {2} Communities updates block
 ##             {3} Entity updates block
+#set($subject = "${config.get('dspace.name')}: Statistics of updates on subscribed items")
 
 =======
 ## Parameters: {0} Collections updates
