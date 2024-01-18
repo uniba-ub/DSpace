@@ -291,6 +291,25 @@ public class CrisLayoutBoxServiceImplTest {
         assertFalse(crisLayoutBoxService.hasContent(context, box, item));
     }
 
+    @Test
+    public void testSingleMetadataboxBitstreamWithoutField() {
+
+        CrisLayoutBox singleBitstreamBox = new CrisLayoutBox();
+        singleBitstreamBox.setShortname("File");
+        singleBitstreamBox.setType(null);
+        Item item = item();
+
+        CrisLayoutFieldBitstream fieldBitstream = new CrisLayoutFieldBitstream();
+        fieldBitstream.setBundle("ORIGINAL");
+        fieldBitstream.setMetadataValue(null);
+        fieldBitstream.setMetadataField(null);
+        fieldBitstream.setRendering("attachment");
+
+        singleBitstreamBox.addLayoutField(fieldBitstream);
+
+        assertThat(crisLayoutBoxService.hasContent(context, singleBitstreamBox, item), is(true));
+    }
+
     private CrisLayoutBox crisLayoutMetadataBox(String shortname, MetadataField... metadataFields) {
         return crisLayoutBox(shortname, CrisLayoutBoxTypes.METADATA.name(), metadataFields);
     }
