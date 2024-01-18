@@ -292,12 +292,14 @@ public class CrisLayoutBoxServiceImplTest {
     }
 
     @Test
-    public void testSingleMetadataboxBitstreamWithoutField() {
+    public void testSingleMetadataboxBitstreamWithoutField() throws SQLException {
 
         CrisLayoutBox singleBitstreamBox = new CrisLayoutBox();
         singleBitstreamBox.setShortname("File");
         singleBitstreamBox.setType(null);
+
         Item item = item();
+        Bitstream bitstream = mock(Bitstream.class);
 
         CrisLayoutFieldBitstream fieldBitstream = new CrisLayoutFieldBitstream();
         fieldBitstream.setBundle("ORIGINAL");
@@ -307,7 +309,11 @@ public class CrisLayoutBoxServiceImplTest {
 
         singleBitstreamBox.addLayoutField(fieldBitstream);
 
+        when(bitstreamService.findShowableByItem(context, item.getID(), "ORIGINAL", Map.of()))
+                .thenReturn(List.of(bitstream));
+
         assertThat(crisLayoutBoxService.hasContent(context, singleBitstreamBox, item), is(true));
+
     }
 
     private CrisLayoutBox crisLayoutMetadataBox(String shortname, MetadataField... metadataFields) {
