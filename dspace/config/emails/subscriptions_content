@@ -1,34 +1,20 @@
 ## E-mail sent to designated address about updates on subscribed items
 ##
-<<<<<<< HEAD
 ## Parameters: {0} Link to subscriptions page
 ##             {1} Collections updates block
 ##             {2} Communities updates block
 ##             {3} Entity updates block
 #set($subject = "${config.get('dspace.name')}: Statistics of updates on subscribed items")
 
-=======
-## Parameters: {0} Collections updates
-##             {1} Communities updates
-#set($subject = "${config.get('dspace.name')} Subscriptions")
->>>>>>> refs/remotes/githubDSpace/main
 This email is sent from ${config.get('dspace.name')} based on the chosen subscription preferences.
 You can manage your subscription preferences from ${params[0]}
 
-<<<<<<< HEAD
 #if( not( "$params[1]" == "" ))
 Communities
 -------------------
 ${params[1]}
-=======
-#if( not( "$params[0]" == "" ))
-Community Subscriptions:
-------------------------
-List of changed items : ${params[0]}
->>>>>>> refs/remotes/githubDSpace/main
 
 #end
-<<<<<<< HEAD
 #if( not( "$params[2]" == "" ))
 Collections
 -------------------
@@ -40,10 +26,3 @@ Entities
 -------------------
 ${params[3]}
 #end
-=======
-#if( not( "$params[1]" == "" ))
-Collection Subscriptions:
--------------------------
-List of changed items : ${params[1]}
-#end
->>>>>>> refs/remotes/githubDSpace/main

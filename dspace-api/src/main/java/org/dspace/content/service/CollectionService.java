@@ -417,8 +417,6 @@ public interface CollectionService
      * @param  entityType the requested entity type
      * @return            the first collection in the community or its descending
      *                    that support the provided entityType
-<<<<<<< HEAD
-=======
      */
     public Collection retrieveCollectionWithSubmitByCommunityAndEntityType(Context context, Community community,
         String entityType);
@@ -450,7 +448,6 @@ public interface CollectionService
      * @return                 total collections found
      * @throws SQLException              if something goes wrong
      * @throws SearchServiceException    if search error
->>>>>>> refs/remotes/githubDSpace/main
      */
     public Collection retriveCollectionByEntityType(Context context, Community community, String entityType);
 
