@@ -59,6 +59,18 @@ public class ItemAuthorityMatcher {
         );
     }
 
+    public static Matcher<? super Object> matchItemAuthorityWithOtherInformations(String authority, String display,
+            String value, String type, Map<String, String> otherInformation, String source) {
+        return allOf(
+                hasJsonPath("$.authority", is(authority)),
+                hasJsonPath("$.display", is(display)),
+                hasJsonPath("$.value", is(value)),
+                hasJsonPath("$.type", is(type)),
+                hasJsonPath("$.otherInformation", is(otherInformation)),
+                hasJsonPath("$.source", is(source))
+        );
+    }
+
     public static Matcher<? super Object> matchItemAuthorityWithTwoMetadataInOtherInformations(String authority,
             String display, String value, String type, String firstOtherMetadata, String firstOtherValue,
             String secondOtherMetadata, String secondOtherValue) {
