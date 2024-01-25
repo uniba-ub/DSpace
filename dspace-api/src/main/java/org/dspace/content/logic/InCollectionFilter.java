@@ -17,7 +17,6 @@ import org.apache.logging.log4j.Logger;
 import org.dspace.content.Collection;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
-import org.dspace.content.logic.LogicalStatementException;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
@@ -43,7 +42,7 @@ public class InCollectionFilter implements Filter {
     private String name;
     private Map<String, Object> parameters = new HashMap<>();
     private static Logger log = LogManager.getLogger(InCollectionFilter.class);
-    
+
     /**
      * Get parameters set by spring configuration in item-filters.xml
      * These could be any kind of map that the extending condition class needs for evaluation
