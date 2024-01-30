@@ -9,7 +9,7 @@
 -- --
 -- Copy raws from nbevent_processed table to qaevent_processed table
 -- --
-INSERT INTO qaevent_processed as qa (qaevent_id, qaevent_timestamp, eperson_uuid, item_uuid)
+INSERT INTO qaevent_processed (qaevent_id, qaevent_timestamp, eperson_uuid, item_uuid)
 SELECT nbevent_id, nbevent_timestamp, eperson_uuid, item_uuid UUID
 FROM nbevent_processed as nb WHERE NOT EXISTS(
 	SELECT * FROM qaevent_processed as qa WHERE qa.qaevent_id = nb.nbevent_id
