@@ -417,7 +417,6 @@ public class OrcidProfileSectionFactoryServiceIT extends AbstractIntegrationTest
         assertThat(organization.getDisambiguatedOrganization(), nullValue());
     }
 
-
     @Test
     public void testQualificationCreation() {
         context.turnOffAuthorisationSystem();
