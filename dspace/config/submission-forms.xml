@@ -47,17 +47,6 @@
           <hint />
         </field>
       </row>
-      <row>
-        <field>
-          <dc-schema>bitstream</dc-schema>
-          <dc-element>hide</dc-element>
-          <label>Hide file</label>
-          <input-type value-pairs-name="truefalse">dropdown</input-type>
-          <repeatable>false</repeatable>
-          <required />
-          <hint />
-        </field>
-      </row>
     </form>
     <form name="publication-dc-contributor-author">
       <row>
