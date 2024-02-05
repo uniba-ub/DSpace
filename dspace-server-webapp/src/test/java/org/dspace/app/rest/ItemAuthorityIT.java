@@ -29,6 +29,7 @@ import org.dspace.builder.GroupBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
+import org.dspace.content.authority.ItemAuthority;
 import org.dspace.content.authority.service.ChoiceAuthorityService;
 import org.dspace.core.service.PluginService;
 import org.dspace.eperson.EPerson;
@@ -265,7 +266,7 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
                                 Map.of("data-oairecerif_author_affiliation", "", "oairecerif_author_affiliation", "",
                                     "data-person_identifier_orcid", "",
                                     "person_identifier_orcid", ""),
-                               "local")
+                               ItemAuthority.DEFAULT)
                        )))
                        .andExpect(jsonPath("$.page.totalElements", Matchers.is(1)));
     }
@@ -890,81 +891,6 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
     }
 
     @Test
-    public void orcidAuthoritySourceReferenceTest() throws Exception {
-        context.turnOffAuthorisationSystem();
-
-        configurationService.setProperty("plugin.named.org.dspace.content.authority.ChoiceAuthority",
-            new String[] {
-                "org.dspace.content.authority.OrcidAuthority=AuthorAuthority"
-            });
-
-        configurationService.setProperty("solr.authority.server", "${solr.server}/authority");
-        configurationService.setProperty("choices.plugin.dc.contributor.author", "AuthorAuthority");
-        configurationService.setProperty("choices.presentation.dc.contributor.author", "suggest");
-        configurationService.setProperty("authority.controlled.dc.contributor.author", "true");
-
-        // set authority source reference
-        configurationService.setProperty("cris.ItemAuthority.AuthorAuthority.source", "ORCID");
-
-        // These clears have to happen so that the config is actually reloaded in those classes. This is needed for
-        // the properties that we're altering above and this is only used within the tests
-        pluginService.clearNamedPluginClasses();
-        choiceAuthorityService.clearCache();
-
-        parentCommunity = CommunityBuilder.createCommunity(context).build();
-        Collection col1 = CollectionBuilder.createCollection(context, parentCommunity).build();
-
-        Item orgUnit_1 = ItemBuilder.createItem(context, col1)
-                                    .withTitle("OrgUnit_1")
-                                    .withEntityType("orgunit")
-                                    .build();
-
-        Item orgUnit_2 = ItemBuilder.createItem(context, col1)
-                                    .withTitle("OrgUnit_2")
-                                    .withEntityType("orgunit")
-                                    .build();
-
-        Item author_1 = ItemBuilder.createItem(context, col1)
-                                   .withTitle("Author 1")
-                                   .withPersonMainAffiliation(orgUnit_1.getName(), orgUnit_1.getID().toString())
-                                   .withEntityType("person")
-                                   .build();
-
-        Item author_2 = ItemBuilder.createItem(context, col1)
-                                   .withTitle("Author 2")
-                                   .withPersonMainAffiliation(orgUnit_2.getName(), orgUnit_2.getID().toString())
-                                   .withEntityType("person")
-                                   .build();
-
-        context.restoreAuthSystemState();
-
-        String token = getAuthToken(eperson.getEmail(), password);
-        getClient(token).perform(get("/api/submission/vocabularies/AuthorAuthority/entries")
-                            .param("metadata", "dc.contributor.author")
-                            .param("collection", col1.getID().toString())
-                            .param("filter", "author"))
-                        .andExpect(status().isOk())
-                        .andExpect(jsonPath("$._embedded.entries", Matchers.containsInAnyOrder(
-                            // filled with AuthorAuthority extra metadata generator
-                            ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_1.getID().toString(),
-                                "Author 1", "Author 1", "vocabularyEntry",
-                                Map.of("data-oairecerif_author_affiliation", "OrgUnit_1::" + orgUnit_1.getID(),
-                                    "oairecerif_author_affiliation", "OrgUnit_1::" + orgUnit_1.getID(),
-                                    "data-person_identifier_orcid", "",
-                                    "person_identifier_orcid", ""),
-                                "ORCID"),
-                            ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(author_2.getID().toString(),
-                                "Author 2", "Author 2", "vocabularyEntry",
-                                Map.of("data-oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID(),
-                                    "oairecerif_author_affiliation", "OrgUnit_2::" + orgUnit_2.getID(),
-                                    "data-person_identifier_orcid", "",
-                                    "person_identifier_orcid", ""),
-                                "ORCID")
-                        )))
-                        .andExpect(jsonPath("$.page.totalElements", Matchers.is(2)));
-    }
-
-    @Test
     public void itemAuthoritySourceReferenceTest() throws Exception {
         context.turnOffAuthorisationSystem();
 
@@ -1012,8 +938,8 @@ public class ItemAuthorityIT extends AbstractControllerIntegrationTest {
             .andExpect(status().isOk()).andExpect(jsonPath("$.page.totalElements", Matchers.is(1)))
             .andExpect(jsonPath("$._embedded.entries",
                 Matchers.containsInAnyOrder(ItemAuthorityMatcher.matchItemAuthorityWithOtherInformations(
-                    person1.getID().toString(), "Person 1", "Person 1", "vocabularyEntry", Map.of(), "ORCID"))));
-
+                    person1.getID().toString(), "Person 1", "Person 1", "vocabularyEntry", Map.of(),
+                    ItemAuthority.DEFAULT))));
     }
 
     @Override
