@@ -8,7 +8,7 @@
     	<property name="typeConverter" ref="mapConverterPublicationTypes"/>
     	<property name="type" value="dc.type"/>
     	<property name="language" value="dc.language.iso"/>
-        <property name="abstrct" value="dc.description.abstract"/>
+        <property name="abstract" value="dc.description.abstract"/>
         <property name="DOI" value="dc.identifier.doi"/>
         <property name="ISBN" value="dc.identifier.isbn"/>
         <property name="ISSN" value="dc.identifier.issn"/>
