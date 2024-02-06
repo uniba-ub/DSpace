@@ -30,7 +30,11 @@ import org.dspace.content.service.CollectionService;
 import org.dspace.core.Context;
 import org.dspace.discovery.SearchServiceException;
 import org.dspace.handle.factory.HandleServiceFactory;
+import org.dspace.services.RequestService;
 import org.dspace.services.factory.DSpaceServicesFactory;
+import org.dspace.versioning.ItemCorrectionService;
+import org.dspace.web.ContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -58,6 +62,13 @@ import org.xml.sax.SAXException;
  */
 
 public class SubmissionConfigReader {
+
+    @Autowired
+    private ItemCorrectionService itemCorrectionService;
+
+    @Autowired
+    RequestService requestService;
+
     /**
      * The ID of the default collection. Will never be the ID of a named
      * collection
@@ -430,6 +441,21 @@ public class SubmissionConfigReader {
         }
     }
 
+
+    private boolean isCorrectionItem(Item item) {
+        Context context = ContextUtil.obtainCurrentRequestContext();
+        ItemCorrectionService itemCorrectionService =
+                DSpaceServicesFactory.getInstance().getServiceManager()
+                        .getServicesByType(ItemCorrectionService.class)
+                        .get(0);
+        try {
+            return itemCorrectionService.checkIfIsCorrectionItem(context, item);
+        } catch (Exception ex) {
+            log.error("An error occurs checking if the given item is a correction item.", ex);
+            return false;
+        }
+    }
+
     /**
      * Process the submission-map section of the XML file. Each element looks
      * like: <name-map collection-handle="hdl" submission-name="name" /> Extract
@@ -764,6 +790,13 @@ public class SubmissionConfigReader {
             return getSubmissionConfigByName(submissionDefinition);
         }
 
-        return getSubmissionConfigByCollection(object.getCollection());
+        if (isCorrectionItem(object.getItem())) {
+            return getCorrectionSubmissionConfigByCollection(object.getCollection());
+        } else {
+            return getSubmissionConfigByCollection(object.getCollection());
+        }
+
     }
+
+
 }
