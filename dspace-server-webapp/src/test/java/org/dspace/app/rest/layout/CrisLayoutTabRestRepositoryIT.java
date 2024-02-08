@@ -2146,6 +2146,8 @@ public class CrisLayoutTabRestRepositoryIT extends AbstractControllerIntegration
 
         context.turnOffAuthorisationSystem();
 
+        // reload the collection as we need to create an additional item in it
+        col1 = context.reloadEntity(col1);
         Item publication1 =
             ItemBuilder.createItem(context, col1)
                        .withTitle("Title Of Item")
