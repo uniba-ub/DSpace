@@ -135,7 +135,7 @@ public class MetadataImporter {
     /**
      * Load all registry file names from config
      *
-     * @param propertyName
+     * @param propertyName name of the property that used in config
      * @return list of all registry files
      */
     public static List<String> getAllRegistryFiles(String propertyName) {

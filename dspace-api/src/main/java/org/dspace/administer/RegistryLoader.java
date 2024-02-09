@@ -128,7 +128,7 @@ public class RegistryLoader {
     /**
      * Load all bitstream formats from configuration properties
      *
-     * @param context
+     * @param context DSpace context object
      * @throws Exception
      */
     private static void loadAllBitstreamFormats(Context context) throws Exception {
