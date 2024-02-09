@@ -62,20 +62,20 @@ public class RegistryUpdater implements Callback {
             context.turnOffAuthorisationSystem();
 
             // Load updates to Bitstream formats registries (if any)
-            List<String> RegistryMetadataFiles =
-                    MetadataImporter.getAllRegistryFiles(MetadataImporter.REGISTRY_METADATA_PROPERTY);
-            for (String bitstreamFormat : RegistryMetadataFiles) {
+            List<String> registryBitstreamFormatFiles  =
+                    MetadataImporter.getAllRegistryFiles(MetadataImporter.REGISTRY_BITSTREAM_FORMAT_PROPERTY);
+            for (String bitstreamFormat : registryBitstreamFormatFiles) {
                 log.info("Updating Bitstream Format Registry based on {}", bitstreamFormat);
                 RegistryLoader.loadBitstreamFormats(context, bitstreamFormat);
             }
 
             // Load updates to Metadata schema registries (if any)
-            List<String> RegistryBitstreamFormatFiles =
-                    MetadataImporter.getAllRegistryFiles(MetadataImporter.REGISTRY_BITSTREAM_FORMAT_PROPERTY);
+            List<String> registryMetadataFiles =
+                    MetadataImporter.getAllRegistryFiles(MetadataImporter.REGISTRY_METADATA_PROPERTY);
             log.info("Updating Metadata Registries based on metadata type configs in {}", MetadataImporter.BASE);
-            for (String namespaceFile: RegistryBitstreamFormatFiles) {
-                log.info("Reading {}", namespaceFile);
-                MetadataImporter.loadRegistry(namespaceFile, true);
+            for (String metadataFile : registryMetadataFiles) {
+                log.info("Reading {}", metadataFile);
+                MetadataImporter.loadRegistry(metadataFile, true);
             }
 
             String workflowTypes = "workflow-types.xml";
