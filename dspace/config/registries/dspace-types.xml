@@ -122,12 +122,4 @@
         <scope_note/>
     </dc-type>
 
-    <!-- Deduplication / DataQuality Merge feature -->
-    <dc-type>
-        <schema>dspace</schema>
-        <element>merge</element>
-        <qualifier>target-uri</qualifier>
-        <scope_note>stores the value of uri of target item</scope_note>
-    </dc-type>
-
 </dspace-dc-types>
