@@ -11,7 +11,6 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.xml.parsers.ParserConfigurationException;
@@ -35,6 +34,8 @@ import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.MetadataFieldService;
 import org.dspace.content.service.MetadataSchemaService;
 import org.dspace.core.Context;
+import org.dspace.services.ConfigurationService;
+import org.dspace.services.factory.DSpaceServicesFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
@@ -66,10 +67,18 @@ import org.xml.sax.SAXException;
  * }
  */
 public class MetadataImporter {
+    public static final String BASE = DSpaceServicesFactory.getInstance()
+            .getConfigurationService().getProperty("dspace.dir") + File.separator + "config" + File.separator
+            + "registries" + File.separator;
+    public static final String REGISTRY_METADATA_PROPERTY = "registry.metadata.load";
+    public static final String REGISTRY_BITSTREAM_FORMAT_PROPERTY = "registry.bitstream-formats.load";
+
     protected static MetadataSchemaService metadataSchemaService = ContentServiceFactory.getInstance()
                                                                                         .getMetadataSchemaService();
     protected static MetadataFieldService metadataFieldService = ContentServiceFactory.getInstance()
                                                                                       .getMetadataFieldService();
+    protected static ConfigurationService configurationService = DSpaceServicesFactory.getInstance()
+            .getConfigurationService();
 
     /**
      * logging category
@@ -117,25 +126,21 @@ public class MetadataImporter {
             loadRegistry(file, forceUpdate);
         } else {
             boolean forceUpdate = line.hasOption('u');
-            for (String file : getAllRegistryFiles()) {
+            for (String file : getAllRegistryFiles(REGISTRY_METADATA_PROPERTY)) {
                 loadRegistry(file, forceUpdate);
             }
         }
     }
 
-    public static List<String> getAllRegistryFiles() {
-        File folder = new File("config/registries");
-
-        if (folder.exists() && folder.isDirectory()) {
-            File[] files = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".xml"));
-
-            if (files != null) {
-                return  Arrays.stream(files)
-                        .map(file -> "config/registries/" + file.getName())
-                        .collect(Collectors.toList());
-            }
-        }
-        return Collections.emptyList();
+    /**
+     * Load all registry file names from config
+     *
+     * @param propertyName
+     * @return list of all registry files
+     */
+    public static List<String> getAllRegistryFiles(String propertyName) {
+        List<String> files = Arrays.asList(configurationService.getArrayProperty(propertyName));
+        return files.stream().map(file -> BASE + file).collect(Collectors.toList());
     }
 
     /**
