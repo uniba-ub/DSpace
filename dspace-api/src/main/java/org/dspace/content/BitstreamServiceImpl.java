@@ -289,6 +289,11 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
         //Remove our bitstream from all our bundles
         final List<Bundle> bundles = bitstream.getBundles();
         for (Bundle bundle : bundles) {
+            authorizeService.authorizeAction(context, bundle, Constants.REMOVE);
+            //We also need to remove the bitstream id when it's set as bundle's primary bitstream
+            if (bitstream.equals(bundle.getPrimaryBitstream())) {
+                bundle.unsetPrimaryBitstreamID();
+            }
             bundle.removeBitstream(bitstream);
         }
 
@@ -403,6 +408,13 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
     }
 
     @Override
+    public List<Bitstream> getBitstreamByBundleName(Item item, String bundleName) throws SQLException {
+        return itemService.getBundles(item, bundleName).stream()
+            .flatMap(bundle -> bundle.getBitstreams().stream())
+            .collect(Collectors.toList());
+    }
+
+    @Override
     public Bitstream getFirstBitstream(Item item, String bundleName) throws SQLException {
         List<Bundle> bundles = itemService.getBundles(item, bundleName);
         if (CollectionUtils.isNotEmpty(bundles)) {
@@ -416,7 +428,7 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
 
     @Override
     public Bitstream getThumbnail(Context context, Bitstream bitstream) throws SQLException {
-        Pattern pattern = Pattern.compile("^" + bitstream.getName() + ".([^.]+)$");
+        Pattern pattern = getBitstreamNamePattern(bitstream);
 
         for (Bundle bundle : bitstream.getBundles()) {
             for (Item item : bundle.getItems()) {
@@ -444,6 +456,13 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
         }
 
         return null;
+    }
+
+    protected Pattern getBitstreamNamePattern(Bitstream bitstream) {
+        if (bitstream.getName() != null) {
+            return Pattern.compile("^" + Pattern.quote(bitstream.getName()) + ".([^.]+)$");
+        }
+        return Pattern.compile("^" + bitstream.getName() + ".([^.]+)$");
     }
 
     @Override
@@ -531,6 +550,10 @@ public class BitstreamServiceImpl extends DSpaceObjectServiceImpl<Bitstream> imp
             throw new SQLRuntimeException(ex);
         }
 
+    }
+
+    public boolean exists(Context context, UUID id) throws SQLException {
+        return this.bitstreamDAO.exists(context, Bitstream.class, id);
     }
 
     private boolean isContainedInBundleNamed(Bitstream bitstream, String name) {
