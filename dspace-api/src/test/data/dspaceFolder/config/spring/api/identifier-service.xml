@@ -19,7 +19,18 @@
     <bean id="org.dspace.identifier.service.IdentifierService"
           class="org.dspace.identifier.IdentifierServiceImpl"
           autowire="byType"
-          scope="singleton"/>
+          scope="singleton">
+        <property name="providers">
+            <list>
+                <ref bean="org.dspace.identifier.HandleIdentifierProvider"/>
+                <ref bean="org.dspace.identifier.DOIIdentifierProvider"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="org.dspace.identifier.HandleIdentifierProvider" class="org.dspace.identifier.VersionedHandleIdentifierProvider" scope="singleton">
+        <property name="configurationService" ref="org.dspace.services.ConfigurationService"/>
+    </bean>
 
     <!-- provider to mint and register DOIs with DSpace.
          To mint DOIs you need a registration agency. The DOIIdentifierProvider
@@ -41,6 +52,12 @@
       <property name='DATACITE_HOST' value='mds.test.datacite.org'/>
       <property name='DATACITE_DOI_PATH' value='/doi/'/>
       <property name='DATACITE_METADATA_PATH' value='/metadata/'/>
-      <property name='disseminationCrosswalkName' value="DataCite"/>
+      <property name='disseminationCrosswalkByEntityType'>
+          <map>
+              <entry key="Publication" value-ref="referCrosswalkPublicationDataciteXml"></entry>
+              <entry key="Patent" value-ref="referCrosswalkPatentDataciteXml"></entry>
+              <entry key="Product" value-ref="referCrosswalkDatasetDataciteXml"></entry>
+          </map>
+      </property>
     </bean>
 </beans>

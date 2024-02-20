@@ -95,11 +95,15 @@ public class EditItemConverter
 
             rest.setId(obj.getID() + ":" + mode.getName());
             SubmissionDefinitionRest def = converter.toRest(
-                    submissionConfigReader.getSubmissionConfigByName(mode.getSubmissionDefinition()), projection);
+                    submissionConfigService.getSubmissionConfigByName(mode.getSubmissionDefinition()), projection);
             rest.setSubmissionDefinition(def);
             storeSubmissionName(def.getName());
             for (SubmissionSectionRest sections : def.getPanels()) {
                 SubmissionStepConfig stepConfig = submissionSectionConverter.toModel(sections);
+
+                if (stepConfig.isHiddenForInProgressSubmission(obj)) {
+                    continue;
+                }
 
                 /*
                  * First, load the step processing class (using the current

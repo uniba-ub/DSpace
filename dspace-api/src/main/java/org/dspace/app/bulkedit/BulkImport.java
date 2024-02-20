@@ -13,7 +13,7 @@ import static org.apache.commons.lang3.BooleanUtils.toBooleanObject;
 import static org.apache.commons.lang3.StringUtils.isAllBlank;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static org.apache.commons.lang3.StringUtils.split;
+import static org.apache.commons.lang3.StringUtils.splitByWholeSeparator;
 import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.apache.commons.lang3.exception.ExceptionUtils.getRootCauseMessage;
 import static org.apache.commons.lang3.math.NumberUtils.isCreatable;
@@ -258,7 +258,7 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         collectionId = commandLine.getOptionValue('c');
         filename = commandLine.getOptionValue('f');
 
-        if (commandLine.hasOption('e')) {
+        if (commandLine.hasOption("er")) {
             abortOnError = true;
         }
     }
@@ -266,10 +266,8 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
     @Override
     public void internalRun() throws Exception {
         context = new Context(Context.Mode.BATCH_EDIT);
-        assignCurrentUserInContext();
+        assignCurrentUserInContext(context);
         assignSpecialGroupsInContext();
-
-        context.turnOffAuthorisationSystem();
 
         InputStream inputStream = handler.getFileStream(context, filename)
             .orElseThrow(() -> new IllegalArgumentException("Error reading file, the file couldn't be "
@@ -285,6 +283,7 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         }
 
         try {
+            context.turnOffAuthorisationSystem();
             performImport(inputStream);
             context.complete();
             context.restoreAuthSystemState();
@@ -609,7 +608,8 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         for (int index = firstMetadataIndex; index < row.getLastCellNum(); index++) {
 
             String cellValue = WorkbookUtils.getCellValue(row, index);
-            String[] values = isNotBlank(cellValue) ? split(cellValue, METADATA_SEPARATOR) : new String[] { "" };
+            String[] values = isNotBlank(cellValue) ? splitByWholeSeparator(cellValue, METADATA_SEPARATOR)
+                : new String[] { "" };
             if (values.length > 1 && !manyMetadataValuesAllowed) {
                 handleValidationErrorOnRow(row, "Multiple metadata value on the same cell not allowed "
                     + "in the metadata group sheets: " + cellValue);
@@ -743,7 +743,7 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         Map<String, AccessConditionOption> accessConditionOptions = getUploadAccessConditions();
 
         return Arrays.stream(getAccessConditionValues(row))
-            .map(accessCondition -> split(accessCondition, ACCESS_CONDITION_ATTRIBUTES_SEPARATOR)[0])
+            .map(accessCondition -> splitByWholeSeparator(accessCondition, ACCESS_CONDITION_ATTRIBUTES_SEPARATOR)[0])
             .filter(accessConditionName -> !accessConditionOptions.containsKey(accessConditionName))
             .collect(Collectors.toList());
     }
@@ -788,14 +788,14 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         }
 
         return Arrays.stream(accessConditions)
-            .map(accessCondition -> split(accessCondition, ACCESS_CONDITION_ATTRIBUTES_SEPARATOR))
+            .map(accessCondition -> splitByWholeSeparator(accessCondition, ACCESS_CONDITION_ATTRIBUTES_SEPARATOR))
             .map(accessConditionAttributes -> buildAccessCondition(accessConditionAttributes))
             .collect(Collectors.toList());
     }
 
     private String[] getAccessConditionValues(Row row) {
         String accessConditionCellValue = getCellValue(row, ACCESS_CONDITION_HEADER);
-        return split(accessConditionCellValue, METADATA_SEPARATOR);
+        return splitByWholeSeparator(accessConditionCellValue, METADATA_SEPARATOR);
     }
 
     private AccessCondition buildAccessCondition(String[] accessCondition) {
@@ -1158,9 +1158,6 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         handler.logInfo("Row " + entityRow.getRow() + " - Item updated successfully - ID: " + item.getID());
 
         switch (entityRow.getAction()) {
-            case UPDATE:
-                itemService.update(context, item);
-                break;
             case UPDATE_WORKFLOW:
                 startWorkflow(entityRow, item);
                 break;
@@ -1168,6 +1165,7 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
                 installItem(entityRow, item);
                 break;
             default:
+                itemService.update(context, item);
                 break;
         }
 
@@ -1308,12 +1306,13 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
     }
 
     private String getMetadataField(String field) {
-        return field.contains(LANGUAGE_SEPARATOR_PREFIX) ? split(field, LANGUAGE_SEPARATOR_PREFIX)[0] : field;
+        return field.contains(LANGUAGE_SEPARATOR_PREFIX) ? splitByWholeSeparator(field, LANGUAGE_SEPARATOR_PREFIX)[0]
+            : field;
     }
 
     private String getMetadataLanguage(String field) {
         if (field.contains(LANGUAGE_SEPARATOR_PREFIX)) {
-            return split(field, LANGUAGE_SEPARATOR_PREFIX)[1].replace(LANGUAGE_SEPARATOR_SUFFIX, "");
+            return splitByWholeSeparator(field, LANGUAGE_SEPARATOR_PREFIX)[1].replace(LANGUAGE_SEPARATOR_SUFFIX, "");
         }
         return null;
     }
@@ -1366,7 +1365,8 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
             if (index >= firstMetadataIndex) {
 
                 String cellValue = WorkbookUtils.getCellValue(row, index);
-                String[] values = isNotBlank(cellValue) ? split(cellValue, METADATA_SEPARATOR) : new String[] { "" };
+                String[] values = isNotBlank(cellValue) ? splitByWholeSeparator(cellValue, METADATA_SEPARATOR)
+                    : new String[] { "" };
 
                 List<MetadataValueVO> metadataValues = Arrays.stream(values)
                     .map(value -> buildMetadataValueVO(row, value, isMetadataGroupsSheet))
@@ -1603,7 +1603,7 @@ public class BulkImport extends DSpaceRunnable<BulkImportScriptConfiguration<Bul
         }
     }
 
-    private void assignCurrentUserInContext() throws SQLException {
+    protected void assignCurrentUserInContext(Context context) throws SQLException, ParseException {
         UUID uuid = getEpersonIdentifier();
         if (uuid != null) {
             EPerson ePerson = EPersonServiceFactory.getInstance().getEPersonService().find(context, uuid);
