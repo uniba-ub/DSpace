@@ -565,9 +565,9 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> newaftercreationOrcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(newaftercreationOrcidQueueRecords, hasSize(2));
-        assertThat(newaftercreationOrcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
-        assertThat(newaftercreationOrcidQueueRecords.get(1), matches(profile, secondpublication,
-                "Publication", INSERT));
+        assertThat(newaftercreationOrcidQueueRecords, hasItem(matches(profile, publication, "Publication", INSERT)));
+        assertThat(newaftercreationOrcidQueueRecords, hasItem(matches(profile, secondpublication,
+                "Publication", INSERT)));
 
         context.turnOffAuthorisationSystem();
         RelationshipBuilder.deleteRelationship(secondrelselected.getID());
@@ -723,8 +723,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(orcidQueueRecords, hasSize(2));
-        assertThat(orcidQueueRecords.get(0), matches(profile, thirdpublication, "Publication", INSERT));
-        assertThat(orcidQueueRecords.get(1), matches(profile, publication, "Publication", INSERT));
+        assertThat(orcidQueueRecords, hasItem(matches(profile, thirdpublication, "Publication", INSERT)));
+        assertThat(orcidQueueRecords, hasItem(matches(profile, publication, "Publication", INSERT)));
 
         addMetadata(publication, "dc", "contributor", "editor", "Editor", null);
         addMetadata(secondpublication, "dc", "contributor", "editor", "Editor", null);
@@ -734,8 +734,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
         List<OrcidQueue> newOrcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(newOrcidQueueRecords, hasSize(2));
 
-        assertThat(orcidQueueRecords.get(0), equalTo(newOrcidQueueRecords.get(0)));
-        assertThat(orcidQueueRecords.get(1), equalTo(newOrcidQueueRecords.get(1)));
+        assertThat(orcidQueueRecords, hasItem(equalTo(newOrcidQueueRecords.get(0))));
+        assertThat(orcidQueueRecords, hasItem(equalTo(newOrcidQueueRecords.get(1))));
 
         context.turnOffAuthorisationSystem();
         Relationship relbeingdeleted =
@@ -757,8 +757,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> newafterdeletionQueueRecords = orcidQueueService.findAll(context);
         assertThat(newafterdeletionQueueRecords, hasSize(2));
-        assertThat(newafterdeletionQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
-        assertThat(newafterdeletionQueueRecords.get(1), matches(profile, thirdpublication, "Publication", INSERT));
+        assertThat(newafterdeletionQueueRecords, hasItem(matches(profile, publication, "Publication", INSERT)));
+        assertThat(newafterdeletionQueueRecords, hasItem(matches(profile, thirdpublication, "Publication", INSERT)));
     }
 
     @Test
@@ -957,9 +957,9 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> orcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(orcidQueueRecords, hasSize(3));
-        assertThat(orcidQueueRecords.get(0), matches(profile, publication, "Publication", INSERT));
-        assertThat(orcidQueueRecords.get(1), matches(profile, secondpublication, "Publication", INSERT));
-        assertThat(orcidQueueRecords.get(2), matches(profile, thirdpublication, "Publication", INSERT));
+        assertThat(orcidQueueRecords, hasItem(matches(profile, publication, "Publication", INSERT)));
+        assertThat(orcidQueueRecords, hasItem(matches(profile, secondpublication, "Publication", INSERT)));
+        assertThat(orcidQueueRecords, hasItem(matches(profile, thirdpublication, "Publication", INSERT)));
 
         changeProfilePublicationSyncPreference(profile, MY_SELECTED);
 
@@ -971,8 +971,8 @@ public class OrcidQueueConsumerIT extends AbstractIntegrationTestWithDatabase {
 
         List<OrcidQueue> mineOrcidQueueRecords = orcidQueueService.findAll(context);
         assertThat(mineOrcidQueueRecords, hasSize(2));
-        assertThat(mineOrcidQueueRecords.get(0), matches(profile, thirdpublication, "Publication", INSERT));
-        assertThat(mineOrcidQueueRecords.get(1), matches(profile, secondpublication, "Publication", INSERT));
+        assertThat(mineOrcidQueueRecords, hasItem(matches(profile, thirdpublication, "Publication", INSERT)));
+        assertThat(mineOrcidQueueRecords, hasItem(matches(profile, secondpublication, "Publication", INSERT)));
 
         changeProfilePublicationSyncPreference(profile, DISABLED);
 
