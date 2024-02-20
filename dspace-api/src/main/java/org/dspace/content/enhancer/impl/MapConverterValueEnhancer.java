@@ -61,11 +61,11 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
     }
 
     @Override
-    public void enhance(Context context, Item item) {
+    public boolean enhance(Context context, Item item, boolean deepMode) {
         try {
             if (StringUtils.isBlank(sourceItemMetadataField) || Objects.isNull(converter) ||
                 StringUtils.isBlank(targetItemMetadataField)) {
-                return;
+                return false;
             }
             String sourceval;
             String targetval;
@@ -78,18 +78,28 @@ public class MapConverterValueEnhancer extends AbstractItemEnhancer {
                     // replace mdv if it's different
                     removeTargetMetadata(context, item);
                     addTargetMetadata(context, item, calculatedval);
+                    return true;
                 } else if (StringUtils.isBlank(targetval)) {
                     // set new value
                     addTargetMetadata(context, item, calculatedval);
+                    return true;
+                } else if (StringUtils.isNotBlank(sourceval) && StringUtils.isNotBlank(targetval)
+                    && sourceval.contentEquals(targetval) && deepMode) {
+                    //When both values are equal and deepMode is active, recalculate the value
+                    removeTargetMetadata(context, item);
+                    addTargetMetadata(context, item, calculatedval);
+                    return true;
                 }
             } else if (StringUtils.isBlank(sourceval) && StringUtils.isNotBlank(targetval)) {
                 // remove value
                 removeTargetMetadata(context, item);
+                return true;
             }
         } catch (Exception e) {
             LOGGER.error("An error occurs enhancing item with id {}: {}", item.getID(), e.getMessage(), e);
             //throw new SQLRuntimeException(e);
         }
+        return false;
     }
     private void addTargetMetadata(Context context, Item item, String value) throws Exception {
         MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
