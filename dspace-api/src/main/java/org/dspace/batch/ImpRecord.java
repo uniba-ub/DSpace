@@ -66,7 +66,6 @@ public class ImpRecord {
     @Column(name = "handle", length = 64)
     private String handle;
 
-    @Id
     @Column(name = "uuid", unique = true)
     protected java.util.UUID uuid;
 
