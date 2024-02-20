@@ -56,27 +56,39 @@ public class NameEnhancer extends AbstractItemEnhancer {
     }
 
     @Override
-    public void enhance(Context context, Item item) {
+    public boolean enhance(Context context, Item item, boolean deepMode) {
         try {
             if (Objects.isNull(relatedItemMetadataFields) || relatedItemMetadataFields.isEmpty() ||
                 StringUtils.isBlank(targetItemMetadataField)) {
-                return;
+                return false;
             }
-            checkNames(context, item);
+            return checkNames(context, item, deepMode);
         } catch (Exception e) {
             LOGGER.error("An error occurs enhancing item with id {}: {}", item.getID(), e.getMessage(), e);
-            //Exception handling not supported by ItemEnhancerService. Thus just log to continue other enhancers
+            //Exception handling not supported by ItemEnhancerService. Thus, just log to continue other enhancers
             //throw new SQLRuntimeException(e);
         }
+        return false;
     }
 
-    private void checkNames(Context context, Item item) throws Exception {
+    /**
+     * Check the names/values from the specified metadatafield and compare the first value found
+     * with the target metadatafield. Updates the target metadatafield when the value is different
+     * or when deepMode is set.
+     * When the target metadatafield has not been set before, then set this value.
+     * @param context current Context
+     * @param item current item
+     * @param deepMode boolean
+     * @return boolean value if some change/update has happened
+     * @throws Exception when some error occurs
+     */
+    private boolean checkNames(Context context, Item item, boolean deepMode) throws Exception {
         // ignore languages of Metadata here. Assume main title is not repeated
         // Could be more simplified
         List<MetadataValue> currentnames = itemService.getMetadataByMetadataString(item, targetItemMetadataField);
 
         if (!currentnames.isEmpty()) {
-            // some name assigned yet
+            // some name is assigned yet
             for (MetadataValue currentname : currentnames) {
                 String val = currentname.getValue();
                 for (String field : relatedItemMetadataFields) {
@@ -89,19 +101,22 @@ public class NameEnhancer extends AbstractItemEnhancer {
                         if (StringUtils.isNotBlank(fieldname.getValue())
                             && fieldname.getValue().contentEquals(val)) {
                             //Values are the same. No Update necessary
-                            return;
+                            if (deepMode) {
+                                // value is recalculated in deepMode
+                                return updateTargetMetadata(context, item, fieldname.getValue(), true);
+                            }
+                            return false;
                         } else {
                             //values differ. We must update the value
-                            updateTargetMetadata(context, item, fieldname.getValue(), true);
-                            return;
+                            return updateTargetMetadata(context, item, fieldname.getValue(), true);
                         }
                     }
                 }
             }
             if (StringUtils.isNotBlank(defaultValue)
                 && !currentnames.get(0).getValue().contentEquals(defaultValue)) {
-                // None of the names above matches. Set Default-Value, if exist. Otherwise do nothing
-                updateTargetMetadata(context, item, defaultValue, true);
+                // None of the names above matches. Set Default-Value, if it exists. Otherwise, do nothing
+                return updateTargetMetadata(context, item, defaultValue, true);
             }
 
         } else {
@@ -115,20 +130,29 @@ public class NameEnhancer extends AbstractItemEnhancer {
                 for (MetadataValue fieldname : fieldnames) {
                     if (StringUtils.isNotBlank(fieldname.getValue())) {
                         //Got some value
-                        updateTargetMetadata(context, item, fieldname.getValue(), false);
-                        return;
+                        return updateTargetMetadata(context, item, fieldname.getValue(), false);
                     }
                 }
             }
             // If no name exist, set defaultvalue
             if (StringUtils.isNotBlank(defaultValue)) {
-                updateTargetMetadata(context, item, defaultValue, false);
+                return updateTargetMetadata(context, item, defaultValue, false);
             }
             // otherwise do not assign any value
         }
+        return false;
     }
 
-    private void updateTargetMetadata(Context context, Item item, String value, boolean clear) throws SQLException {
+    /**
+     * Update/Set the target metadata with option to clear/delete previous metadatavalues
+     * @param context current Context
+     * @param item item to set metadatavalue
+     * @param value value to set
+     * @param clear clear/delete existing values byfore
+     * @return boolean value if the value has been updated successfully
+     * @throws SQLException when some error occurs
+     */
+    private boolean updateTargetMetadata(Context context, Item item, String value, boolean clear) throws SQLException {
         MetadataField targetmd = metadatafieldService.findByString(context, targetItemMetadataField, '.');
         if (targetmd != null) {
             if (clear) {
@@ -136,9 +160,11 @@ public class NameEnhancer extends AbstractItemEnhancer {
                     targetmd.getQualifier(), Item.ANY);
             }
             itemService.addMetadata(context, item, targetmd, null, value);
+            return true;
         } else {
             LOGGER.error("No valid metadatavalue to enhance specified");
         }
+        return false;
     }
 
     public void setSourceEntityType(String sourceEntityType) {
