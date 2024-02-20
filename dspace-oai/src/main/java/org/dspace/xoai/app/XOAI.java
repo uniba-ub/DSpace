@@ -36,6 +36,7 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.Options;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.solr.client.solrj.SolrClient;
@@ -81,11 +82,10 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
  */
 @SuppressWarnings("deprecation")
 public class XOAI {
-    private static Logger log = LogManager.getLogger(XOAI.class);
+    private static final Logger log = LogManager.getLogger(XOAI.class);
 
     // needed because the solr query only returns 10 rows by default
     private final Context context;
-    private boolean optimize;
     private final boolean verbose;
     private boolean clean;
 
@@ -104,7 +104,7 @@ public class XOAI {
     private final static ConfigurationService configurationService = DSpaceServicesFactory.getInstance()
             .getConfigurationService();
 
-    private List<XOAIExtensionItemCompilePlugin> extensionPlugins;
+    private final List<XOAIExtensionItemCompilePlugin> extensionPlugins;
 
     private List<String> getFileFormats(Item item) {
         List<String> formats = new ArrayList<>();
@@ -122,9 +122,8 @@ public class XOAI {
         return formats;
     }
 
-    public XOAI(Context context, boolean optimize, boolean clean, boolean verbose) {
+    public XOAI(Context context, boolean clean, boolean verbose) {
         this.context = context;
-        this.optimize = optimize;
         this.clean = clean;
         this.verbose = verbose;
 
@@ -151,9 +150,9 @@ public class XOAI {
     }
 
     public int index() throws DSpaceSolrIndexerException {
-        int result = 0;
-        try {
+        int result;
 
+        try {
             if (clean) {
                 clearIndex();
                 System.out.println("Using full import.");
@@ -169,15 +168,9 @@ public class XOAI {
                 } else {
                     result = this.index((Date) results.get(0).getFieldValue("item.lastmodified"));
                 }
-
             }
+
             solrServerResolver.getServer().commit();
-
-            if (optimize) {
-                println("Optimizing Index");
-                solrServerResolver.getServer().optimize();
-                println("Index optimized");
-            }
 
             // Set last compilation date
             xoaiLastCompilationCacheService.put(new Date());
@@ -214,7 +207,7 @@ public class XOAI {
      * @param last maximum date for an item to be considered for an update
      * @return Iterator over list of items which might have changed their visibility
      *         since the last update.
-     * @throws DSpaceSolrIndexerException
+     * @throws DSpaceSolrIndexerException e
      */
     private Iterator<Item> getItemsWithPossibleChangesBefore(Date last) throws DSpaceSolrIndexerException, IOException {
         try {
@@ -365,7 +358,7 @@ public class XOAI {
      *
      * @param item Item
      * @return date
-     * @throws SQLException
+     * @throws SQLException e
      */
     private Date getMostRecentModificationDate(Item item) throws SQLException {
         List<Date> dates = new LinkedList<>();
@@ -398,8 +391,12 @@ public class XOAI {
         SolrInputDocument doc = new SolrInputDocument();
         doc.addField("item.id", item.getID().toString());
 
+        String legacyOaiId = itemService.getMetadataFirstValue(item, "dspace", "legacy", "oai-identifier", Item.ANY);
         String handle = item.getHandle();
-        doc.addField("item.handle", handle);
+        doc.addField("item.handle", item.getHandle());
+        if (StringUtils.isNotEmpty(legacyOaiId)) {
+            doc.addField("item.legacyoaiidentifier", legacyOaiId.split(":")[2]);
+        }
 
         boolean isEmbargoed = !this.isPublic(item);
         boolean isCurrentlyVisible = this.checkIfVisibleInOAI(item);
@@ -418,7 +415,7 @@ public class XOAI {
          * future will be marked as such.
          */
 
-        boolean isPublic = isEmbargoed ? (isIndexed ? isCurrentlyVisible : false) : true;
+        boolean isPublic = !isEmbargoed || (isIndexed && isCurrentlyVisible);
         doc.addField("item.public", isPublic);
 
         // if the visibility of the item will change in the future due to an
@@ -433,8 +430,7 @@ public class XOAI {
          * because this will override the item.public flag.
          */
 
-        doc.addField("item.deleted",
-                (item.isWithdrawn() || !item.isDiscoverable() || (isEmbargoed ? isPublic : false)));
+        doc.addField("item.deleted", (item.isWithdrawn() || !item.isDiscoverable() || (isEmbargoed && isPublic)));
 
         /*
          * An item that is embargoed will potentially not be harvested by incremental
@@ -574,8 +570,8 @@ public class XOAI {
 
     public static void main(String[] argv) throws IOException, ConfigurationException {
 
-        AnnotationConfigApplicationContext applicationContext = new AnnotationConfigApplicationContext(
-                new Class[] { BasicConfiguration.class });
+        AnnotationConfigApplicationContext applicationContext =
+            new AnnotationConfigApplicationContext(BasicConfiguration.class);
 
         XOAICacheService cacheService = applicationContext.getBean(XOAICacheService.class);
         XOAIItemCacheService itemCacheService = applicationContext.getBean(XOAIItemCacheService.class);
@@ -586,7 +582,6 @@ public class XOAI {
             CommandLineParser parser = new DefaultParser();
             Options options = new Options();
             options.addOption("c", "clear", false, "Clear index before indexing");
-            options.addOption("o", "optimize", false, "Optimize index at the end");
             options.addOption("v", "verbose", false, "Verbose output");
             options.addOption("h", "help", false, "Shows some help");
             options.addOption("n", "number", true, "FOR DEVELOPMENT MUST DELETE");
@@ -596,10 +591,9 @@ public class XOAI {
             String[] validDatabaseCommands = { COMMAND_CLEAN_CACHE, COMMAND_COMPILE_ITEMS,
                 COMMAND_ERASE_COMPILED_ITEMS };
 
-            boolean solr = true; // Assuming solr by default
-            solr = !("database").equals(configurationService.getProperty("oai.storage", "solr"));
-
+            boolean solr = !("database").equals(configurationService.getProperty("oai.storage", "solr"));
             boolean run = false;
+
             if (line.getArgs().length > 0) {
                 if (solr) {
                     if (Arrays.asList(validSolrCommands).contains(line.getArgs()[0])) {
@@ -620,7 +614,7 @@ public class XOAI {
 
                 if (COMMAND_IMPORT.equals(command)) {
                     ctx = new Context(Context.Mode.READ_ONLY);
-                    XOAI indexer = new XOAI(ctx, line.hasOption('o'), line.hasOption('c'), line.hasOption('v'));
+                    XOAI indexer = new XOAI(ctx, line.hasOption('c'), line.hasOption('v'));
 
                     applicationContext.getAutowireCapableBeanFactory().autowireBean(indexer);
 
@@ -706,7 +700,6 @@ public class XOAI {
             System.out.println("     " + COMMAND_IMPORT + " - To import DSpace items into OAI index and cache system");
             System.out.println("     " + COMMAND_CLEAN_CACHE + " - Cleans the OAI cached responses");
             System.out.println("> Parameters:");
-            System.out.println("     -o Optimize index after indexing (" + COMMAND_IMPORT + " only)");
             System.out.println("     -c Clear index (" + COMMAND_IMPORT + " only)");
             System.out.println("     -v Verbose output");
             System.out.println("     -h Shows this text");

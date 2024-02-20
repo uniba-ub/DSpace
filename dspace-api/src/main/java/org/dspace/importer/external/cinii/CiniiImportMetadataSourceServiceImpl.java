@@ -289,6 +289,9 @@ public class CiniiImportMetadataSourceServiceImpl extends AbstractImportMetadata
             URIBuilder uriBuilder = new URIBuilder(this.url + id + ".rdf?appid=" + appId);
             Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
             String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
+            if (StringUtils.isBlank(response)) {
+                return records;
+            }
             List<Element> elements = splitToRecords(response);
             for (Element record : elements) {
                 records.add(transformSourceRecords(record));
@@ -303,6 +306,8 @@ public class CiniiImportMetadataSourceServiceImpl extends AbstractImportMetadata
     private List<Element> splitToRecords(String recordsSrc) {
         try {
             SAXBuilder saxBuilder = new SAXBuilder();
+            // disallow DTD parsing to ensure no XXE attacks can occur
+            saxBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
             Document document = saxBuilder.build(new StringReader(recordsSrc));
             Element root = document.getRootElement();
             return root.getChildren();
@@ -356,6 +361,8 @@ public class CiniiImportMetadataSourceServiceImpl extends AbstractImportMetadata
             String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
             int url_len = this.url.length() - 1;
             SAXBuilder saxBuilder = new SAXBuilder();
+            // disallow DTD parsing to ensure no XXE attacks can occur
+            saxBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
             Document document = saxBuilder.build(new StringReader(response));
             Element root = document.getRootElement();
             List<Namespace> namespaces = Arrays.asList(
@@ -416,8 +423,13 @@ public class CiniiImportMetadataSourceServiceImpl extends AbstractImportMetadata
 
             Map<String, Map<String, String>> params = new HashMap<String, Map<String,String>>();
             String response = liveImportClient.executeHttpGetRequest(1000, uriBuilder.toString(), params);
+            if (StringUtils.isEmpty(response)) {
+                return 0;
+            }
 
             SAXBuilder saxBuilder = new SAXBuilder();
+            // disallow DTD parsing to ensure no XXE attacks can occur
+            saxBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
             Document document = saxBuilder.build(new StringReader(response));
             Element root = document.getRootElement();
             List<Namespace> namespaces = Arrays

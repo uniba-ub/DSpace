@@ -200,8 +200,13 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
                 Map<String, String> requestParams = getRequestParameters(query, null, null, null);
                 params.put(URI_PARAMETERS, requestParams);
                 String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                if (StringUtils.isEmpty(response)) {
+                    return 0;
+                }
 
                 SAXBuilder saxBuilder = new SAXBuilder();
+                // disallow DTD parsing to ensure no XXE attacks can occur
+                saxBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
                 Document document = saxBuilder.build(new StringReader(response));
                 Element root = document.getRootElement();
 
@@ -243,6 +248,9 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
                 Map<String, String> requestParams = getRequestParameters(queryString, viewMode, null, null);
                 params.put(URI_PARAMETERS, requestParams);
                 String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                if (StringUtils.isEmpty(response)) {
+                    return results;
+                }
                 List<Element> elements = splitToRecords(response);
                 for (Element record : elements) {
                     results.add(transformSourceRecords(record));
@@ -302,6 +310,9 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
                 Map<String, String> requestParams = getRequestParameters(queryString, viewMode, start, count);
                 params.put(URI_PARAMETERS, requestParams);
                 String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                if (StringUtils.isEmpty(response)) {
+                    return results;
+                }
                 List<Element> elements = splitToRecords(response);
                 for (Element record : elements) {
                     results.add(transformSourceRecords(record));
@@ -347,6 +358,9 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
                 Map<String, String> requestParams = getRequestParameters(queryString, viewMode, start, count);
                 params.put(URI_PARAMETERS, requestParams);
                 String response = liveImportClient.executeHttpGetRequest(timeout, url, params);
+                if (StringUtils.isEmpty(response)) {
+                    return results;
+                }
                 List<Element> elements = splitToRecords(response);
                 for (Element record : elements) {
                     results.add(transformSourceRecords(record));
@@ -377,6 +391,8 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
     private List<Element> splitToRecords(String recordsSrc) {
         try {
             SAXBuilder saxBuilder = new SAXBuilder();
+            // disallow DTD parsing to ensure no XXE attacks can occur
+            saxBuilder.setFeature("http://apache.org/xml/features/disallow-doctype-decl",true);
             Document document = saxBuilder.build(new StringReader(recordsSrc));
             Element root = document.getRootElement();
             List<Element> records = root.getChildren("entry",Namespace.getNamespace("http://www.w3.org/2005/Atom"));

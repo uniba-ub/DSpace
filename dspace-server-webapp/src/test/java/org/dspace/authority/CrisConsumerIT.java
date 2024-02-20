@@ -22,6 +22,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.ArgumentMatchers.matches;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -56,6 +57,8 @@ import org.dspace.content.Community;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.WorkspaceItem;
+import org.dspace.content.authority.ChoiceAuthorityServiceImpl;
+import org.dspace.content.authority.service.MetadataAuthorityService;
 import org.dspace.content.service.ItemService;
 import org.dspace.eperson.EPerson;
 import org.dspace.external.OrcidRestConnector;
@@ -89,10 +92,13 @@ public class CrisConsumerIT extends AbstractControllerIntegrationTest {
     @Autowired
     private ConfigurationService configurationService;
 
+    @Autowired
+    private ChoiceAuthorityServiceImpl choiceAuthorityService;
+
     @Value("classpath:org/dspace/app/rest/simple-article.pdf")
     private Resource simpleArticle;
 
-    @Value("classpath:org/dspace/authority/orcid/orcid-person-record.xml")
+    @Value("classpath:org/dspace/authority/orcid/orcid-record.xml")
     private Resource orcidPersonRecord;
 
     private EPerson submitter;
@@ -109,6 +115,9 @@ public class CrisConsumerIT extends AbstractControllerIntegrationTest {
 
     @Autowired
     private OrcidV3AuthorDataProvider orcidV3AuthorDataProvider;
+
+    @Autowired
+    private MetadataAuthorityService metadataAuthorityService;
 
     @Override
     public void setUp() throws Exception {
@@ -1058,7 +1067,7 @@ public class CrisConsumerIT extends AbstractControllerIntegrationTest {
 
         String orcid = "0000-0002-9029-1854";
 
-        when(mockOrcidConnector.get(eq(orcid + "/person"), any()))
+        when(mockOrcidConnector.get(matches("^\\d{4}-\\d{4}-\\d{4}-\\d{4}$"), any()))
             .thenAnswer(i -> orcidPersonRecord.getInputStream());
 
         try {
@@ -1076,7 +1085,7 @@ public class CrisConsumerIT extends AbstractControllerIntegrationTest {
 
             context.restoreAuthSystemState();
 
-            verify(mockOrcidConnector).get(eq(orcid + "/person"), any());
+            verify(mockOrcidConnector).get(eq(orcid), any());
             verifyNoMoreInteractions(mockOrcidConnector);
 
             String authToken = getAuthToken(submitter.getEmail(), password);
@@ -1126,54 +1135,74 @@ public class CrisConsumerIT extends AbstractControllerIntegrationTest {
     @Test
     public void testSherpaImportFiller() throws Exception {
 
-        String issn = "2731-0582";
+        try {
+            configurationService.setProperty("authority.controlled.dc.relation.journal", "true");
+            configurationService.setProperty("choices.plugin.dc.relation.journal", "JournalAuthority");
+            configurationService.setProperty("choices.presentation.dc.relation.journal", "suggest");
+            configurationService.setProperty("choices.closed.dc.relation.journal", "true");
+            configurationService.setProperty("cris.ItemAuthority.JournalAuthority.entityType", "Journal");
+            configurationService.setProperty("cris.ItemAuthority.JournalAuthority.relationshipType", "Journal");
+            metadataAuthorityService.clearCache();
+            choiceAuthorityService.clearCache();
 
-        context.turnOffAuthorisationSystem();
+            String issn = "2731-0582";
 
-        Collection journals = createCollection("Collection of journals", "Journal", subCommunity);
+            context.turnOffAuthorisationSystem();
 
-        Item publication = ItemBuilder.createItem(context, publicationCollection)
-            .withTitle("Test Publication")
-            .withRelationJournal("Nature Synthesis", "will be generated::ISSN::" + issn)
-            .build();
+            Collection journals = createCollection("Collection of journals", "Journal", subCommunity);
 
-        context.commit();
+            Item publication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test Publication")
+                .withRelationJournal("Nature Synthesis", "will be generated::ISSN::" + issn)
+                .build();
 
-        context.restoreAuthSystemState();
+            context.commit();
 
-        String authToken = getAuthToken(submitter.getEmail(), password);
-        ItemRest item = getItemViaRestByID(authToken, publication.getID());
+            context.restoreAuthSystemState();
 
-        MetadataValueRest journalMetadata = findSingleMetadata(item, "dc.relation.journal");
+            String authToken = getAuthToken(submitter.getEmail(), password);
+            ItemRest item = getItemViaRestByID(authToken, publication.getID());
 
-        UUID journalId = UUIDUtils.fromString(journalMetadata.getAuthority());
-        assertThat(journalId, notNullValue());
+            MetadataValueRest journalMetadata = findSingleMetadata(item, "dc.relation.journal");
 
-        Item journal = itemService.find(context, journalId);
-        assertThat(journal, notNullValue());
-        assertThat(journal.getOwningCollection(), is(journals));
-        assertThat(journal.getMetadata(), hasItems(
-            with("dc.title", "Nature Synthesis"),
-            with("dc.identifier.issn", issn),
-            with("cris.sourceId", "ISSN::" + issn)));
+            UUID journalId = UUIDUtils.fromString(journalMetadata.getAuthority());
+            assertThat(journalId, notNullValue());
 
-        context.turnOffAuthorisationSystem();
+            Item journal = itemService.find(context, journalId);
+            assertThat(journal, notNullValue());
+            assertThat(journal.getOwningCollection(), is(journals));
+            assertThat(journal.getMetadata(), hasItems(
+                with("dc.title", "Nature Synthesis"),
+                with("dc.identifier.issn", issn),
+                with("cris.sourceId", "ISSN::" + issn)));
 
-        publicationCollection = context.reloadEntity(publicationCollection);
+            context.turnOffAuthorisationSystem();
 
-        Item anotherPublication = ItemBuilder.createItem(context, publicationCollection)
-            .withTitle("Test Publication 2")
-            .withRelationJournal("Nature Synthesis", "will be generated::ISSN::" + issn)
-            .build();
+            publicationCollection = context.reloadEntity(publicationCollection);
 
-        context.commit();
+            Item anotherPublication = ItemBuilder.createItem(context, publicationCollection)
+                .withTitle("Test Publication 2")
+                .withRelationJournal("Nature Synthesis", "will be generated::ISSN::" + issn)
+                .build();
 
-        context.restoreAuthSystemState();
+            context.commit();
 
-        item = getItemViaRestByID(authToken, anotherPublication.getID());
-        journalMetadata = findSingleMetadata(item, "dc.relation.journal");
-        assertThat(UUIDUtils.fromString(journalMetadata.getAuthority()), is(journal.getID()));
+            context.restoreAuthSystemState();
 
+            item = getItemViaRestByID(authToken, anotherPublication.getID());
+            journalMetadata = findSingleMetadata(item, "dc.relation.journal");
+            assertThat(UUIDUtils.fromString(journalMetadata.getAuthority()), is(journal.getID()));
+
+        } finally {
+            configurationService.setProperty("authority.controlled.dc.relation.journal", "false");
+            configurationService.setProperty("choices.plugin.dc.relation.journal", null);
+            configurationService.setProperty("choices.presentation.dc.relation.journal", null);
+            configurationService.setProperty("choices.closed.dc.relation.journal", null);
+            configurationService.setProperty("cris.ItemAuthority.JournalAuthority.entityType", null);
+            configurationService.setProperty("cris.ItemAuthority.JournalAuthority.relationshipType", null);
+            metadataAuthorityService.clearCache();
+            choiceAuthorityService.clearCache();
+        }
     }
 
     private ItemRest getItemViaRestByID(String authToken, UUID id) throws Exception {
