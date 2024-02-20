@@ -43,7 +43,8 @@ public class ItemEnhancerEntityTypeScriptConfiguration<T extends ItemEnhancerEnt
         if (options == null) {
             Options options = new Options();
 
-            options.addOption("f", "force", false, "force the recalculation of all the virtual fields");
+            options.addOption("f", "force", false, "force the usage of the deep mode"
+                    + " (always compute the enhanced metadata to verify if the item need an update)");
             options.addOption("c", "collection", true,
                 "uuid of the collection. If the collection does not exist the script aborts.");
             options.addOption("e", "entity", true,

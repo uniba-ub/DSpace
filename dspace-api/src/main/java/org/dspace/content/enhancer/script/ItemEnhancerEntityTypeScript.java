@@ -312,11 +312,7 @@ public class ItemEnhancerEntityTypeScript
     }
 
     private void enhanceItem(Item item) {
-        if (force) {
-            itemEnhancerService.forceEnhancement(context, item);
-        } else {
-            itemEnhancerService.enhance(context, item);
-        }
+        itemEnhancerService.enhance(context, item, force);
         uncacheItem(item);
     }
 
@@ -329,11 +325,7 @@ public class ItemEnhancerEntityTypeScript
                 uncacheItem(item);
             }
         } else {
-            if (force) {
-                itemEnhancerService.forceEnhancement(context, item);
-            } else {
-                itemEnhancerService.enhance(context, item);
-            }
+            itemEnhancerService.enhance(context, item, force);
             uncacheItem(item);
         }
     }
