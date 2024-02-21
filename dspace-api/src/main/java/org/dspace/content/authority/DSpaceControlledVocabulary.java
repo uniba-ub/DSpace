@@ -75,6 +75,8 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
     protected Map<Locale,InputSource> vocabularies = null;
     protected Boolean suggestHierarchy = false;
     protected Boolean storeHierarchy = true;
+    protected Boolean storeValue = false;
+    protected Boolean storeValueFallbackID = false;
     protected boolean storeAuthority = false;
     protected String hierarchyDelimiter = "::";
     protected Integer preloadLevel = 1;
@@ -133,6 +135,8 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
         storeHierarchy = config.getBooleanProperty(configurationPrefix + ".hierarchy.store", storeHierarchy);
         storeAuthority = config.getBooleanProperty(configurationPrefix + ".authority.store",
                                             config.getBooleanProperty("vocabulary.plugin.authority.store", false));
+        storeValue = config.getBooleanProperty(configurationPrefix + ".value.store", false);
+        storeValueFallbackID = config.getBooleanProperty(configurationPrefix + ".valuefallbackid.store", false);
         suggestHierarchy = config.getBooleanProperty(configurationPrefix + ".hierarchy.suggest", suggestHierarchy);
         preloadLevel = config.getIntProperty(configurationPrefix + ".hierarchy.preloadLevel", preloadLevel);
         String configuredDelimiter = config.getProperty(configurationPrefix + ".delimiter");
@@ -161,10 +165,36 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
             Node currentLabel = node.getAttributes().getNamedItem("label");
             if (currentLabel != null) {
                 String currentValue = currentLabel.getNodeValue();
-                if (parentValue.equals("")) {
+                if (parentValue.isEmpty()) {
                     return currentValue;
                 } else {
                     return (parentValue + this.hierarchyDelimiter + currentValue);
+                }
+            } else {
+                return (parentValue);
+            }
+        }
+    }
+
+    protected String buildStringValue(Node node) {
+        if (node.getNodeType() == Node.DOCUMENT_NODE) {
+            return ("");
+        } else {
+            String parentValue = buildStringValue(node.getParentNode());
+            Node currentLabel = node.getAttributes().getNamedItem("value");
+            if (currentLabel != null) {
+                String currentValue = currentLabel.getNodeValue();
+                if (parentValue.isEmpty()) {
+                    return currentValue;
+                } else {
+                    return (parentValue + this.hierarchyDelimiter + currentValue);
+                }
+            } else if (storeValueFallbackID) {
+                String currentID = getNodeId(node);
+                if (parentValue.isEmpty()) {
+                    return currentID;
+                } else {
+                    return (parentValue + this.hierarchyDelimiter + currentID);
                 }
             } else {
                 return (parentValue);
@@ -228,7 +258,7 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
     @Override
     public String getValue(String key, String locale) {
         init();
-        return getNodeLabel(key, this.storeHierarchy, locale);
+        return getNodeValue(key, this.storeHierarchy, locale);
     }
 
     @Override
@@ -372,6 +402,34 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
         }
     }
 
+    private String getNodeValue(String key, boolean useHierarchy, String locale) {
+        try {
+            String nodeId = getNodeIdFromAuthorityKey(key);
+            Node node = getNode(nodeId, locale);
+            if (Objects.isNull(node)) {
+                return null;
+            }
+            if (useHierarchy) {
+                if (storeValue) {
+                    return this.buildStringValue(node);
+                }
+                return this.buildString(node);
+            } else {
+                if (storeValue) {
+                    if (Objects.nonNull(node.getAttributes().getNamedItem("value"))) {
+                        return node.getAttributes().getNamedItem("value").getNodeValue();
+                    }
+                    if (storeValueFallbackID) {
+                        return getNodeId(node);
+                    }
+                }
+                return node.getAttributes().getNamedItem("label").getNodeValue();
+            }
+        } catch (XPathExpressionException e) {
+            return ("");
+        }
+    }
+
     private String getLabel(Node node) {
         if (this.suggestHierarchy) {
             String hierarchy = this.buildString(node);
@@ -382,6 +440,17 @@ public class DSpaceControlledVocabulary extends SelfNamedPlugin implements Hiera
     }
 
     private String getValue(Node node) {
+        if (storeValue) {
+            if (this.storeHierarchy) {
+                return this.buildString(node);
+            }
+            if (Objects.nonNull(node.getAttributes().getNamedItem("value"))) {
+                return node.getAttributes().getNamedItem("value").getNodeValue();
+            }
+            if (storeValueFallbackID) {
+                return getNodeId(node);
+            }
+        }
         if (this.storeHierarchy) {
             String hierarchy = this.buildString(node);
             return hierarchy;
