@@ -9,6 +9,7 @@ package org.dspace.content.logic.condition;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -49,7 +50,7 @@ public class ReadableByGroupCondition extends AbstractCondition {
             List<ResourcePolicy> policies = authorizeService
                 .getPoliciesActionFilter(context, item, Constants.getActionID(action));
             for (ResourcePolicy policy : policies) {
-                if (policy.getGroup().getName().equals(group)) {
+                if (Objects.nonNull(policy.getGroup()) && policy.getGroup().getName().equals(group)) {
                     return true;
                 }
             }

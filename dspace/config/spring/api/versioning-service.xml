@@ -4,6 +4,145 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans
            http://www.springframework.org/schema/beans/spring-beans-2.5.xsd">
 
+    <bean id="org.dspace.versioning.uniba.VersioningService"
+          class="org.dspace.versioning.uniba.VersioningServiceImpl"
+          autowire="byType"
+          scope="singleton">
+        <!-- filter if some version can be created -->
+        <property name="filter" ref="can-fulltext-be-appended_filter" />
+        <property name="versioncheckFilter" ref="no-version-exist_filter" />
+        <!-- versionoffield and hasversionfield should be some reciprocal authority -->
+        <!-- versionoffield and hasversionfield might be added to the Publication.layout visible to the Administrator Group or Controlling Group, because otherwise the display of the items might not work properly -->
+        <!-- it allows some entity-specific behaviour and some default value -->
+        <property name="versionoffield">
+            <map>
+                <entry key="default" value="dc.relation.isversionof" />
+            </map>
+        </property>
+        <property name="hasversionfield">
+            <map>
+                <entry key="default" value="dc.relation.hasversion" />
+            </map>
+        </property>
+        <!-- Filter to check on the item if the version can be changed -->
+        <property name="canChangeFilter" ref="can-version-be-changed_filter"></property>
+        <!-- fields which are not copied when the new workspace item is created -->
+        <property name="ignoredMetadataFields">
+            <map>
+                <entry key="Publication">
+                    <list>
+                        <value>dc.title.alternative</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <!-- A simple filter to check if eperson is member of ubstaff -->
+    <bean id="can-version-be-changed_filter" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement">
+            <bean class="org.dspace.content.logic.operator.And">
+                <property name="statements">
+                    <list>
+                        <ref bean="eperson-member-administrator_condition" />
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="eperson-member-administrator_condition" class="org.dspace.content.logic.condition.MemberOfGroupCondition">
+        <property name="parameters">
+            <map>
+                <entry key="group" value="Administrator" />
+                <entry key="direct" value="true" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="copy-metadata-publications_filter" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement">
+            <bean class="org.dspace.content.logic.operator.And">
+                <property name="statements">
+                    <list>
+                        <ref bean="entity-is-public_condition" />
+                        <ref bean="entity-type-equals-publication_condition" />
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <!-- A simple filter for items to check whether the new version can be created depending on bitstream count, entity type and dc.type -->
+    <bean id="can-fulltext-be-appended_filter" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement">
+            <bean class="org.dspace.content.logic.operator.And">
+                <property name="statements">
+                    <list>
+                        <ref bean="entity-is-public_condition" />
+                        <ref bean="entity-type-equals-publication_condition" />
+                        <ref bean="has-no-bitstream-readable-by-anonymous_condition"/>
+                    </list>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="entity-type-equals-publication_condition" class="org.dspace.content.logic.condition.MetadataValueMatchCondition">
+        <property name="parameters">
+            <map>
+                <entry key="field" value="dspace.entity.type" />
+                <entry key="pattern" value="^Publication" />
+            </map>
+        </property>
+    </bean>
+
+    <bean id="entity-is-public_condition"
+          class="org.dspace.content.logic.condition.ReadableByGroupCondition">
+        <property name="parameters">
+            <map>
+                <entry key="group" value="Anonymous" />
+                <entry key="action" value="READ" />
+            </map>
+        </property>
+    </bean>
+
+    <!-- has no bitstream readable by Anonymous group bundle -->
+    <bean id="has-no-bitstream-readable-by-anonymous_condition"
+          class="org.dspace.content.logic.condition.BitstreamCountReadableAnonymousCondition">
+        <property name="parameters">
+            <map>
+                <entry key="bundle" value="ORIGINAL"/>
+                <entry key="max" value="0"/>
+            </map>
+        </property>
+    </bean>
+
+    <!-- A simple filter to check if no version exist -->
+    <bean id="no-version-exist_filter" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement">
+            <bean class="org.dspace.content.logic.operator.Not">
+                <property name="statements">
+                    <bean class="org.dspace.content.logic.operator.Or">
+                        <property name="statements">
+                            <list>
+                                <ref bean="version-exist_condition" />
+                            </list>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
+
+    <bean id="version-exist_condition"
+          class="org.dspace.content.logic.condition.MetadataValueExistCondition">
+        <property name="parameters">
+            <map>
+                <entry key="field" value="dc.relation.isversionof"/>
+            </map>
+        </property>
+    </bean>
 
     <!-- Versioning Service Application Interface for DSpace Will be autowired with
          a Versioning Provider present in Spring context.
