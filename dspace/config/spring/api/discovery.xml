@@ -72,6 +72,29 @@
     <!-- Additional indexing plugin enables searching by filenames and by file descriptions for files in ORIGINAL bundle -->
     <bean id="solrServiceFileInfoPlugin" class="org.dspace.discovery.SolrServiceFileInfoPlugin"/>
 
+    <!-- Additional indexing plugin to publication the orgunit and the corresponding hierarchy -->
+    <bean id="SolrServiceUnibaPublicationOrgunitIndexPlugin"
+          class="org.dspace.discovery.SolrServiceUnibaPublicationOrgunitIndexPlugin">
+        <property name="originentity">
+            <list>
+                <value>Publication</value>
+            </list>
+        </property>
+        <property name="originfield">
+            <list>
+                <value>oairecerif.author.affiliation</value>
+                <value>oairecerif.editor.affiliation</value>
+            </list>
+        </property>
+        <property name="targetentity" value="OrgUnit"></property>
+        <property name="indexfield" value="pubhierarchy_authority"></property>
+        <property name="targetonlyvisible" value="true"></property>
+        <property name="targethierarchyfield" value="crisou.relation.ispartof"></property>
+        <!-- <property name="targetsuccessorfield" value="crisou.successor"></property> -->
+    </bean>
+
+
+
     <!--Bean that is used for mapping communities/collections to certain discovery configurations.-->
     <bean id="org.dspace.discovery.configuration.DiscoveryConfigurationService" class="org.dspace.discovery.configuration.DiscoveryConfigurationService">
         <property name="map">
@@ -1251,6 +1274,10 @@
             <list>
                 <!--Only find related items. The placeholder {0} will be replaced with scope (UUID of item)-->
                 <value>dc.description.sponsorship_authority:{0}</value>
+                <!-- use this as the main filter value for the above mentioned SolrIndexPlugin -->
+                <!--
+                <value>pubhierarchy_authority:{0}</value>
+                -->
                 <value>-withdrawn:true AND -discoverable:false</value>
             </list>
         </property>
