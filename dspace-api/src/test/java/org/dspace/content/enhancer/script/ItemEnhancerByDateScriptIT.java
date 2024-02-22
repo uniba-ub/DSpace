@@ -9,6 +9,7 @@ package org.dspace.content.enhancer.script;
 
 import static org.dspace.app.matcher.MetadataValueMatcher.with;
 import static org.dspace.content.Item.ANY;
+import static org.dspace.content.enhancer.consumer.ItemEnhancerConsumer.ITEMENHANCER_ENABLED;
 import static org.dspace.core.CrisConstants.PLACEHOLDER_PARENT_METADATA_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
@@ -47,6 +48,10 @@ import org.junit.Test;
 
 public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatabase {
 
+    private static ConfigurationService configService = DSpaceServicesFactory.getInstance().getConfigurationService();
+
+    private static final EventService eventService = EventServiceFactory.getInstance().getEventService();
+    private static boolean isEnabled;
     private static String[] consumers;
 
     private ItemService itemService;
@@ -60,13 +65,13 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
      */
     @BeforeClass
     public static void initConsumers() {
-        ConfigurationService configService = DSpaceServicesFactory.getInstance().getConfigurationService();
         consumers = configService.getArrayProperty("event.dispatcher.default.consumers");
         Set<String> consumersSet = new HashSet<String>(Arrays.asList(consumers));
-        consumersSet.remove("itemenhancer");
-        configService.setProperty("event.dispatcher.default.consumers", consumersSet.toArray());
-        EventService eventService = EventServiceFactory.getInstance().getEventService();
-        eventService.reloadConfiguration();
+        if (!consumersSet.contains("itemenhancer")) {
+            consumersSet.add("itemenhancer");
+            configService.setProperty("event.dispatcher.default.consumers", consumersSet.toArray());
+            eventService.reloadConfiguration();
+        }
     }
 
     /**
@@ -74,18 +79,19 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
      */
     @AfterClass
     public static void resetDefaultConsumers() {
-        ConfigurationService configService = DSpaceServicesFactory.getInstance().getConfigurationService();
         configService.setProperty("event.dispatcher.default.consumers", consumers);
-        EventService eventService = EventServiceFactory.getInstance().getEventService();
         eventService.reloadConfiguration();
     }
 
     @Before
     public void setup() {
 
+        configService.setProperty(ITEMENHANCER_ENABLED, false);
+
         itemService = ContentServiceFactory.getInstance().getItemService();
 
         context.turnOffAuthorisationSystem();
+
         parentCommunity = CommunityBuilder.createCommunity(context)
             .withName("Parent Community")
             .build();
