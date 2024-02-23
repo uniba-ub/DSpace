@@ -86,6 +86,10 @@ public class ItemEnhancerByDateScript
 
     private int limit;
 
+    private int counter = 0;
+
+    private int countertotal = 0;
+
     private EntityTypeService entityTypeService;
 
     private static final Logger log = LoggerFactory.getLogger(ItemEnhancerByDateScript.class);
@@ -99,36 +103,35 @@ public class ItemEnhancerByDateScript
         itemEnhancerService = new DSpace().getSingletonService(ItemEnhancerService.class);
         this.solrSearchCore =
             DSpaceServicesFactory.getInstance().getServiceManager().getServicesByType(SolrSearchCore.class).get(0);
-        //this.solrSearchCore = new DSpace().getSingletonService(SolrSearchCore.class);
 
         this.force = commandLine.hasOption('f');
         if (commandLine.hasOption('c')) {
-            this.collection = UUIDUtils.fromString(commandLine.getOptionValue('c'));
+            this.collection = UUIDUtils.fromString(commandLine.getOptionValue('c').trim());
         }
         if (commandLine.hasOption('e')) {
-            this.entitytype = commandLine.getOptionValue('e');
+            this.entitytype = commandLine.getOptionValue('e').trim();
         }
         if (commandLine.hasOption('q')) {
-            this.query = commandLine.getOptionValue('q');
+            this.query = commandLine.getOptionValue('q').trim();
         }
         if (commandLine.hasOption('d')) {
-            this.dateupper = commandLine.getOptionValue('d');
+            this.dateupper = commandLine.getOptionValue('d').trim();
         }
         if (commandLine.hasOption('s')) {
-            this.datelower = commandLine.getOptionValue('s');
+            this.datelower = commandLine.getOptionValue('s').trim();
         }
         if (commandLine.hasOption('m')) {
             try {
-                this.max = Integer.parseInt(commandLine.getOptionValue('m'));
+                this.max = Integer.parseInt(commandLine.getOptionValue('m').trim());
             } catch (Exception e) {
-                //
+                handler.logError(e.getMessage());
             }
         }
         if (commandLine.hasOption('l')) {
             try {
-                this.limit = Integer.parseInt(commandLine.getOptionValue('l'));
+                this.limit = Integer.parseInt(commandLine.getOptionValue('l').trim());
             } catch (Exception e) {
-                //
+                handler.logError(e.getMessage());
             }
         }
     }
@@ -165,7 +168,8 @@ public class ItemEnhancerByDateScript
 
 
     private void searchItems() {
-
+        int maximum = 0; //maximum items to be processed
+        int total = 0; //results of search/query
         List<String> items = new ArrayList<>();
         try {
             SolrDocumentList results = searchItemsInSolr(this.query, this.dateupper, this.datelower);
@@ -179,43 +183,59 @@ public class ItemEnhancerByDateScript
             handler.logError(e.getMessage(), e);
             log.error(e.getMessage());
         }
-        int total = items.size();
+        total = items.size();
         if (total == 0) {
             handler.logInfo("No results in solr-Query");
             log.info("No results in solr-Query");
             return;
+        } else if (this.max > 0) {
+            maximum = this.max;
+            if (this.max < items.size()) {
+                items = items.subList(0, (this.max - 1));
+                total = this.max - 1;
+            }
         }
 
+        // split list and commit after limit entries
         if (this.limit > 0) {
-            // Split through every list
-            int counter = 0;
+            if (limit > total) {
+                limit = total;
+            }
+            // counting variables for pagination
+            int tempcounter = 0;
             int start = 0;
             int end = 0;
-            while (counter < total) {
-                start = counter;
-                end = counter + limit;
-                if (end > (total - 1)) {
-                    end = total - 1;
+            while (tempcounter < total) {
+                start = tempcounter;
+                end = tempcounter + limit;
+                if (end > total) {
+                    end = total;
+                    limit = total - tempcounter;
                 }
                 try {
                     this.itemService.findByIds(context, items.subList(start, end)).forEachRemaining(this::enhanceItem);
+                    tempcounter += limit;
                     context.commit();
-                    counter += limit;
+                    handler.logInfo("enhanced " + tempcounter + " out of max " + maximum + " items");
+                    log.info("enhanced " + tempcounter + " out of max " + maximum + " items");
                 } catch (Exception e) {
+                    tempcounter += limit;
                     handler.logError(e.getMessage());
-                    counter += limit;
+                    handler.logInfo("enhanced " + tempcounter + " out of max " + maximum + " items");
+                    log.info("enhanced " + tempcounter + " out of max " + maximum + " items");
                 }
             }
 
         } else {
+            // enhance all found items
             try {
                 this.itemService.findByIds(context, items).forEachRemaining(this::enhanceItem);
             } catch (SQLException e) {
                 handler.logError(e.getMessage());
             }
         }
-        handler.logInfo("enhanced " + total + " items");
-        log.info("enhanced " + total + " items");
+        handler.logInfo("enhanced " + counter + " items");
+        log.info("enhanced " + counter + " items");
     }
 
     private SolrDocumentList searchItemsInSolr(String query, String datequeryupper, String datequerylower)
@@ -253,6 +273,7 @@ public class ItemEnhancerByDateScript
     }
 
     private void enhanceItem(Item item) {
+        counter++;
         itemEnhancerService.enhance(context, item, force);
         uncacheItem(item);
     }

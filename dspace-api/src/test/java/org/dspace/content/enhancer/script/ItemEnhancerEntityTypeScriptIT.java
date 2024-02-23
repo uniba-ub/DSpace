@@ -13,24 +13,31 @@ import static org.dspace.content.enhancer.consumer.ItemEnhancerConsumer.ITEMENHA
 import static org.dspace.core.CrisConstants.PLACEHOLDER_PARENT_METADATA_VALUE;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalToIgnoringCase;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.lang.StringUtils;
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.app.launcher.ScriptLauncher;
 import org.dspace.app.scripts.handler.impl.TestDSpaceRunnableHandler;
 import org.dspace.authorize.AuthorizeException;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
+import org.dspace.builder.EntityTypeBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.builder.WorkspaceItemBuilder;
 import org.dspace.content.Collection;
+import org.dspace.content.EntityType;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
 import org.dspace.content.WorkspaceItem;
@@ -56,6 +63,14 @@ public class ItemEnhancerEntityTypeScriptIT extends AbstractIntegrationTestWithD
     private ItemService itemService;
 
     private Collection collection;
+
+    private Collection publications;
+
+    private Collection publications2;
+
+    private Collection publications3;
+
+    private Collection persons;
 
     /**
      * This method will be run before the first test as per @BeforeClass. It will
@@ -98,6 +113,27 @@ public class ItemEnhancerEntityTypeScriptIT extends AbstractIntegrationTestWithD
         collection = CollectionBuilder.createCollection(context, parentCommunity)
             .withName("Collection")
             .build();
+
+        publications = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection Publication")
+            .withEntityType("Publication")
+            .build();
+
+        publications2 = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection Publication2")
+            .withEntityType("Publication")
+            .build();
+
+        publications3 = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection Publication3")
+            .withEntityType("Publication")
+            .build();
+
+        persons = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection Person")
+            .withEntityType("Person")
+            .build();
+
         context.restoreAuthSystemState();
 
     }
@@ -460,9 +496,319 @@ public class ItemEnhancerEntityTypeScriptIT extends AbstractIntegrationTestWithD
 
     }
 
+    @Test
+    public void testItemEnhancementEntityTypeInvalidCollectionUUID() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        Item publication = ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 2 ")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        context.commit();
+        publication = reload(publication);
+
+        TestDSpaceRunnableHandler runnableHandler = runScript(false, publication.getID().toString(), null, null, null);
+
+        assertThat(runnableHandler.getException(), notNullValue());
+        assertThat(runnableHandler.getException().getMessage(),
+            equalToIgnoringCase("specified Collection does not exist"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeNoCollection() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType projectType = EntityTypeBuilder.createEntityTypeBuilder(context, "Project").build();
+        context.restoreAuthSystemState();
+
+        TestDSpaceRunnableHandler runnableHandler = runScript(false, null, projectType.getLabel(), null, null);
+
+        assertThat(runnableHandler.getException(), notNullValue());
+        assertThat(runnableHandler.getException().getMessage(),
+            equalToIgnoringCase("no Collections with EntityType " + projectType.getLabel()));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeInvalidForCollection() throws Exception {
+        context.turnOffAuthorisationSystem();
+        EntityType personType = EntityTypeBuilder.createEntityTypeBuilder(context, "Person").build();
+        context.commit();
+        context.restoreAuthSystemState();
+
+        TestDSpaceRunnableHandler runnableHandler = runScript(false, publications.getID().toString(),
+            personType.getLabel(), null, null);
+
+        assertThat(runnableHandler.getException(), notNullValue());
+        assertThat(runnableHandler.getException().getMessage(),
+                equalToIgnoringCase("the specified Collection does not match with the specified EntityType"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeInvalidEntityType() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        context.commit();
+
+        TestDSpaceRunnableHandler runnableHandler = runScript(false, null, "ResearchData", null, null);
+
+        assertThat(runnableHandler.getException(), notNullValue());
+        assertThat(runnableHandler.getException().getMessage(), equalToIgnoringCase("unknown EntityType ResearchData"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeMaxMatches() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 2 ")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 3")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        context.commit();
+        String max = "2";
+
+        TestDSpaceRunnableHandler runnableHandler
+            = runScript(false, collection.getID().toString(), null, null, max);
+
+        assertThat(runnableHandler.getInfoMessages(), hasItems());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeLimitAndMaxMatches() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 2 ")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 3")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 4")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 5")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build();
+
+        context.commit();
+
+        String limit = "2";
+        String max = "4"; //smaller than collection size
+
+        TestDSpaceRunnableHandler runnableHandler
+            = runScript(false, collection.getID().toString(), null, limit, max);
+
+        assertThat(runnableHandler.getInfoMessages(), hasItems());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 2 out of max " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 4 out of max " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeLimitAndMaxMatches2() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        List<Item> list = new ArrayList<>();
+
+        list.add(ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 2 ")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 3")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 4")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, collection)
+            .withTitle("Test publication 5")
+            .withEntityType("Publication")
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        context.commit();
+
+        String limit = "3";
+        String max = "7";
+
+        TestDSpaceRunnableHandler runnableHandler
+            = runScript(false, collection.getID().toString(), null, limit, max);
+
+        assertThat(runnableHandler.getInfoMessages(), hasItems());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 3 out of max " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 5 out of max " + max + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced " + list.size() + " items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+    }
+
+    @Test
+    public void testItemEnhancementEntityTypeMaxMatchesPerCollectionsAndEntityType() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        EntityType publicationType = EntityTypeBuilder.createEntityTypeBuilder(context, "Publication").build();
+
+        List<Item> list = new ArrayList<>();
+
+        list.add(ItemBuilder.createItem(context, publications)
+            .withTitle("Test publication")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications2)
+            .withTitle("Test publication 2 ")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications2)
+            .withTitle("Test publication 3")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications2)
+            .withTitle("Test publication 4 ")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications3)
+            .withTitle("Test publication 5")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications3)
+            .withTitle("Test publication 6")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        list.add(ItemBuilder.createItem(context, publications3)
+            .withTitle("Test publication 7")
+            .withEntityType(publicationType.getLabel())
+            .withAuthor("Jesse Pinkman")
+            .withAuthor("Jesse Smith")
+            .build());
+
+        context.commit();
+
+        // Max 2 per collection
+        String max = "2";
+
+        TestDSpaceRunnableHandler runnableHandler
+            = runScript(false, null, "Publication", null, max);
+
+        // every collection max two items
+        assertThat(runnableHandler.getInfoMessages(), hasItems());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 1 out of max 2 items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 3 out of max 2 items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("enhanced 5 items"));
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+    }
+
     private TestDSpaceRunnableHandler runScript(boolean force) throws InstantiationException, IllegalAccessException {
         TestDSpaceRunnableHandler runnableHandler = new TestDSpaceRunnableHandler();
         String[] args = force ? new String[] { "item-enhancer-type", "-f" } : new String[] { "item-enhancer-type" };
+        ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), runnableHandler, kernelImpl);
+        return runnableHandler;
+    }
+
+    private TestDSpaceRunnableHandler runScript(boolean force, String collectionuuid, String entitytype, String limit,
+                                                String max) throws InstantiationException, IllegalAccessException {
+        TestDSpaceRunnableHandler runnableHandler = new TestDSpaceRunnableHandler();
+        List<String> argslist = new ArrayList<>();
+        argslist.add("item-enhancer-type");
+        if (force) {
+            argslist.add("-f");
+        }
+        if (StringUtils.isNotBlank(collectionuuid)) {
+           argslist.add("-c " + collectionuuid);
+        }
+        if (StringUtils.isNotBlank(entitytype)) {
+            argslist.add("-e " + entitytype);
+        }
+        if (StringUtils.isNotBlank(limit)) {
+            argslist.add("-l " + limit);
+        }
+        if (StringUtils.isNotBlank(max)) {
+            argslist.add("-m " + max);
+        }
+        String[] args = argslist.toArray(new String[0]);
+
         ScriptLauncher.handleScript(args, ScriptLauncher.getConfig(kernelImpl), runnableHandler, kernelImpl);
         return runnableHandler;
     }

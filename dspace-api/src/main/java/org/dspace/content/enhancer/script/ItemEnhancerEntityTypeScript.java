@@ -65,6 +65,8 @@ public class ItemEnhancerEntityTypeScript
 
     private int offset;
 
+    private int counter;
+
     private EntityTypeService entityTypeService;
 
     private static final Logger log = LoggerFactory.getLogger(ItemEnhancerEntityTypeScript.class);
@@ -79,30 +81,30 @@ public class ItemEnhancerEntityTypeScript
 
         this.force = commandLine.hasOption('f');
         if (commandLine.hasOption('c')) {
-            this.collection = UUIDUtils.fromString(commandLine.getOptionValue('c'));
+            this.collection = UUIDUtils.fromString(commandLine.getOptionValue('c').trim());
         }
         if (commandLine.hasOption('e')) {
-            this.entitytype = commandLine.getOptionValue('e');
+            this.entitytype = commandLine.getOptionValue('e').trim();
         }
         if (commandLine.hasOption('l')) {
             try {
-                this.limit = Integer.parseInt(commandLine.getOptionValue('l'));
+                this.limit = Integer.parseInt(commandLine.getOptionValue('l').trim());
             } catch (Exception e) {
-                //
+                handler.logError(e.getMessage());
             }
         }
         if (commandLine.hasOption('m')) {
             try {
-                this.max = Integer.parseInt(commandLine.getOptionValue('m'));
+                this.max = Integer.parseInt(commandLine.getOptionValue('m').trim());
             } catch (Exception e) {
-                //
+                handler.logError(e.getMessage());
             }
         }
         if (commandLine.hasOption('o')) {
             try {
-                this.offset = Integer.parseInt(commandLine.getOptionValue('o'));
+                this.offset = Integer.parseInt(commandLine.getOptionValue('o').trim());
             } catch (Exception e) {
-                //
+                handler.logError(e.getMessage());
             }
         }
     }
@@ -149,7 +151,7 @@ public class ItemEnhancerEntityTypeScript
             Collection coll = this.collectionService.find(context, collection);
             findItemsToEnhance(coll);
         } else if (Objects.nonNull(entitytype)) {
-            //for each colelction with entity type
+            //for each collection with entity type
             for (Collection coll : collectionService.findAll(context).stream()
                 .filter(collection1 -> collection1.getEntityType().contentEquals(entitytype)).collect(
                 Collectors.toList())) {
@@ -160,9 +162,13 @@ public class ItemEnhancerEntityTypeScript
         }
     }
 
+    /**
+     * enhance the items in this collection with the given numeric restrictions
+     * @param coll
+     */
     private void findItemsToEnhance(Collection coll) {
         int total = 0;
-        int counter = 0;
+        int maximal = 0;
         if (Objects.nonNull(coll)) {
             //Paginate through items in one (given) collection
             try {
@@ -171,64 +177,72 @@ public class ItemEnhancerEntityTypeScript
                 handler.logError(e.getMessage());
                 return;
             }
-            if ( this.max > 0) {
+            if (this.max > 0) {
                 total = this.max;
+                maximal = this.max;
             }
             if (this.offset > 0) {
                 //offset is being added to counter and offset
                 total += offset;
-                counter += offset;
                 if (limit > 0) {
-                    handler.logInfo("offset " + offset + " added. Range: ["
+                    handler.logDebug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "] in " + limit + " steps");
-                    log.info("offset " + offset + " added. Range: ["
+                    log.debug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "] in " + limit + " steps");
                 } else {
-                    handler.logInfo("offset " + offset + " added. Range: ["
+                    handler.logDebug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "]");
-                    log.info("offset " + offset + " added. Range: ["
+                    log.debug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "]");
                 }
             } else {
                 if (limit > 0) {
-                    handler.logInfo("Range: [" + counter + " to "
+                    handler.logDebug("Range: [" + counter + " to "
                         + total + "] in " + limit + " steps");
-                    log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                    log.debug("Range: [" + counter + " to " + total + "] in " + limit + " steps");
                 } else {
-                    handler.logInfo("Range: [" + counter + " to "
+                    handler.logDebug("Range: [" + counter + " to "
                         + total + "]");
-                    log.info("Range: [" + counter + " to " + total + "]");
+                    log.debug("Range: [" + counter + " to " + total + "]");
                 }
             }
-            while (counter < total) {
+            int tempcounter = 0;
+            if (limit > total) {
+                limit = total;
+            }
+            while (tempcounter < total) {
                 if (limit > 0) {
                     try {
-                        itemService.findAllByCollection(context, coll, limit, counter)
+                        itemService.findAllByCollection(context, coll, limit, tempcounter)
                             .forEachRemaining(this::enhanceItem);
-                        counter += limit;
                         context.commit();
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logInfo("enhanced " + counter + " out of max " + maximal + " items");
+                        log.info("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += limit;
                     } catch (SQLException e) {
                         handler.logError(e.getMessage());
-                        counter += limit;
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logError("enhanced " + counter + " out of max " + maximal + " items");
+                        log.error("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += limit;
                     }
                 } else {
                     try {
                         // no limit, so process all items in one commit
-                        itemService.findAllByCollection(context, coll, total, counter)
+                        itemService.findAllByCollection(context, coll, total, 0)
                             .forEachRemaining(this::enhanceItem);
-                        counter += total;
                         context.commit();
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logInfo("enhanced " + counter + " out of max " + maximal + " items");
+                        log.info("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += total;
                     } catch (SQLException e) {
                         handler.logError(e.getMessage());
-                        counter += limit;
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logError("enhanced " + counter + " out of max " + maximal + " items");
+                        log.error("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += total;
                     }
                 }
             }
@@ -240,78 +254,90 @@ public class ItemEnhancerEntityTypeScript
                 handler.logError(e.getMessage());
                 return;
             }
+
             if (this.max > 0) {
                 total = this.max;
+                maximal = this.max;
             }
             if (this.offset > 0) {
                 //offset is being added to counter and offset
                 total += offset;
-                counter += offset;
                 if (limit > 0) {
-                    handler.logInfo("offset " + offset + " added. Range: ["
+                    handler.logDebug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "] in " + limit + " steps");
-                    log.info("offset " + offset + " added. Range: ["
+                    log.debug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "] in " + limit + " steps");
                 } else {
-                    handler.logInfo("offset " + offset + " added. Range: ["
+                    handler.logDebug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "]");
-                    log.info("offset " + offset + " added. Range: ["
+                    log.debug("offset " + offset + " added. Range: ["
                         + counter + " to " + total + "]");
                 }
             } else {
                 if (limit > 0) {
-                    handler.logInfo("Range: [" + counter + " to "
+                    handler.logDebug("Range: [" + counter + " to "
                         + total + "] in " + limit + " steps");
-                    log.info("Range: [" + counter + " to " + total + "] in " + limit + " steps");
+                    log.debug("Range: [" + counter + " to " + total + "] in " + limit + " steps");
                 } else {
-                    handler.logInfo("Range: [" + counter + " to "
+                    handler.logDebug("Range: [" + counter + " to "
                         + total + "]");
-                    log.info("Range: [" + counter + " to " + total + "]");
+                    log.debug("Range: [" + counter + " to " + total + "]");
                 }
             }
-            while (counter < total) {
+            //Counting variables for pagination
+            int tempcounter = 0;
+            while (tempcounter < total) {
                 if (limit > 0) {
                     try {
                         // Check for entity type in enhanceItem method
                         if (Objects.nonNull(this.entitytype)) {
-                            itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItemEntityCheck);
+                            itemService.findAll(context, limit, tempcounter)
+                                .forEachRemaining(this::enhanceItemEntityCheck);
                         } else {
-                            itemService.findAll(context, limit, counter).forEachRemaining(this::enhanceItem);
+                            itemService.findAll(context, limit, tempcounter).forEachRemaining(this::enhanceItem);
                         }
-                        counter += limit;
                         context.commit();
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logInfo("enhanced " + counter + " out of max " + maximal + " items");
+                        log.info("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += limit;
                     } catch (SQLException e) {
                         handler.logError(e.getMessage());
-                        counter += limit;
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logError("enhanced " + counter + " out of max " + maximal + " items");
+                        log.error("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += limit;
                     }
                 } else {
                     try {
                         // Check for entity type in enhanceItem method
                         if (Objects.nonNull(this.entitytype)) {
-                            itemService.findAll(context, total, counter).forEachRemaining(this::enhanceItemEntityCheck);
+                            itemService.findAll(context, total, 0).forEachRemaining(this::enhanceItemEntityCheck);
                         } else {
-                            itemService.findAll(context, total, counter).forEachRemaining(this::enhanceItem);
+                            itemService.findAll(context, total, 0).forEachRemaining(this::enhanceItem);
                         }
-                        counter += total;
                         context.commit();
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logInfo("enhanced " + counter + " out of max " + maximal + " items");
+                        log.info("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += total;
                     } catch (SQLException e) {
+                        counter++;
                         handler.logError(e.getMessage());
-                        counter += total;
-                        handler.logInfo("processed " + counter + " out of total " + total + " items");
-                        log.info("processed " + counter + " out of total " + total + " items");
+                        handler.logError("enhanced " + counter + " out of max " + maximal + " items");
+                        log.error("enhanced " + counter + " out of max " + maximal + " items");
+
+                        tempcounter += total;
                     }
                 }
             }
         }
+        handler.logInfo("enhanced " + counter + " items");
+        log.info("enhanced " + counter + " items");
     }
 
     private void enhanceItem(Item item) {
+        counter++;
         itemEnhancerService.enhance(context, item, force);
         uncacheItem(item);
     }
@@ -321,10 +347,13 @@ public class ItemEnhancerEntityTypeScript
     */
     private void enhanceItemEntityCheck(Item item) {
         if (Objects.nonNull(entitytype)) {
-            if (!entitytype.contentEquals(itemService.getEntityType(item))) {
+            if (entitytype.contentEquals(itemService.getEntityType(item))) {
+                counter++;
+                itemEnhancerService.enhance(context, item, force);
                 uncacheItem(item);
             }
         } else {
+            counter++;
             itemEnhancerService.enhance(context, item, force);
             uncacheItem(item);
         }
