@@ -64,8 +64,9 @@
         <property name="targetItemMetadataField" value="dc.title" />
         <property name="relatedItemMetadataFields">
         	<list>
-        		<value>crisrp.preferredName</value>
-        		<value>crisrp.fullName</value>
+        		<value>crisrp.name</value>
+        		<value>crisrp.name.translated</value>
+                <value>crisrp.name.variants</value>
         	</list>
         </property>
         <!-- using some defaultValue might not work with creating profiles -->

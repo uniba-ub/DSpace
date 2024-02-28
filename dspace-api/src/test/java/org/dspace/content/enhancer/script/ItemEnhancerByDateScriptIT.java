@@ -64,6 +64,8 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
 
     private Collection collection;
 
+    private Collection persons;
+
     /**
      * This method will be run before the first test as per @BeforeClass. It will
      * configure the event.dispatcher.default.consumers property to remove the
@@ -105,6 +107,12 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         collection = CollectionBuilder.createCollection(context, parentCommunity)
             .withName("Collection")
             .build();
+
+        persons = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection")
+            .withEntityType("Person")
+            .build();
+
         context.restoreAuthSystemState();
 
     }
@@ -254,6 +262,70 @@ public class ItemEnhancerByDateScriptIT extends AbstractIntegrationTestWithDatab
         assertThat(publication.getMetadata(), hasItem(with("cris.virtual.department", "4Science")));
         assertThat(publication.getMetadata(), hasItem(with("cris.virtualsource.department", firstAuthorId)));
 
+    }
+
+    @Test
+    public void testItemEnhancementNameWithoutForce() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+
+        Item firstPerson = ItemBuilder.createItem(context, persons)
+            .withMetadata("crisrp", "name", null, "Walter White")
+            .build();
+
+        Item secondPerson = ItemBuilder.createItem(context, persons)
+            .withMetadata("crisrp", "name", null, "Alois White")
+            .withMetadata("crisrp", "name", "translated", "Alois W. White")
+            .build();
+
+        Item thirdPerson = ItemBuilder.createItem(context, persons)
+            .withMetadata("crisrp", "name", "translated", "Walt Alternative")
+            .build();
+
+        context.commit();
+
+
+        assertThat(getMetadataValues(firstPerson, "dc.title"), empty());
+        assertThat(getMetadataValues(secondPerson, "dc.title"), empty());
+        assertThat(getMetadataValues(thirdPerson, "dc.title"), empty());
+
+        TestDSpaceRunnableHandler runnableHandler = runScript(false);
+
+        assertThat(runnableHandler.getErrorMessages(), empty());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+
+        firstPerson = reload(firstPerson);
+        secondPerson = reload(secondPerson);
+        thirdPerson = reload(thirdPerson);
+
+        assertThat(getMetadataValues(firstPerson, "dc.title"), hasSize(1));
+        assertThat(getMetadataValues(secondPerson, "dc.title"), hasSize(1));
+        assertThat(getMetadataValues(thirdPerson, "dc.title"), hasSize(1));
+
+        assertThat(firstPerson.getMetadata(), hasItem(with("dc.title", "Walter White")));
+        assertThat(secondPerson.getMetadata(), hasItem(with("dc.title", "Alois White")));
+        assertThat(thirdPerson.getMetadata(), hasItem(with("dc.title", "Walt Alternative")));
+
+        context.turnOffAuthorisationSystem();
+
+        MetadataValue nameToRemove = getMetadataValues(secondPerson, "crisrp.name").get(0);
+        itemService.removeMetadataValues(context, secondPerson, List.of(nameToRemove));
+
+        replaceMetadata(thirdPerson, "crisrp", "name", "translated", "Walt D. Alternative");
+
+        context.restoreAuthSystemState();
+
+        runnableHandler = runScript(false);
+        assertThat(runnableHandler.getErrorMessages(), empty());
+        assertThat(runnableHandler.getInfoMessages(), hasItem("Enhancement completed with success"));
+
+        firstPerson = reload(firstPerson);
+        secondPerson = reload(secondPerson);
+        thirdPerson = reload(thirdPerson);
+
+        assertThat(firstPerson.getMetadata(), hasItem(with("dc.title", "Walter White")));
+        assertThat(secondPerson.getMetadata(), hasItem(with("dc.title", "Alois W. White")));
+        assertThat(thirdPerson.getMetadata(), hasItem(with("dc.title", "Walt D. Alternative")));
     }
 
     @Test
