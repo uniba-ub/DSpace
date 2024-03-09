@@ -368,6 +368,23 @@
 			</dependencies>
 		</profile>
 
+        <profile>
+            <id>addon-networklab</id>
+            <activation>
+                <property>
+                    <name>nl.on</name>
+                </property>
+            </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>it.4science</groupId>
+                    <artifactId>dspace-networklab</artifactId>
+                    <version>${addon-networklab.version}</version>
+                    <type>jar</type>
+                </dependency>
+            </dependencies>
+        </profile>
+
         <!-- Builds Orchestrator addon for DSpace -->
         <profile>
             <id>addon-orchestrator</id>
