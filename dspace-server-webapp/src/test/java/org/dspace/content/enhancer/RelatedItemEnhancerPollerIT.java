@@ -24,9 +24,7 @@ import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import java.sql.SQLException;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import org.apache.commons.codec.binary.StringUtils;
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.app.matcher.CustomItemMatcher;
 import org.dspace.authorize.AuthorizeException;
@@ -36,11 +34,11 @@ import org.dspace.builder.ItemBuilder;
 import org.dspace.content.Collection;
 import org.dspace.content.Item;
 import org.dspace.content.MetadataValue;
-import org.dspace.content.WorkspaceItem;
 import org.dspace.content.enhancer.service.ItemEnhancerService;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.ReloadableEntity;
+import org.dspace.services.ConfigurationService;
 import org.dspace.utils.DSpace;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,8 +54,11 @@ public class RelatedItemEnhancerPollerIT extends AbstractIntegrationTestWithData
 
     @Before
     public void setup() throws InterruptedException {
+        final DSpace dspace = new DSpace();
+        ConfigurationService configurationService = dspace.getConfigurationService();
+        configurationService.setProperty("item.enable-virtual-metadata", false);
         itemService = ContentServiceFactory.getInstance().getItemService();
-        itemEnhancerService = new DSpace().getSingletonService(ItemEnhancerService.class);
+        itemEnhancerService = dspace.getSingletonService(ItemEnhancerService.class);
         spyItemEnhancerService = spy(itemEnhancerService);
         poller.setItemEnhancerService(spyItemEnhancerService);
         poller.setItemService(itemService);
@@ -184,6 +185,8 @@ public class RelatedItemEnhancerPollerIT extends AbstractIntegrationTestWithData
         verify(spyItemEnhancerService).enhance(any(), argThat(new CustomItemMatcher(publication2.getID())), eq(true));
         // 2 + 1 iteration as the last poll will return null
         verify(spyItemEnhancerService, times(3)).pollItemToUpdate(any());
+        verify(spyItemEnhancerService).saveAffectedItemsForUpdate(any(), eq(publication.getID()));
+        verify(spyItemEnhancerService).saveAffectedItemsForUpdate(any(), eq(publication2.getID()));
         verifyNoMoreInteractions(spyItemEnhancerService);
         person = context.reloadEntity(person);
         person2 = context.reloadEntity(person2);
@@ -256,6 +259,7 @@ public class RelatedItemEnhancerPollerIT extends AbstractIntegrationTestWithData
         verify(spyItemEnhancerService).enhance(any(), argThat(new CustomItemMatcher(publication3.getID())), eq(true));
         // 1 + 1 iteration as the last poll will return null
         verify(spyItemEnhancerService, times(2)).pollItemToUpdate(any());
+        verify(spyItemEnhancerService).saveAffectedItemsForUpdate(any(), eq(publication3.getID()));
         verifyNoMoreInteractions(spyItemEnhancerService);
         person = context.reloadEntity(person);
         person2 = context.reloadEntity(person2);
@@ -317,22 +321,8 @@ public class RelatedItemEnhancerPollerIT extends AbstractIntegrationTestWithData
 
     }
 
-    private List<Integer> getPlacesAsVirtualSource(Item person1, Item publication, String metadata) {
-        return getMetadataValues(publication, metadata).stream()
-                .filter(mv -> StringUtils.equals(mv.getValue(), person1.getID().toString())).map(mv -> mv.getPlace())
-                .collect(Collectors.toList());
-    }
-
-    private MetadataValue getFirstMetadataValue(Item item, String metadataField) {
-        return getMetadataValues(item, metadataField).get(0);
-    }
-
     private List<MetadataValue> getMetadataValues(Item item, String metadataField) {
         return itemService.getMetadataByMetadataString(item, metadataField);
-    }
-
-    private List<MetadataValue> getMetadataValues(WorkspaceItem item, String metadataField) {
-        return itemService.getMetadataByMetadataString(item.getItem(), metadataField);
     }
 
     @SuppressWarnings("rawtypes")
