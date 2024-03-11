@@ -28,6 +28,7 @@ public class FacetEntryMatcher {
             hasJsonPath("$.name", is("author")),
             hasJsonPath("$.facetType", is("text")),
             hasJsonPath("$.facetLimit", any(Integer.class)),
+            hasJsonPath("$.openByDefault", any(Boolean.class)),
             hasJsonPath("$._links.self.href", containsString("api/discover/facets/author")),
             hasJsonPath("$._links", matchNextLink(hasNext, "api/discover/facets/author"))
         );
@@ -40,6 +41,7 @@ public class FacetEntryMatcher {
             hasJsonPath("$.facetLimit", any(Integer.class)),
             hasJsonPath("$.minValue", is(min)),
             hasJsonPath("$.maxValue", is(max)),
+            hasJsonPath("$.openByDefault", any(Boolean.class)),
             hasJsonPath("$._links.self.href", containsString("api/discover/facets/author")),
             hasJsonPath("$._links", matchNextLink(hasNext, "api/discover/facets/author"))
         );
