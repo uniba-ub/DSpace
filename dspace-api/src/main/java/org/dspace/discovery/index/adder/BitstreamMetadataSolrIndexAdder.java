@@ -13,6 +13,9 @@ import org.apache.solr.common.SolrInputDocument;
 
 /**
  * Implementation of {@link IndexAdder} defining default bitstream metadata index adder.
+ *
+ * @author Nikita Krisonov
+ * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  */
 public class BitstreamMetadataSolrIndexAdder implements IndexAdder {
 

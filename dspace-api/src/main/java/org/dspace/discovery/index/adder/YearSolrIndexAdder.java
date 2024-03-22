@@ -15,6 +15,9 @@ import org.joda.time.format.DateTimeFormatter;
 
 /**
  * Implementation of {@link IndexAdder} defining index adder for handling year of a date.
+ *
+ * @author Nikita Krisonov
+ * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  */
 public class YearSolrIndexAdder implements IndexAdder {
 

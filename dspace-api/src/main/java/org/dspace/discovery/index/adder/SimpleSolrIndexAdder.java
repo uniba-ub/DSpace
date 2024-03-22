@@ -13,6 +13,9 @@ import org.apache.solr.common.SolrInputDocument;
 
 /**
  * Implementation of {@link IndexAdder} defining simple index adder without any postfixes.
+ *
+ * @author Nikita Krisonov
+ * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  */
 public class SimpleSolrIndexAdder implements IndexAdder {
 

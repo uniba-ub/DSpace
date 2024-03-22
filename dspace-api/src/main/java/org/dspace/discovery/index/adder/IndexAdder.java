@@ -11,6 +11,9 @@ import org.apache.solr.common.SolrInputDocument;
 
 /**
  * Interface for defining strategy of adding an index.
+ *
+ * @author Nikita Krisonov
+ * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  */
 public interface IndexAdder {
 
