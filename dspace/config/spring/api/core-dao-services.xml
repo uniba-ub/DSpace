@@ -87,5 +87,6 @@
 
     <bean class="org.dspace.supervision.dao.impl.SupervisionOrderDaoImpl"/>
 
+    <bean class="org.dspace.content.dao.impl.ItemForMetadataEnhancementUpdateDAOImpl"/>
 
 </beans>

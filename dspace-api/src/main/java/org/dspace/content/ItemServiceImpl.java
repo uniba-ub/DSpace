@@ -1844,7 +1844,7 @@ prevent the generation of resource policy entry values with null dspace_object a
     @Override
     public Iterator<Item> findByIds(Context context, List<String> ids) throws SQLException {
         return itemDAO.findByIds(context,
-                ids.stream().map(uuid -> UUID.fromString(uuid)).collect(Collectors.toList()));
+                ids.stream().map(uuid -> UUID.fromString(uuid)).distinct().collect(Collectors.toList()));
     }
 
     @Override
@@ -1979,7 +1979,9 @@ prevent the generation of resource policy entry values with null dspace_object a
             List<MetadataValue> dbMetadataValues = item.getMetadata();
 
             List<MetadataValue> fullMetadataValueList = new LinkedList<>();
-            fullMetadataValueList.addAll(relationshipMetadataService.getRelationshipMetadata(item, true));
+            if (configurationService.getBooleanProperty("item.enable-virtual-metadata", false)) {
+                fullMetadataValueList.addAll(relationshipMetadataService.getRelationshipMetadata(item, true));
+            }
             fullMetadataValueList.addAll(dbMetadataValues);
 
             item.setCachedMetadata(MetadataValueComparators.sort(fullMetadataValueList));

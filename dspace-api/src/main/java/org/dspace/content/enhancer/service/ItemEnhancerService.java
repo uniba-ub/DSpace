@@ -7,7 +7,11 @@
  */
 package org.dspace.content.enhancer.service;
 
+import java.sql.SQLException;
+import java.util.UUID;
+
 import org.dspace.content.Item;
+import org.dspace.content.dao.ItemForMetadataEnhancementUpdateDAO;
 import org.dspace.core.Context;
 
 /**
@@ -24,15 +28,26 @@ public interface ItemEnhancerService {
      *
      * @param context the DSpace Context
      * @param item    the item to enhance
+     * @param deepMode <code>false</code>, if the implementation can assume that only the target
+     *        item as been updated since the eventual previous computation of enhanced metadata
      */
-    void enhance(Context context, Item item);
+    void enhance(Context context, Item item, boolean deepMode);
 
     /**
-     * Remove all the already calculated virtual metadata fields from the given item
-     * and perform a new enhancement.
+     * Find items that could be affected by a change of the item with given uuid
+     * and save them to db for future processing
      *
      * @param context the DSpace Context
-     * @param item    the item to enhance
+     * @param uuid    UUID of the changed item
      */
-    void forceEnhancement(Context context, Item item);
+    void saveAffectedItemsForUpdate(Context context, UUID uuid) throws SQLException;
+
+    /**
+     * Extract the first uuid in the itemupdate_metadata_enhancement table, see
+     * {@link ItemForMetadataEnhancementUpdateDAO#pollItemToUpdate(Context)}
+     *
+     * @param context the DSpace Context
+     * @return UUID of the older item queued for update
+     */
+    UUID pollItemToUpdate(Context context);
 }
