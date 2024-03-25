@@ -110,13 +110,12 @@ public class ItemSimpleAuthorityMetadataGenerator implements ItemAuthorityExtraM
 
     protected void buildSingleExtraByMetadata(MetadataValueDTO metadataValue, Map<String, String> extras) {
         if (metadataValue == null) {
-            putValueInExtras(extras, "");
+            return;
+        }
+        if (StringUtils.isNotBlank(metadataValue.getAuthority())) {
+            putValueInExtras(extras, metadataValue.getValue() + "::" + metadataValue.getAuthority());
         } else {
-            if (StringUtils.isNotBlank(metadataValue.getAuthority())) {
-                putValueInExtras(extras, metadataValue.getValue() + "::" + metadataValue.getAuthority());
-            } else {
-                putValueInExtras(extras, metadataValue.getValue());
-            }
+            putValueInExtras(extras, metadataValue.getValue());
         }
     }
 
@@ -125,16 +124,27 @@ public class ItemSimpleAuthorityMetadataGenerator implements ItemAuthorityExtraM
         if (metadataValues.isEmpty()) {
             buildSingleExtraByMetadata(null, extras);
         } else {
-            buildSingleExtraByMetadata(metadataValues.get(0), extras);
+            metadataValues.forEach(metadataValue -> {
+                buildSingleExtraByMetadata(metadataValue, extras);
+            });
         }
     }
 
     private void putValueInExtras(Map<String, String> extras, String value) {
         if (useAsData) {
-            extras.put("data-" + keyId, value);
+            String key = "data-" + keyId;
+            if (extras.containsKey(key)) {
+                extras.put(key, extras.get(key) + "|||" + value);
+            } else {
+                extras.put(key, value);
+            }
         }
         if (useForDisplay) {
-            extras.put(keyId, value);
+            if (extras.containsKey(keyId)) {
+                extras.put(keyId, extras.get(keyId) + "|||" + value);
+            } else {
+                extras.put(keyId, value);
+            }
         }
     }
 
