@@ -67,6 +67,6 @@ public class VocabularyEntryDetailsParentLinkRepository extends AbstractDSpaceRe
             throw new NotFoundException();
         }
         return authorityUtils.convertEntryDetails(fix, choice, vocabularyName, authority.isHierarchical(),
-                utils.obtainProjection());
+                authority.storeAuthorityInMetadata(), utils.obtainProjection());
     }
 }

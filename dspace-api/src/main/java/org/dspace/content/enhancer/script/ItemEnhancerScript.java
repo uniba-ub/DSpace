@@ -91,10 +91,15 @@ public class ItemEnhancerScript extends DSpaceRunnable<ItemEnhancerScriptConfigu
     }
 
     private void enhanceItem(Item item) {
-        if (force) {
-            itemEnhancerService.forceEnhancement(context, item);
-        } else {
-            itemEnhancerService.enhance(context, item);
+        itemEnhancerService.enhance(context, item, force);
+        uncacheItem(item);
+    }
+
+    private void uncacheItem(Item item) {
+        try {
+            context.uncacheEntity(item);
+        } catch (SQLException e) {
+            throw new SQLRuntimeException(e);
         }
     }
 
