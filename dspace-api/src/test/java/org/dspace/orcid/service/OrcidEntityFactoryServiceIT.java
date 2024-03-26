@@ -75,6 +75,8 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
 
     private Collection publications;
 
+    private Collection products;
+
     private Collection fundings;
 
     @Before
@@ -101,6 +103,11 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
         publications = CollectionBuilder.createCollection(context, parentCommunity)
             .withName("Collection")
             .withEntityType("Publication")
+            .build();
+
+        products = CollectionBuilder.createCollection(context, parentCommunity)
+            .withName("Collection")
+            .withEntityType("Product")
             .build();
 
         fundings = CollectionBuilder.createCollection(context, parentCommunity)
@@ -175,6 +182,69 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
+    public void testProductWorkCreation() {
+
+        context.turnOffAuthorisationSystem();
+
+        Item author = ItemBuilder.createItem(context, persons)
+            .withTitle("Jesse Pinkman")
+            .withOrcidIdentifier("0000-1111-2222-3333")
+            .withPersonEmail("test@test.it")
+            .build();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test dataset")
+            .withAuthor("Walter White")
+            .withAuthor("Jesse Pinkman", author.getID().toString())
+            .withEditor("Editor")
+            .withIssueDate("2021-04-30")
+            .withDescriptionAbstract("Product description")
+            .withLanguage("en_US")
+            .withType("http://purl.org/coar/resource_type/c_ddb1")
+            .withIsPartOf("Collection of Products")
+            .withDoiIdentifier("doi-id")
+            .withScopusIdentifier("scopus-id")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+        assertThat(work.getJournalTitle(), notNullValue());
+        assertThat(work.getJournalTitle().getContent(), is("Collection of Products"));
+        assertThat(work.getLanguageCode(), is("en"));
+        assertThat(work.getPublicationDate(), matches(date("2021", "04", "30")));
+        assertThat(work.getShortDescription(), is("Product description"));
+        assertThat(work.getPutCode(), nullValue());
+        // assertThat(work.getWorkCitation(), notNullValue());
+        // assertThat(work.getWorkCitation().getCitation(), containsString("Test product"));
+        assertThat(work.getWorkType(), is(WorkType.DATA_SET));
+        assertThat(work.getWorkTitle(), notNullValue());
+        assertThat(work.getWorkTitle().getTitle(), notNullValue());
+        assertThat(work.getWorkTitle().getTitle().getContent(), is("Test dataset"));
+        assertThat(work.getWorkContributors(), notNullValue());
+        assertThat(work.getUrl(), matches(urlEndsWith(product.getHandle())));
+
+        List<Contributor> contributors = work.getWorkContributors().getContributor();
+        assertThat(contributors, hasSize(2));
+        assertThat(contributors, has(contributor("Walter White", AUTHOR, FIRST)));
+        // assertThat(contributors, has(contributor("Editor", EDITOR, FIRST)));
+        assertThat(contributors, has(contributor("Jesse Pinkman", AUTHOR, ADDITIONAL,
+            "0000-1111-2222-3333", "test@test.it")));
+
+        assertThat(work.getExternalIdentifiers(), notNullValue());
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(3));
+        assertThat(externalIds, has(selfExternalId("doi", "doi-id")));
+        assertThat(externalIds, has(selfExternalId("eid", "scopus-id")));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+
+    }
+
+    @Test
     public void testWorkWithFundingCreation() {
         context.turnOffAuthorisationSystem();
 
@@ -197,6 +267,32 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
         List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
         assertThat(externalIds, hasSize(2));
         assertThat(externalIds, has(selfExternalId("handle", publication.getHandle())));
+        assertThat(externalIds, has(fundedByExternalId("grant_number", "123456")));
+    }
+
+    @Test
+    public void testProductWorkWithFundingCreation() {
+        context.turnOffAuthorisationSystem();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test dataset")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/H6QP-SC1X")
+            .withRelationFunding("Test funding")
+            .withRelationGrantno("123456")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(2));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
         assertThat(externalIds, has(fundedByExternalId("grant_number", "123456")));
     }
 
@@ -225,6 +321,30 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
+    public void testProductWorkWithFundingWithoutGrantNumberCreation() {
+        context.turnOffAuthorisationSystem();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test product")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/c_e9a0")
+            .withRelationFunding("Test funding")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(1));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+    }
+
+    @Test
     public void testWorkWithFundingWithGrantNumberPlaceholderCreation() {
         context.turnOffAuthorisationSystem();
 
@@ -250,11 +370,36 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
+    public void testProductWorkWithFundingWithGrantNumberPlaceholderCreation() {
+        context.turnOffAuthorisationSystem();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test dataset")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/c_7ad9")
+            .withRelationFunding("Test funding")
+            .withRelationGrantno(CrisConstants.PLACEHOLDER_PARENT_METADATA_VALUE)
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(1));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+    }
+
+    @Test
     public void testWorkWithFundingEntityWithoutGrantNumberCreation() {
 
         context.turnOffAuthorisationSystem();
 
-        Item funding = ItemBuilder.createItem(context, publications)
+        Item funding = ItemBuilder.createItem(context, fundings)
             .withTitle("Test funding")
             .build();
 
@@ -281,11 +426,42 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
+    public void testProductWorkWithFundingEntityWithoutGrantNumberCreation() {
+
+        context.turnOffAuthorisationSystem();
+
+        Item funding = ItemBuilder.createItem(context, fundings)
+            .withTitle("Test funding")
+            .build();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test product")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/c_7ad9")
+            .withRelationFunding("Test funding", funding.getID().toString())
+            .withRelationGrantno("123456")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(2));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+        assertThat(externalIds, has(fundedByExternalId("grant_number", "123456")));
+    }
+
+    @Test
     public void testWorkWithFundingEntityWithGrantNumberCreation() {
 
         context.turnOffAuthorisationSystem();
 
-        Item funding = ItemBuilder.createItem(context, publications)
+        Item funding = ItemBuilder.createItem(context, fundings)
             .withHandle("123456789/0001")
             .withTitle("Test funding")
             .withFundingIdentifier("987654")
@@ -315,11 +491,46 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
+    public void testProductWorkWithFundingEntityWithGrantNumberCreation() {
+
+        context.turnOffAuthorisationSystem();
+
+        Item funding = ItemBuilder.createItem(context, fundings)
+            .withHandle("123456789/0001")
+            .withTitle("Test funding")
+            .withFundingIdentifier("987654")
+            .build();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test product")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/c_18cc")
+            .withRelationFunding("Test funding", funding.getID().toString())
+            .withRelationGrantno("123456")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(2));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+        assertThat(externalIds, has(fundedByExternalId("grant_number", "987654",
+            "http://localhost:4000/handle/123456789/0001")));
+    }
+
+
+    @Test
     public void testWorkWithFundingEntityWithGrantNumberAndUrlCreation() {
 
         context.turnOffAuthorisationSystem();
 
-        Item funding = ItemBuilder.createItem(context, publications)
+        Item funding = ItemBuilder.createItem(context, fundings)
             .withHandle("123456789/0001")
             .withTitle("Test funding")
             .withFundingIdentifier("987654")
@@ -345,6 +556,40 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
         List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
         assertThat(externalIds, hasSize(2));
         assertThat(externalIds, has(selfExternalId("handle", publication.getHandle())));
+        assertThat(externalIds, has(fundedByExternalId("grant_number", "987654", "http://test-funding")));
+    }
+
+    @Test
+    public void testProductWorkWithFundingEntityWithGrantNumberAndUrlCreation() {
+
+        context.turnOffAuthorisationSystem();
+
+        Item funding = ItemBuilder.createItem(context, fundings)
+            .withHandle("123456789/0001")
+            .withTitle("Test funding")
+            .withFundingIdentifier("987654")
+            .withFundingAwardUrl("http://test-funding")
+            .build();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withTitle("Test product")
+            .withAuthor("Walter White")
+            .withIssueDate("2021-04-30")
+            .withType("http://purl.org/coar/resource_type/c_18cc")
+            .withRelationFunding("Test funding", funding.getID().toString())
+            .withRelationGrantno("123456")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(2));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
         assertThat(externalIds, has(fundedByExternalId("grant_number", "987654", "http://test-funding")));
     }
 
@@ -379,6 +624,39 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
         assertThat(externalIds, hasSize(1));
         assertThat(externalIds, has(selfExternalId("handle", publication.getHandle())));
     }
+
+    @Test
+    public void testEmptyProductWorkWithUnknownTypeCreation() {
+
+        context.turnOffAuthorisationSystem();
+
+        Item product = ItemBuilder.createItem(context, products)
+            .withType("http://purl.org/coar/resource_type/")
+            .build();
+
+        context.restoreAuthSystemState();
+
+        Activity activity = entityFactoryService.createOrcidObject(context, product);
+        assertThat(activity, instanceOf(Work.class));
+
+        Work work = (Work) activity;
+        assertThat(work.getJournalTitle(), nullValue());
+        assertThat(work.getLanguageCode(), nullValue());
+        assertThat(work.getPublicationDate(), nullValue());
+        assertThat(work.getShortDescription(), nullValue());
+        assertThat(work.getPutCode(), nullValue());
+        // assertThat(work.getWorkCitation(), notNullValue());
+        assertThat(work.getWorkType(), is(WorkType.DATA_SET));
+        assertThat(work.getWorkTitle(), nullValue());
+        assertThat(work.getWorkContributors(), notNullValue());
+        assertThat(work.getWorkContributors().getContributor(), empty());
+        assertThat(work.getExternalIdentifiers(), notNullValue());
+
+        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
+        assertThat(externalIds, hasSize(1));
+        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
+    }
+
 
     @Test
     public void testFundingCreation() {
