@@ -99,7 +99,6 @@ public class ItemSimpleAuthorityMetadataGenerator implements ItemAuthorityExtraM
                     }
                 } else {
                     Map<String, String> extras = new HashMap<String, String>();
-                    putValueInExtras(extras, "");
                     choiceList.add(new Choice((String) document.getFieldValue("search.resourceid"),
                             title, title, extras));
                 }
