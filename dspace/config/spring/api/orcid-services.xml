@@ -135,7 +135,7 @@
 			</util:map>
 		</property>
 	</bean>
-	
+
 	<bean id="orcidFundingFactoryFieldMapping" class="org.dspace.orcid.model.OrcidFundingFieldMapping" >
 		<property name="contributorFields" value="${orcid.mapping.funding.contributors}" />
 		<property name="externalIdentifierFields" value="${orcid.mapping.funding.external-ids}" />
