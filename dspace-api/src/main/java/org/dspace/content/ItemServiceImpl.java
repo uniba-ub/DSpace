@@ -216,6 +216,31 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         if (thumbnail != null) {
             return thumbnail;
         }
+        // If no thumbnail is retrieved by the first strategy
+        // then use the fallback strategy
+        Bitstream thumbBitstream = null;
+        List<Bundle> originalBundles = getBundles(item, "ORIGINAL");
+        Bitstream primaryBitstream = null;
+        if (CollectionUtils.isNotEmpty(originalBundles)) {
+            primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
+        }
+        if (primaryBitstream == null) {
+            primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
+        }
+        if (primaryBitstream != null) {
+            thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
+            if (thumbBitstream == null) {
+                thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
+                if (!bitstreamService.isValidThumbnail(context, thumbBitstream)) {
+                    thumbBitstream = null;
+                }
+            }
+        }
+
+        if (thumbBitstream != null) {
+            return new Thumbnail(thumbBitstream, primaryBitstream);
+        }
+
         return null;
     }
 
@@ -230,27 +255,7 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
         List<CrisLayoutField> thumbFields = getThumbnailFields(crisLayoutTabs);
         if (CollectionUtils.isEmpty(thumbFields)) {
-            // If no thumbnail is retrieved by the first strategy
-            // then use the fallback strategy
-            Bitstream thumbBitstream = null;
-            List<Bundle> originalBundles = getBundles(item, "ORIGINAL");
-            Bitstream primaryBitstream = null;
-            if (CollectionUtils.isNotEmpty(originalBundles)) {
-                primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
-            }
-            if (primaryBitstream == null) {
-                primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
-            }
-            if (primaryBitstream != null) {
-                thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
-                if (thumbBitstream == null) {
-                    thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
-                }
-            }
-
-            if (thumbBitstream != null) {
-                return new Thumbnail(thumbBitstream, primaryBitstream);
-            }
+            return null;
         }
         return retrieveThumbnailFromFields(context, item, thumbFields);
     }
