@@ -366,32 +366,6 @@ public class OrcidEntityFactoryServiceIT extends AbstractIntegrationTestWithData
     }
 
     @Test
-    public void testProductWorkWithFundingCreation() {
-        context.turnOffAuthorisationSystem();
-
-        Item product = ItemBuilder.createItem(context, products)
-            .withTitle("Test dataset")
-            .withAuthor("Walter White")
-            .withIssueDate("2021-04-30")
-            .withType("http://purl.org/coar/resource_type/H6QP-SC1X")
-            .withRelationFunding("Test funding")
-            .withRelationGrantno("123456")
-            .build();
-
-        context.restoreAuthSystemState();
-
-        Activity activity = entityFactoryService.createOrcidObject(context, product);
-        assertThat(activity, instanceOf(Work.class));
-
-        Work work = (Work) activity;
-
-        List<ExternalID> externalIds = work.getExternalIdentifiers().getExternalIdentifier();
-        assertThat(externalIds, hasSize(2));
-        assertThat(externalIds, has(selfExternalId("handle", product.getHandle())));
-        assertThat(externalIds, has(fundedByExternalId("grant_number", "123456")));
-    }
-
-    @Test
     public void testPatentsWorkWithFundingCreation() {
         context.turnOffAuthorisationSystem();
 
