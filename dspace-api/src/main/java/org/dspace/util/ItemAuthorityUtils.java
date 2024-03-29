@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.dspace.content.authority.Choice;
@@ -36,9 +37,10 @@ public class ItemAuthorityUtils {
                 extras.putAll(extrasTmp);
             }
         }
-        if (objectNames.size() > 1) {
+        Set<String> alternativeNames = Set.copyOf(objectNames);
+        if (alternativeNames.size() > 1) {
             String alternativeNameKey = "alternative-names";
-            objectNames.forEach(alternativeName -> {
+            alternativeNames.forEach(alternativeName -> {
                 String alternative = alternativeName + "::" + uuid;
                 if (extras.containsKey(alternativeNameKey)) {
                     extras.put(alternativeNameKey, extras.get(alternativeNameKey) + "|||" + alternative);

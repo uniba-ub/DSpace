@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -111,11 +112,37 @@ public class ItemSimpleAuthorityMetadataGenerator implements ItemAuthorityExtraM
         if (metadataValue == null) {
             return;
         }
+        if (isDuplicatedValue(metadataValue, extras)) {
+            return;
+        }
         if (StringUtils.isNotBlank(metadataValue.getAuthority())) {
             putValueInExtras(extras, metadataValue.getValue() + "::" + metadataValue.getAuthority());
         } else {
             putValueInExtras(extras, metadataValue.getValue());
         }
+    }
+
+    private boolean isDuplicatedValue(MetadataValueDTO metadataValue, Map<String, String> extras) {
+        String key = keyId;
+        if (useAsData) {
+            key = "data-" + keyId;
+        }
+        String values = extras.get(key);
+        if (values == null) {
+            return false;
+        }
+
+        String valueToFind = StringUtils.isNotBlank(metadataValue.getAuthority())
+            ? metadataValue.getValue() + "::" + metadataValue.getAuthority()
+            : metadataValue.getValue();
+
+        if (values.contains("|||")) {
+            // so it's multivalues
+            String splittedVals[] = values.split(Pattern.quote("|||"));
+            return ArrayUtils.contains(splittedVals, valueToFind);
+        }
+        return values.equals(valueToFind);
+
     }
 
     protected void buildSingleExtraByRP(SolrDocument solrDocument, Map<String, String> extras) {
