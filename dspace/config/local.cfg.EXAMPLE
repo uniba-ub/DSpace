@@ -334,3 +334,13 @@ iiif.enabled = false
 # iiif.search.url = ${solr.server}/${solr.multicorePrefix}ocr
 # iiif.search.plugin = org.dspace.app.iiif.service.WordHighlightSolrSearch
 # ocr.tesseract.path =
+
+### LOGIN MIUR configuration ###
+
+### ANCE SEARCH JOURNALS ENDPOINT
+#ance.webservice.search.endpoint = https://webservice.cineca.it/ance-ws/services/riviste
+
+### ANCE REQUEST JOURNALS ENDPOINT
+#ance.webservice.addjournal.endpoint = https://webservice.cineca.it/pubblicazioni
+
+
