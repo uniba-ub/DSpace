@@ -336,7 +336,7 @@ iiif.enabled = false
 # ocr.tesseract.path =
 ########################################################
 
-dspace.task.executor = orchestratorTaskExecutor
+dspace.task.executor = dspaceRunnableThreadExecutor
 
 #######################################
 # ******* ORCHESTRATOR CONFIG ******* #
