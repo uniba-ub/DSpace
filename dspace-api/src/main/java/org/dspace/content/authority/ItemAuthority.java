@@ -174,6 +174,11 @@ public class ItemAuthority implements ChoiceAuthority, LinkableEntityAuthority {
                             objectNames = (ArrayList<String>) fieldValue;
                             title = objectNames.get(0);
                         }
+                    } else {
+                        title = ((ArrayList<String>) doc.getFieldValue("dc.title"))
+                            .stream()
+                            .findFirst()
+                            .orElse(searchTitle);
                     }
                 }
                 String uuid = (String) doc.getFieldValue("search.resourceid");

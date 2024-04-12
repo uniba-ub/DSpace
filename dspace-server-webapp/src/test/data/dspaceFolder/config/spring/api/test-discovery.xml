@@ -4342,28 +4342,6 @@
         <property name="isOpenByDefault" value="false"/>
         <property name="pageSize" value="10"/>
     </bean>
-		
-	<bean id="searchFilterObjectName"
-		class="org.dspace.discovery.configuration.DiscoverySearchFilterFacet">
-		<property name="indexFieldName" value="objectname" />
-		<property name="metadataFields">
-			<list>
-				<value>dc.title</value>
-				<value>crisrp.fullName</value>
-				<value>crisrp.name</value>
-				<value>crisrp.name.variant</value>
-				<value>crisproject.title</value>
-				<value>crisou.name</value>
-				<value>unibe.document.title</value>
-				<value>crisdo.name</value>
-				<value>crisfunding.fundingname</value>
-			</list>
-		</property>
-        <property name="isOpenByDefault" value="true"/>
-        <property name="sortOrderSidebar" value="COUNT"/>
-        <property name="sortOrderFilterPage" value="COUNT"/>
-        <property name="pageSize" value="10"/>
-	</bean>
 
     <bean id="searchFilterIsPublicationOfJournalIssue" class="org.dspace.discovery.configuration.DiscoverySearchFilter">
         <property name="indexFieldName" value="isPublicationOfJournalIssue"/>
