@@ -41,6 +41,7 @@ import org.dspace.layout.dao.CrisLayoutBoxDAO;
 import org.dspace.layout.service.CrisLayoutBoxAccessService;
 import org.dspace.layout.service.CrisLayoutBoxService;
 import org.dspace.metrics.CrisItemMetricsService;
+import org.dspace.versioning.service.VersionHistoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -70,6 +71,9 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
 
     @Autowired
     private BitstreamService bitstreamService;
+
+    @Autowired
+    private VersionHistoryService versionHistoryService;
 
     public CrisLayoutBoxServiceImpl() {
     }
@@ -164,6 +168,8 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
                 return isOwningCollectionPresent(item);
             case "IIIFVIEWER":
                 return isIiifEnabled(item);
+            case "VERSIONING":
+                return hasVersioningBox(context, item);
             case "METADATA":
             default:
                 return hasMetadataBoxContent(context, box, item);
@@ -171,6 +177,13 @@ public class CrisLayoutBoxServiceImpl implements CrisLayoutBoxService {
 
     }
 
+    private boolean hasVersioningBox(Context context, Item item) {
+        try {
+            return versionHistoryService.hasVersionHistory(context, item);
+        } catch (SQLException e) {
+            return false;
+        }
+    }
     @Override
     public boolean hasAccess(Context context, CrisLayoutBox box, Item item) {
         return crisLayoutBoxAccessService.hasAccess(context, context.getCurrentUser(), box, item);
