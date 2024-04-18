@@ -50,6 +50,7 @@ import org.dspace.builder.BundleBuilder;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
 import org.dspace.builder.EPersonBuilder;
+import org.dspace.builder.GroupBuilder;
 import org.dspace.builder.ItemBuilder;
 import org.dspace.builder.VersionBuilder;
 import org.dspace.builder.WorkflowItemBuilder;
@@ -63,6 +64,7 @@ import org.dspace.content.service.InstallItemService;
 import org.dspace.content.service.ItemService;
 import org.dspace.content.service.WorkspaceItemService;
 import org.dspace.eperson.EPerson;
+import org.dspace.eperson.Group;
 import org.dspace.services.ConfigurationService;
 import org.dspace.versioning.Version;
 import org.dspace.versioning.service.VersioningService;
@@ -396,6 +398,56 @@ public class VersionRestRepositoryIT extends AbstractControllerIntegrationTest {
                                .contentType(MediaType.parseMediaType(RestMediaTypes.TEXT_URI_LIST_VALUE))
                                .content("/api/core/items/" + item.getID()))
                                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void createFirstVersionItemWithUserInAllowedGroupsTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        configurationService.setProperty("versioning.allowed.groups", "GROUP_A");
+
+        EPerson eperson = EPersonBuilder.createEPerson(context)
+                .withEmail("testtest@mail.com")
+                .withPassword(password)
+                .withCanLogin(true)
+                .build();
+
+        Group groupA = GroupBuilder.createGroup(context)
+                .withName("GROUP_A")
+                .addMember(eperson)
+                .build();
+
+        Community child1 = CommunityBuilder.createSubCommunity(context, parentCommunity)
+                .withName("Sub Community")
+                .build();
+
+        Collection col1 = CollectionBuilder.createCollection(context, child1)
+                .withName("Collection 1")
+                .withEntityType("Product")
+                .withSubmitterGroup(groupA.getMembers().toArray(new EPerson[0]))
+                .build();
+
+        item = ItemBuilder.createItem(context, col1)
+                .withTitle("Public item 1")
+                .withIssueDate("2017-10-17")
+                .withAuthor("Smith, Donald").withAuthor("Doe, John")
+                .withSubject("ExtraEntry")
+                .build();
+
+        // install the last version item to can create new version
+        installItemService.installItem(context, workspaceItemService.findByItem(context, version.getItem()));
+
+        context.restoreAuthSystemState();
+
+        // test with not the submitter but user in the allowed groups
+        String epersonToken = getAuthToken(eperson.getEmail(), password);
+        getClient(epersonToken).perform(post("/api/versioning/versions")
+                               .param("summary", "test summary!")
+                               .contentType(MediaType.parseMediaType(RestMediaTypes.TEXT_URI_LIST_VALUE))
+                               .content("/api/core/items/" + item.getID()))
+                               .andExpect(status().isCreated());
+
+        configurationService.setProperty("versioning.allowed.groups", "");
     }
 
     @Test
