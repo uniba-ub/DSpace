@@ -328,8 +328,8 @@
            </activation>
            <dependencies>
                <dependency>
-                   <groupId>it.4science</groupId>
-                   <artifactId>dspace-networklab</artifactId>
+                   <groupId>it.4science.dspace</groupId>
+                   <artifactId>addon-networklab</artifactId>
                    <version>${addon-networklab.version}</version>
                    <type>jar</type>
                </dependency>
