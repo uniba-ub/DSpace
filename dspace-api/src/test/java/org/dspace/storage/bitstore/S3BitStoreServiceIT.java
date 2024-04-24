@@ -88,6 +88,7 @@ public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
         amazonS3Client = createAmazonS3Client();
 
         s3BitStoreService = new S3BitStoreService(amazonS3Client);
+        s3BitStoreService.setEnabled(true);
 
         context.turnOffAuthorisationSystem();
 
@@ -104,6 +105,15 @@ public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
     public void cleanUp() throws IOException {
         FileUtils.deleteDirectory(s3Directory);
         s3Mock.shutdown();
+    }
+
+    @Test
+    public void testBitstreamServiceNotInitializedWhenDisabled() throws IOException {
+        this.s3BitStoreService.setEnabled(false);
+
+        this.s3BitStoreService.init();
+
+        assertThat(this.s3BitStoreService.initialized, is(false));
     }
 
     @Test
