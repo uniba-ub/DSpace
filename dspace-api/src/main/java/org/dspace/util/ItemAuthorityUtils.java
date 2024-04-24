@@ -11,6 +11,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.solr.common.SolrDocument;
 import org.dspace.content.authority.Choice;
@@ -25,7 +26,8 @@ public class ItemAuthorityUtils {
     private static DSpace dspace = new DSpace();
     private ItemAuthorityUtils() {}
 
-    public static Map<String, String> buildExtra(String authorityName, SolrDocument item) {
+    public static Map<String, String> buildExtra(String authorityName, SolrDocument item,
+        List<String> objectNames, String uuid) {
         Map<String, String> extras = new HashMap<String, String>();
         List<ItemAuthorityExtraMetadataGenerator> generators = dspace.getServiceManager()
                 .getServicesByType(ItemAuthorityExtraMetadataGenerator.class);
@@ -34,6 +36,18 @@ public class ItemAuthorityUtils {
                 Map<String, String> extrasTmp = gg.build(authorityName, item);
                 extras.putAll(extrasTmp);
             }
+        }
+        Set<String> alternativeNames = Set.copyOf(objectNames);
+        if (alternativeNames.size() > 1) {
+            String alternativeNameKey = "alternative-names";
+            alternativeNames.forEach(alternativeName -> {
+                String alternative = alternativeName + "::" + uuid;
+                if (extras.containsKey(alternativeNameKey)) {
+                    extras.put(alternativeNameKey, extras.get(alternativeNameKey) + "|||" + alternative);
+                } else {
+                    extras.put(alternativeNameKey, alternative);
+                }
+            });
         }
         return extras;
     }
