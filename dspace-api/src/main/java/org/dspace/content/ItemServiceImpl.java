@@ -216,28 +216,6 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         if (thumbnail != null) {
             return thumbnail;
         }
-        // If no thumbnail is retrieved by the first strategy
-        // then use the fallback strategy
-        Bitstream thumbBitstream = null;
-        List<Bundle> originalBundles = getBundles(item, "ORIGINAL");
-        Bitstream primaryBitstream = null;
-        if (CollectionUtils.isNotEmpty(originalBundles)) {
-            primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
-        }
-        if (primaryBitstream == null) {
-            primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
-        }
-        if (primaryBitstream != null) {
-            thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
-            if (thumbBitstream == null) {
-                thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
-            }
-        }
-
-        if (thumbBitstream != null) {
-            return new Thumbnail(thumbBitstream, primaryBitstream);
-        }
-
         return null;
     }
 
@@ -252,7 +230,27 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
         List<CrisLayoutField> thumbFields = getThumbnailFields(crisLayoutTabs);
         if (CollectionUtils.isEmpty(thumbFields)) {
-            return null;
+            // If no thumbnail is retrieved by the first strategy
+            // then use the fallback strategy
+            Bitstream thumbBitstream = null;
+            List<Bundle> originalBundles = getBundles(item, "ORIGINAL");
+            Bitstream primaryBitstream = null;
+            if (CollectionUtils.isNotEmpty(originalBundles)) {
+                primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
+            }
+            if (primaryBitstream == null) {
+                primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
+            }
+            if (primaryBitstream != null) {
+                thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
+                if (thumbBitstream == null) {
+                    thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
+                }
+            }
+
+            if (thumbBitstream != null) {
+                return new Thumbnail(thumbBitstream, primaryBitstream);
+            }
         }
         return retrieveThumbnailFromFields(context, item, thumbFields);
     }
@@ -312,9 +310,13 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
         if (CollectionUtils.isNotEmpty(bundles)) {
             Optional<Bitstream> primaryBitstream = bundles.get(0).getBitstreams().stream().filter(bitstream -> {
                 return bitstream.getMetadata().stream().anyMatch(metadataValue -> {
-                    return metadataValue.getMetadataField().getID() == metadataField.getID()
-                        && metadataValue.getValue() != null
-                        && metadataValue.getValue().equalsIgnoreCase(value);
+                    if (metadataField != null) {
+                        return metadataValue.getMetadataField().getID() == metadataField.getID()
+                            && metadataValue.getValue() != null
+                            && metadataValue.getValue().equalsIgnoreCase(value);
+                    } else {
+                        return true;
+                    }
                 });
             }).findFirst();
             if (primaryBitstream.isEmpty()) {
@@ -1922,17 +1924,37 @@ prevent the generation of resource policy entry values with null dspace_object a
 
     @Override
     public boolean canCreateNewVersion(Context context, Item item) throws SQLException {
+        boolean userAuthorized = false;
         if (authorizeService.isAdmin(context, item)) {
-            return true;
+            userAuthorized = true;
         }
 
         if (context.getCurrentUser() != null
-                && context.getCurrentUser().equals(item.getSubmitter())) {
-            return configurationService.getPropertyAsType(
-                    "versioning.submitterCanCreateNewVersion", false);
+            && context.getCurrentUser().equals(item.getSubmitter())) {
+            userAuthorized = configurationService.getPropertyAsType(
+                "versioning.submitterCanCreateNewVersion", false);
         }
 
-        return false;
+        if (!userAuthorized) {
+            List<String> allowedGroups = List
+                    .of(configurationService.getArrayProperty("versioning.allowed.groups"));
+            userAuthorized = allowedGroups.stream().anyMatch(groupName -> {
+                try {
+                    return groupService.isMember(context, groupName);
+                } catch (SQLException e) {
+                    return false;
+                }
+            });
+        }
+
+        if (userAuthorized) {
+            List<String> allowedEntities = List
+                .of(configurationService.getArrayProperty("versioning.enabled.entities"));
+            String entityType = getEntityType(item);
+            return entityType != null && allowedEntities.contains(entityType);
+        }
+
+        return userAuthorized;
     }
 
     /**
@@ -1979,7 +2001,9 @@ prevent the generation of resource policy entry values with null dspace_object a
             List<MetadataValue> dbMetadataValues = item.getMetadata();
 
             List<MetadataValue> fullMetadataValueList = new LinkedList<>();
-            fullMetadataValueList.addAll(relationshipMetadataService.getRelationshipMetadata(item, true));
+            if (configurationService.getBooleanProperty("item.enable-virtual-metadata", false)) {
+                fullMetadataValueList.addAll(relationshipMetadataService.getRelationshipMetadata(item, true));
+            }
             fullMetadataValueList.addAll(dbMetadataValues);
 
             item.setCachedMetadata(MetadataValueComparators.sort(fullMetadataValueList));
