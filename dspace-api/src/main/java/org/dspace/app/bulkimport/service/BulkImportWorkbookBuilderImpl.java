@@ -7,6 +7,7 @@
  */
 package org.dspace.app.bulkimport.service;
 
+import static com.google.common.collect.Iterators.filter;
 import static com.google.common.collect.Iterators.transform;
 import static org.dspace.app.bulkedit.BulkImport.ACCESS_CONDITION_HEADER;
 import static org.dspace.app.bulkedit.BulkImport.ADDITIONAL_ACCESS_CONDITION_HEADER;
@@ -27,6 +28,7 @@ import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.logging.Level;
@@ -108,14 +110,22 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
 
     @Override
     public <T> Workbook build(Context ctx, Collection collection, Iterator<T> sources, ItemDTOConverter<T> converter) {
-        Iterator<ItemDTO> itemIterator = transform(sources, source -> converter.convert(ctx, source));
+        Iterator<ItemDTO> itemIterator =
+            filter(
+                transform(sources, source -> converter.convert(ctx, source)),
+                Objects::nonNull
+            );
         return build(ctx, collection, itemIterator);
     }
 
     @Override
     public Workbook buildForItems(Context context, Collection collection, Iterator<Item> items,
                                   BiConsumer<Level, String> logHandler) {
-        Iterator<ItemDTO> itemIterator = transform(items, item -> convertItem(context, collection, item, logHandler));
+        Iterator<ItemDTO> itemIterator =
+            filter(
+                transform(items, item -> convertItem(context, collection, item, logHandler)),
+                Objects::nonNull
+            );
         return build(context, collection, itemIterator);
     }
 
@@ -452,7 +462,7 @@ public class BulkImportWorkbookBuilderImpl implements BulkImportWorkbookBuilder 
             Context context, Collection collection, Item item, BiConsumer<Level, String> logHandler) {
         if (isNotInCollection(context, item, collection)) {
             logHandler.accept(Level.WARNING, "Skipping item " + item.getID() +
-                    " because it is mapped from collection " + collection.getID());
+                    " because it is not mapped from collection " + collection.getID());
             return null;
         }
 

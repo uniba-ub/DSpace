@@ -143,7 +143,7 @@ public class XlsCollectionCrosswalk implements ItemExportCrosswalk {
     }
 
 
-    public void logMessage(Level level, String message) {
+    protected void logMessage(Level level, String message) {
 
         if (handler != null) {
             switch (level.getName()) {
