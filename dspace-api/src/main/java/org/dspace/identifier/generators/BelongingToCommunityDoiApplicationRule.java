@@ -25,22 +25,19 @@ import org.slf4j.LoggerFactory;
  *
  * @author Stefano Maffei (steph-ieffam @ 4Science.com)
  */
-
-public class BelongingToCommunityDoiApplicationRule implements DoiApplicationRule {
+public class BelongingToCommunityDoiApplicationRule extends BelongingToCollectionDoiApplicationRule {
 
     private static final Logger log = LoggerFactory.getLogger(BelongingToCommunityDoiApplicationRule.class);
 
-    private final Set<String> handles;
-
     BelongingToCommunityDoiApplicationRule(Set<String> handles) {
-        this.handles = handles;
+        super(handles);
     }
 
     @Override
     public boolean getApplicable(Context context, Item item) {
 
         try {
-            Collection owningCollection = item.getOwningCollection();
+            Collection owningCollection = getOwningCollection(context, item);
 
             if (null == owningCollection) {
                 return false;

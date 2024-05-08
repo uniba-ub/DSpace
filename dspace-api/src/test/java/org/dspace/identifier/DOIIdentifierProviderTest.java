@@ -356,6 +356,81 @@ public class DOIIdentifierProviderTest
     }
 
     @Test
+    public void testGet_DOI_Belongs_To_Thesis() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        community = communityService.create(null, context, "123456789/9");
+        communityService.setMetadataSingleValue(context, community,
+            CommunityService.MD_NAME, null, "A Test Community");
+        communityService.update(context, community);
+
+        collection = collectionService.create(context, community);
+        collectionService.setMetadataSingleValue(context, collection,
+            CollectionService.MD_NAME, null, "A Test Collection");
+        collectionService.update(context, collection);
+
+        context.restoreAuthSystemState();
+
+        Item item = newItem();
+        String doi = DOI.SCHEME + PREFIX + "/" + "units/custom/" +
+            Long.toHexString(new Date().getTime());
+
+        context.turnOffAuthorisationSystem();
+        itemService.addMetadata(context, item, provider.MD_SCHEMA,
+            provider.DOI_ELEMENT,
+            provider.DOI_QUALIFIER,
+            null,
+            doiService.DOIToExternalForm(doi));
+        itemService.update(context, item);
+        context.restoreAuthSystemState();
+
+        assertEquals("Failed to recognize DOI in item metadata.",
+            doi, provider.getDOIOutOfObject(context, item));
+    }
+
+    @Test
+    public void testGet_DOI_Belongs_To_EUT() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        community = communityService.create(null, context, "123456789/7520");
+        communityService.setMetadataSingleValue(context, community,
+            CommunityService.MD_NAME, null, "A Test Community");
+        communityService.update(context, community);
+
+        collection = collectionService.create(context, community);
+        collectionService.setMetadataSingleValue(context, collection,
+            CollectionService.MD_NAME, null, "A Test Collection");
+        collectionService.update(context, collection);
+
+        context.restoreAuthSystemState();
+
+        Item item = newItem();
+
+        context.turnOffAuthorisationSystem();
+        itemService.addMetadata(context, item, "dc", "identifier", "issn", null, "test-identifier");
+        itemService.update(context, item);
+        context.restoreAuthSystemState();
+
+        String doi = DOI.SCHEME + PREFIX + "/" +
+            itemService.getMetadata(item, "dc.identifier.issn") + "/" +
+            Long.toHexString(new Date().getTime());
+
+        context.turnOffAuthorisationSystem();
+
+        itemService.addMetadata(context, item, provider.MD_SCHEMA,
+            provider.DOI_ELEMENT,
+            provider.DOI_QUALIFIER,
+            null,
+            doiService.DOIToExternalForm(doi));
+        itemService.update(context, item);
+
+        context.restoreAuthSystemState();
+
+        assertEquals("Failed to recognize DOI in item metadata.",
+            doi, provider.getDOIOutOfObject(context, item));
+    }
+
+    @Test
     public void testRemove_DOI_from_item_metadata()
         throws SQLException, AuthorizeException, IOException, IdentifierException, WorkflowException,
         IllegalAccessException {

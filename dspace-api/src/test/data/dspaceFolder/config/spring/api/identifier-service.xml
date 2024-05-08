@@ -67,7 +67,7 @@
     <bean id="belongsToEUT" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
         <constructor-arg name="handles">
             <set>
-                <value>10077/7520</value>
+                <value>123456789/7520</value>
             </set>
         </constructor-arg>
     </bean>
@@ -75,7 +75,7 @@
     <bean id="belongsToThesis" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
         <constructor-arg name="handles">
             <set>
-                <value>10077/9</value>
+                <value>123456789/9</value>
             </set>
         </constructor-arg>
     </bean>
@@ -86,7 +86,7 @@
     </bean>
     
     <bean id="thesisCustomNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
-    	<property name="configurationValue" value="units/openstarts/" />
+    	<property name="configurationValue" value="units/custom/" />
     </bean>
     
     <bean id="eutCustomNamespace" class="org.dspace.identifier.generators.MetadataValueNamespaceGenerator">
