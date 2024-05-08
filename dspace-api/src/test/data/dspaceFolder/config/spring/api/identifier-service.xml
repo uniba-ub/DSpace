@@ -88,10 +88,17 @@
     <bean id="thesisCustomNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
     	<property name="configurationValue" value="units/custom/" />
     </bean>
-    
+
     <bean id="eutCustomNamespace" class="org.dspace.identifier.generators.MetadataValueNamespaceGenerator">
-    	<property name="metadataField" value="dc.identifier.issn" />
-    	<property name="postValue" value="/" />
+        <constructor-arg name="metadataField">
+            <set>
+                <value>dc.identifier.issn</value>
+                <value>dc.identifier.eissn</value>
+                <value>dc.identifier.isbn</value>
+                <value>dc.identifier.eisbn</value>
+            </set>
+        </constructor-arg>
+        <constructor-arg name="postValue" value="/" />
     </bean>
     
     
