@@ -73,6 +73,8 @@ public class DOIIdentifierProviderTest
     private static final String PREFIX = "10.5072";
     private static final String NAMESPACE_SEPARATOR = "dspaceUnitTests-";
 
+    private static final String CFG_NAMESPACE_SEPARATOR = "identifier.doi.namespaceseparator";
+
     private static ConfigurationService config = null;
 
     protected DOIService doiService = IdentifierServiceFactory.getInstance().getDOIService();
@@ -120,7 +122,7 @@ public class DOIIdentifierProviderTest
             config = DSpaceServicesFactory.getInstance().getConfigurationService();
             // Configure the service under test.
             config.setProperty(DOIIdentifierProvider.CFG_PREFIX, PREFIX);
-            config.setProperty(DOIIdentifierProvider.CFG_NAMESPACE_SEPARATOR,
+            config.setProperty(CFG_NAMESPACE_SEPARATOR,
                                NAMESPACE_SEPARATOR);
 
             connector = mock(DOIConnector.class);
@@ -346,7 +348,7 @@ public class DOIIdentifierProviderTest
         context.restoreAuthSystemState();
 
         assertEquals("Failed to recognize DOI in item metadata.",
-                doi, provider.getDOIOutOfObject(item));
+                doi, provider.getDOIOutOfObject(context, item));
     }
 
     @Test

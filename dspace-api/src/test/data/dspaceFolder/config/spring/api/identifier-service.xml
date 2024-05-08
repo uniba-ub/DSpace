@@ -60,4 +60,59 @@
           </map>
       </property>
     </bean>
+    
+    <!-- Application rules -->
+    <bean id="configuredTrue" class="org.dspace.identifier.generators.FixedValueDoiApplicationRule" />
+    
+    <bean id="belongsToEUT" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
+        <constructor-arg name="handles">
+            <set>
+                <value>10077/7520</value>
+            </set>
+        </constructor-arg>
+    </bean>
+    
+    <bean id="belongsToThesis" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
+        <constructor-arg name="handles">
+            <set>
+                <value>10077/9</value>
+            </set>
+        </constructor-arg>
+    </bean>
+    
+    <!-- Namespace definition -->
+    <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
+    	<property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
+    </bean>
+    
+    <bean id="thesisCustomNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
+    	<property name="configurationValue" value="units/openstarts/" />
+    </bean>
+    
+    <bean id="eutCustomNamespace" class="org.dspace.identifier.generators.MetadataValueNamespaceGenerator">
+    	<property name="metadataField" value="dc.identifier.issn" />
+    	<property name="postValue" value="/" />
+    </bean>
+    
+    
+    <!-- Below there are defined the generation strategy -->  
+    <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+    	<property name="doiApplicationRule" ref="configuredTrue" />
+    	<property name="doiNamespaceGenerator" ref="defaultValueNamespace" />
+    	<property name="generationType" value="DEFAULT" />
+    </bean>
+    
+    <bean id="thesisDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+    	<property name="doiApplicationRule" ref="belongsToThesis" />
+    	<property name="doiNamespaceGenerator" ref="thesisCustomNamespace" />
+    	<property name="generationType" value="CUSTOM" />
+    </bean>  
+      
+    <bean id="eutDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+    	<property name="doiApplicationRule" ref="belongsToEUT" />
+    	<property name="doiNamespaceGenerator" ref="eutCustomNamespace" />
+    	<property name="generationType" value="CUSTOM" />
+    </bean>
+    
+    
 </beans>
