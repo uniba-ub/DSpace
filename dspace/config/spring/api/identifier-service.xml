@@ -164,9 +164,9 @@
 
     <!-- Below there are defined the generation strategy -->
     <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-        <property name="doiApplicationRule" ref="configuredTrue" />
-        <property name="doiNamespaceGenerator" ref="defaultValueNamespace" />
-        <property name="generationType" value="DEFAULT" />
+        <constructor-arg name="doiApplicationRule" ref="configuredTrue" />
+        <constructor-arg name="doiNamespaceGenerator" ref="defaultValueNamespace" />
+        <constructor-arg name="generationType" value="DEFAULT" />
     </bean>
 
 </beans>

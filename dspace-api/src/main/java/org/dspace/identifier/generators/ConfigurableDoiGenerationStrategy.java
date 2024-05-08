@@ -26,11 +26,19 @@ public class ConfigurableDoiGenerationStrategy implements DoiGenerationStrategy 
     @Autowired(required = true)
     protected DOIService doiService;
 
-    private DoiApplicationRule doiApplicationRule;
+    protected final DoiApplicationRule doiApplicationRule;
+    protected final DoiNamespaceGenerator doiNamespaceGenerator;
+    protected final DoiGenType generationType;
 
-    private DoiNamespaceGenerator doiNamespaceGenerator;
-
-    private DoiGenType generationType;
+    ConfigurableDoiGenerationStrategy(
+        DoiApplicationRule doiApplicationRule,
+        DoiNamespaceGenerator doiNamespaceGenerator,
+        DoiGenType generationType
+    ) {
+        this.doiApplicationRule = doiApplicationRule;
+        this.doiNamespaceGenerator = doiNamespaceGenerator;
+        this.generationType = generationType;
+    }
 
     @Override
     public boolean isApplicable(Context context, DSpaceObject dso) {
@@ -54,24 +62,8 @@ public class ConfigurableDoiGenerationStrategy implements DoiGenerationStrategy 
             + doiNamespaceGenerator.getNamespace(context, (Item) dso);
     }
 
-    public DoiApplicationRule getDoiApplicationRule() {
-        return doiApplicationRule;
-    }
-
-    public void setDoiApplicationRule(DoiApplicationRule doiApplicationRule) {
-        this.doiApplicationRule = doiApplicationRule;
-    }
-
     public DoiNamespaceGenerator getDoiNamespaceGenerator() {
         return doiNamespaceGenerator;
-    }
-
-    public void setDoiNamespaceGenerator(DoiNamespaceGenerator doiNamespaceGenerator) {
-        this.doiNamespaceGenerator = doiNamespaceGenerator;
-    }
-
-    public void setGenerationType(DoiGenType generationType) {
-        this.generationType = generationType;
     }
 
 }
