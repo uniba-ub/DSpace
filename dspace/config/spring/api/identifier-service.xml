@@ -154,4 +154,19 @@
     </bean>
     -->
 
+    <!-- Application rules -->
+    <bean id="configuredTrue" class="org.dspace.identifier.generators.FixedValueDoiApplicationRule" />
+
+    <!-- Namespace definition -->
+    <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
+        <property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
+    </bean>
+
+    <!-- Below there are defined the generation strategy -->
+    <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+        <property name="doiApplicationRule" ref="configuredTrue" />
+        <property name="doiNamespaceGenerator" ref="defaultValueNamespace" />
+        <property name="generationType" value="DEFAULT" />
+    </bean>
+
 </beans>

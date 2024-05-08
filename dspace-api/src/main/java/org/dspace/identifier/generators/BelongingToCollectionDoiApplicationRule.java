@@ -22,19 +22,14 @@ import org.dspace.core.Context;
 
 public class BelongingToCollectionDoiApplicationRule implements DoiApplicationRule {
 
-    private Set<String> handles;
+    private final Set<String> handles;
+
+    BelongingToCollectionDoiApplicationRule(Set<String> handles) {
+        this.handles = handles;
+    }
 
     @Override
     public boolean getApplicable(Context context, Item item) {
         return handles.contains(item.getOwningCollection().getHandle());
     }
-
-    public Set<String> getCollectionHandles() {
-        return handles;
-    }
-
-    public void setCollectionHandles(Set<String> collectionHandles) {
-        this.handles = collectionHandles;
-    }
-
 }

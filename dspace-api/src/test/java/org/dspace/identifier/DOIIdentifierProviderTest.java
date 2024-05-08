@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.logging.log4j.LogManager;
@@ -47,6 +48,7 @@ import org.dspace.identifier.doi.DOIConnector;
 import org.dspace.identifier.doi.DOIIdentifierException;
 import org.dspace.identifier.doi.DOIIdentifierNotApplicableException;
 import org.dspace.identifier.factory.IdentifierServiceFactory;
+import org.dspace.identifier.generators.DoiGenerationStrategy;
 import org.dspace.identifier.service.DOIService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -82,7 +84,8 @@ public class DOIIdentifierProviderTest
     protected CollectionService collectionService = ContentServiceFactory.getInstance().getCollectionService();
     protected ItemService itemService = ContentServiceFactory.getInstance().getItemService();
     protected WorkspaceItemService workspaceItemService = ContentServiceFactory.getInstance().getWorkspaceItemService();
-
+    protected Set<DoiGenerationStrategy> doiGenerationStrategies =
+        IdentifierServiceFactory.getInstance().getDoiGenerationStrategies();
 
     private static Community community;
     private static Collection collection;
@@ -134,6 +137,7 @@ public class DOIIdentifierProviderTest
             provider.setConfigurationService(config);
             provider.setDOIConnector(connector);
             provider.setFilter(null);
+            provider.setDoiGenerationStrategies(doiGenerationStrategies);
         } catch (AuthorizeException ex) {
             log.error("Authorization Error in init", ex);
             fail("Authorization Error in init: " + ex.getMessage());
