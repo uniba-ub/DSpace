@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.solr.common.SolrDocument;
 import org.dspace.content.authority.Choice;
@@ -37,7 +38,7 @@ public class ItemAuthorityUtils {
                 extras.putAll(extrasTmp);
             }
         }
-        Set<String> alternativeNames = Set.copyOf(objectNames);
+        Set<String> alternativeNames = new TreeSet<>(objectNames);
         if (alternativeNames.size() > 1) {
             String alternativeNameKey = "alternative-names";
             alternativeNames.forEach(alternativeName -> {
