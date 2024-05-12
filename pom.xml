@@ -66,7 +66,9 @@
         <addon-docviewer.version>[CRIS-7.0-SNAPSHOT,CRIS-8.0-SNAPSHOT)</addon-docviewer.version>
         <addon-analytics.version>[CRIS-7.0-SNAPSHOT,CRIS-8.0-SNAPSHOT)</addon-analytics.version>
         <addon-dataquality.version>[CRIS-2023.02-SNAPSHOT,CRIS-2023.03-SNAPSHOT)</addon-dataquality.version>
-
+        <addon-networklab.version>[CRIS-2023.02-SNAPSHOT,CRIS-2023.03-SNAPSHOT)</addon-networklab.version>
+        <addon-orchestrator.version>[CRIS-2023.02-SNAPSHOT,CRIS-2023.03-SNAPSHOT)</addon-orchestrator.version>
+		<addon-loginmiur.version>[CRIS-7.0-SNAPSHOT,CRIS-8.0-SNAPSHOT)</addon-loginmiur.version>
         <!--=== MAVEN SETTINGS ===-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
@@ -955,6 +957,47 @@
                          <artifactId>addon-dataquality</artifactId>
                          <version>${addon-dataquality.version}</version>
                          <type>jar</type>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <profile>
+            <id>addon-networklab</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>it.4science.dspace</groupId>
+                        <artifactId>addon-networklab</artifactId>
+                        <version>${addon-networklab.version}</version>
+                        <type>jar</type>
+                    </dependency>
+                </dependencies>
+            </dependencyManagement>
+        </profile>
+
+        <!-- Builds Orchestrator addon for DSpace -->
+        <profile>
+            <id>addon-orchestrator</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <dependencyManagement>
+                <dependencies>
+                    <dependency>
+                        <groupId>it.4science.dspace</groupId>
+                        <artifactId>addon-orchestrator-api</artifactId>
+                        <version>${addon-orchestrator.version}</version>
+                        <type>jar</type>
+                    </dependency>
+                    <dependency>
+                        <groupId>it.4science.dspace</groupId>
+                        <artifactId>addon-orchestrator-rest</artifactId>
+                        <version>${addon-orchestrator.version}</version>
+                        <type>jar</type>
                     </dependency>
                 </dependencies>
             </dependencyManagement>
