@@ -26,6 +26,7 @@ import org.dspace.app.rest.RestResourceController;
 })
 public class AuditEventRest extends BaseObjectRest<UUID> {
     public static final String NAME = "auditevent";
+    public static final String NAME_PLURAL = "auditevents";
     public static final String CATEGORY = RestAddressableModel.SYSTEM;
 
     public static final String EPERSON = "eperson";
@@ -49,7 +50,7 @@ public class AuditEventRest extends BaseObjectRest<UUID> {
 
     @Override
     public String getTypePlural() {
-        return null;
+        return NAME_PLURAL;
     }
 
     @Override
