@@ -10,6 +10,8 @@ package org.dspace.storage.bitstore;
 import static com.amazonaws.regions.Regions.DEFAULT_REGION;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.dspace.storage.bitstore.S3BitStoreService.CSA;
+import static org.dspace.storage.bitstore.S3BitStoreService.getAwsCredentialsSupplier;
+import static org.dspace.storage.bitstore.S3BitStoreService.getClientConfiguration;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
@@ -32,11 +34,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.AnonymousAWSCredentials;
-import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.services.s3.AmazonS3;
-import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.s3.model.AmazonS3Exception;
 import com.amazonaws.services.s3.model.Bucket;
 import com.amazonaws.services.s3.model.ObjectMetadata;
@@ -71,6 +70,9 @@ import org.junit.Test;
 public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
 
     private static final String DEFAULT_BUCKET_NAME = "dspace-asset-localhost";
+    public static final String S3_ENDPOINT = "http://127.0.0.1:8001";
+    public static final int MAX_CONNECTIONS = 5;
+    public static final int CONNECTION_TIMEOUT = 1000;
 
     private S3BitStoreService s3BitStoreService;
 
@@ -94,11 +96,11 @@ public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
         s3Mock = S3Mock.create(8001, s3Directory.getAbsolutePath());
         s3Mock.start();
 
-        amazonS3Client = createAmazonS3Client();
+        amazonS3Client = createAmazonS3Client(S3_ENDPOINT);
 
         s3BitStoreService = new S3BitStoreService(amazonS3Client);
-        s3BitStoreService.setEnabled(BooleanUtils.toBoolean(
-                configurationService.getProperty("assetstore.s3.enabled")));
+        s3BitStoreService.setEnabled(true);
+
         context.turnOffAuthorisationSystem();
 
         parentCommunity = CommunityBuilder.createCommunity(context)
@@ -114,6 +116,15 @@ public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
     public void cleanUp() throws IOException {
         FileUtils.deleteDirectory(s3Directory);
         s3Mock.shutdown();
+    }
+
+    @Test
+    public void testBitstreamServiceNotInitializedWhenDisabled() throws IOException {
+        this.s3BitStoreService.setEnabled(false);
+
+        this.s3BitStoreService.init();
+
+        assertThat(this.s3BitStoreService.initialized, is(false));
     }
 
     @Test
@@ -413,11 +424,13 @@ public class S3BitStoreServiceIT extends AbstractIntegrationTestWithDatabase {
         }
     }
 
-    private AmazonS3 createAmazonS3Client() {
-        return AmazonS3ClientBuilder.standard()
-            .withCredentials(new AWSStaticCredentialsProvider(new AnonymousAWSCredentials()))
-            .withEndpointConfiguration(new EndpointConfiguration("http://127.0.0.1:8001", DEFAULT_REGION.getName()))
-            .build();
+    private AmazonS3 createAmazonS3Client(String endpoint) {
+        return S3BitStoreService.amazonClientBuilderBy(
+            DEFAULT_REGION,
+            getAwsCredentialsSupplier(new AnonymousAWSCredentials()),
+            getClientConfiguration(MAX_CONNECTIONS, CONNECTION_TIMEOUT),
+            endpoint
+        ).get();
     }
 
     private Item createItem() {

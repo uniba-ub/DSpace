@@ -479,12 +479,7 @@ public class SubmissionConfigReader {
                 } else if (communityId != null) {
                     communityToSubmissionConfig.put(communityId, value);
                 } else {
-                    // get all collections for this entity-type
-                    List<Collection> collections = collectionService.findAllCollectionsByEntityType( context,
-                                    entityType);
-                    for (Collection collection : collections) {
-                        collectionToSubmissionConfig.putIfAbsent(collection.getHandle(), value);
-                    }
+                    collectionToSubmissionConfig.putIfAbsent(entityType, value);
                 }
             } // ignore any child node that isn't a "name-map"
         }
