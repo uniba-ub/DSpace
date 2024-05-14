@@ -245,6 +245,9 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
                 thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
                 if (thumbBitstream == null) {
                     thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
+                    if (!bitstreamService.isValidThumbnail(context, thumbBitstream)) {
+                        thumbBitstream = null;
+                    }
                 }
             }
 
@@ -1924,17 +1927,37 @@ prevent the generation of resource policy entry values with null dspace_object a
 
     @Override
     public boolean canCreateNewVersion(Context context, Item item) throws SQLException {
+        boolean userAuthorized = false;
         if (authorizeService.isAdmin(context, item)) {
-            return true;
+            userAuthorized = true;
         }
 
         if (context.getCurrentUser() != null
-                && context.getCurrentUser().equals(item.getSubmitter())) {
-            return configurationService.getPropertyAsType(
-                    "versioning.submitterCanCreateNewVersion", false);
+            && context.getCurrentUser().equals(item.getSubmitter())) {
+            userAuthorized = configurationService.getPropertyAsType(
+                "versioning.submitterCanCreateNewVersion", false);
         }
 
-        return false;
+        if (!userAuthorized) {
+            List<String> allowedGroups = List
+                    .of(configurationService.getArrayProperty("versioning.allowed.groups"));
+            userAuthorized = allowedGroups.stream().anyMatch(groupName -> {
+                try {
+                    return groupService.isMember(context, groupName);
+                } catch (SQLException e) {
+                    return false;
+                }
+            });
+        }
+
+        if (userAuthorized) {
+            List<String> allowedEntities = List
+                .of(configurationService.getArrayProperty("versioning.enabled.entities"));
+            String entityType = getEntityType(item);
+            return entityType != null && allowedEntities.contains(entityType);
+        }
+
+        return userAuthorized;
     }
 
     /**
