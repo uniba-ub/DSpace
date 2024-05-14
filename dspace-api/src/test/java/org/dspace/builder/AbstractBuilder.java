@@ -15,6 +15,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.dspace.alerts.service.SystemWideAlertService;
 import org.dspace.app.audit.AuditService;
+import org.dspace.app.ldn.factory.NotifyServiceFactory;
+import org.dspace.app.ldn.service.LDNMessageService;
+import org.dspace.app.ldn.service.NotifyPatternToTriggerService;
+import org.dspace.app.ldn.service.NotifyService;
+import org.dspace.app.ldn.service.NotifyServiceInboundPatternService;
 import org.dspace.app.metrics.service.CrisMetricsService;
 import org.dspace.app.requestitem.factory.RequestItemServiceFactory;
 import org.dspace.app.requestitem.service.RequestItemService;
@@ -136,7 +141,12 @@ public abstract class AbstractBuilder<T, S> {
     static SystemWideAlertService systemWideAlertService;
     static SubmissionConfigService submissionConfigService;
     static SupervisionOrderService supervisionOrderService;
+    static NotifyService notifyService;
+    static NotifyServiceInboundPatternService inboundPatternService;
+    static NotifyPatternToTriggerService notifyPatternToTriggerService;
+
     static QAEventService qaEventService;
+    static LDNMessageService ldnMessageService;
 
     protected Context context;
 
@@ -215,7 +225,11 @@ public abstract class AbstractBuilder<T, S> {
         }
         subscribeService = ContentServiceFactory.getInstance().getSubscribeService();
         supervisionOrderService = SupervisionOrderServiceFactory.getInstance().getSupervisionOrderService();
+        notifyService = NotifyServiceFactory.getInstance().getNotifyService();
+        inboundPatternService = NotifyServiceFactory.getInstance().getNotifyServiceInboundPatternService();
+        notifyPatternToTriggerService = NotifyServiceFactory.getInstance().getNotifyPatternToTriggerService();
         qaEventService = new DSpace().getSingletonService(QAEventService.class);
+        ldnMessageService = NotifyServiceFactory.getInstance().getLDNMessageService();
     }
 
 
@@ -255,19 +269,18 @@ public abstract class AbstractBuilder<T, S> {
         crisMetricsService = null;
         crisLayoutMetric2BoxService = null;
         harvestedCollectionService = null;
-        subscribeService = null;
         requestItemService = null;
         versioningService = null;
         orcidTokenService = null;
-        systemWideAlertService = null;
-        submissionConfigService = null;
-        subscribeService = null;
-        supervisionOrderService = null;
+        notifyService = null;
+        inboundPatternService = null;
+        notifyPatternToTriggerService = null;
         qaEventService = null;
         systemWideAlertService = null;
         submissionConfigService = null;
         subscribeService = null;
         supervisionOrderService = null;
+        ldnMessageService = null;
     }
 
     public static void cleanupObjects() throws Exception {

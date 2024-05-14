@@ -19,7 +19,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import javax.servlet.ServletException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -157,10 +156,9 @@ public class DCInputsReader {
      * Returns the set of DC inputs used for a particular collection, or the default
      * set if no inputs defined for the collection
      *
-     * @param  collection              collection
-     * @return                         DC input set
+     * @param collection collection for which search the set of DC inputs
+     * @return DC input set
      * @throws DCInputsReaderException if no default set defined
-     * @throws ServletException
      */
     public List<DCInputSet> getInputsByCollection(Collection collection)
         throws DCInputsReaderException {

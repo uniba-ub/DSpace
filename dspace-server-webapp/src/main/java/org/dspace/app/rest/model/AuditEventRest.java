@@ -48,6 +48,11 @@ public class AuditEventRest extends BaseObjectRest<UUID> {
     }
 
     @Override
+    public String getTypePlural() {
+        return null;
+    }
+
+    @Override
     public String getCategory() {
         return CATEGORY;
     }

@@ -12,16 +12,17 @@
 
     <context:annotation-config /> <!-- allows us to use spring annotations in beans -->
 
-    <!-- This is defined in the solr-services.xml -->
- 
-	 <util:map id="suggestionProviders" map-class="java.util.HashMap" 
+    <!-- This is defined in the solr-services.xml
+	<bean id="org.dspace.app.nbevent.service.NBEventService"
+	   class="org.dspace.app.nbevent.service.impl.NBEventServiceImpl" /> -->
+
+	 <util:map id="suggestionProviders" map-class="java.util.HashMap"
 	          key-type="java.lang.String" value-type="org.dspace.app.suggestion.SuggestionProvider">
-	    <entry key="oaire" value-ref="OAIREPublicationLoader" />
-	    <entry key="orcidWorks" value-ref="orcidPublicationLoader" />
+	    <entry key="openaire" value-ref="OpenairePublicationLoader" />
 	</util:map>
 
-    <bean id="OAIREPublicationLoader" class="org.dspace.app.suggestion.oaire.OAIREPublicationLoader">
-        <property name="sourceName" value="oaire" />
+    <bean id="OpenairePublicationLoader" class="org.dspace.app.suggestion.openaire.PublicationLoader">
+        <property name="sourceName" value="openaire" />
         <property name="primaryProvider" ref="openaireLiveImportDataProviderByAuthor" />
         <property name="otherProviders">
             <list>
@@ -31,15 +32,12 @@
         <property name="names">
             <list>
                 <value>dc.title</value>
-                <value>crisrp.name</value>
-                <value>crisrp.name.translated</value>
-                <value>crisrp.name.variant</value>
             </list>
         </property>
         <property name="pipeline">
             <list>
                 <bean
-                    class="org.dspace.app.suggestion.oaire.AuthorNamesScorer">
+                    class="org.dspace.app.suggestion.openaire.AuthorNamesScorer">
                     <property name="contributorMetadata">
                         <list>
                             <value>dc.contributor.author</value>
@@ -48,16 +46,12 @@
                     <property name="names">
                         <list>
                             <value>dc.title</value>
-                            <value>crisrp.name</value>
-                            <value>crisrp.name.translated</value>
-                            <value>crisrp.name.variant</value>
                         </list>
                     </property>
                 </bean>
                 <bean
-                    class="org.dspace.app.suggestion.oaire.DateScorer">
+                    class="org.dspace.app.suggestion.openaire.DateScorer">
                     <property name="birthDateMetadata" value="person.birthDate" />
-                    <property name="educationDateMetadata" value="crisrp.education.end" />
                     <property name="publicationDateMetadata" value="dc.date.issued" />
                 </bean>    
             </list>

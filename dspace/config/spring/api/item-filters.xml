@@ -365,7 +365,7 @@
             </bean>
         </property>
     </bean>
-    
+
     <!-- dspace.entity.type is exactly Funding -->
     <bean id="relationship-type-equals-funding_condition" class="org.dspace.content.logic.condition.MetadataValueMatchCondition">
         <property name="parameters">
@@ -375,7 +375,7 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="has-investigators-set_condition" class="org.dspace.content.logic.condition.RequiredMetadataCondition">
         <property name="parameters">
             <map>
@@ -383,7 +383,7 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="has-co-investigators-set_condition" class="org.dspace.content.logic.condition.RequiredMetadataCondition">
         <property name="parameters">
             <map>
@@ -391,7 +391,7 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="has-lead-organizations-set_condition" class="org.dspace.content.logic.condition.RequiredMetadataCondition">
         <property name="parameters">
             <map>
@@ -399,7 +399,7 @@
             </map>
         </property>
     </bean>
-    
+
     <bean id="has-lead-co-organizations-set_condition" class="org.dspace.content.logic.condition.RequiredMetadataCondition">
         <property name="parameters">
             <map>
@@ -424,4 +424,12 @@
         </property>
     </bean>-->
 
+    <util:map id="ldnItemFilters" key-type="java.lang.String"
+              value-type="org.dspace.content.logic.LogicalStatement">
+        <entry key="item-is-public_condition" value-ref="item-is-public_condition"/>
+        <entry key="title-starts-with-pattern_condition" value-ref="title-starts-with-pattern_condition"/>
+        <entry key="type-equals-journal-article_condition" value-ref="type-equals-journal-article_condition"/>
+        <entry key="type-equals-dataset_condition" value-ref="type-equals-dataset_condition"/>
+        <entry key="has-one-bitstream_condition" value-ref="has-one-bitstream_condition"/>
+    </util:map>
 </beans>

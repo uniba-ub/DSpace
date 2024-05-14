@@ -35,6 +35,7 @@ public class CrisLayoutTabRest extends BaseObjectRest<Integer> {
     public static final String NAME = "tab";
     public static final String CATEGORY = RestAddressableModel.LAYOUT;
     public static final String SECURITY_METADATA = "securitymetadata";
+    public static final String PLURAL_NAME = "securitymetadata";
 
     private String shortname;
     private String header;
@@ -52,6 +53,11 @@ public class CrisLayoutTabRest extends BaseObjectRest<Integer> {
     @JsonProperty(access = Access.READ_ONLY)
     public String getType() {
         return NAME;
+    }
+
+    @Override
+    public String getTypePlural() {
+        return PLURAL_NAME;
     }
 
     /* (non-Javadoc)

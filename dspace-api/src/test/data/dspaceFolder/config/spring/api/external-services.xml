@@ -119,6 +119,8 @@
             </list>
         </property>
     </bean>
+    
+    <bean class="org.dspace.app.suggestion.MockSuggestionExternalDataSource" />
 
     <bean class="org.dspace.app.suggestion.MockSuggestionExternalDataSource" />
     

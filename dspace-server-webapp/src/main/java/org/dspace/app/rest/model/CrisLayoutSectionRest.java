@@ -28,6 +28,7 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
 
     public static final String CATEGORY = RestModel.LAYOUT;
     public static final String NAME = "section";
+    public static final String NAME_PLURAL = "sections";
 
     private List<List<CrisLayoutSectionComponentRest>> componentRows = new LinkedList<>();
 
@@ -36,6 +37,11 @@ public class CrisLayoutSectionRest extends BaseObjectRest<String> {
     @Override
     public String getType() {
         return NAME;
+    }
+
+    @Override
+    public String getTypePlural() {
+        return NAME_PLURAL;
     }
 
     @Override

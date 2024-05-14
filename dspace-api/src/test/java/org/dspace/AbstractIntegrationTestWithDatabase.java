@@ -9,8 +9,11 @@ package org.dspace;
 
 import static org.junit.Assert.fail;
 
+import java.sql.Connection;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.List;
+import javax.sql.DataSource;
 
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.logging.log4j.LogManager;
@@ -94,6 +97,14 @@ public class AbstractIntegrationTestWithDatabase extends AbstractDSpaceIntegrati
         try {
             // Update/Initialize the database to latest version (via Flyway)
             DatabaseUtils.updateDatabase();
+
+            // Register custom functions in the H2 database
+            DataSource dataSource = DSpaceServicesFactory.getInstance()
+                    .getServiceManager()
+                    .getServiceByName("dataSource", DataSource.class);
+            try (Connection c = dataSource.getConnection(); Statement stmt = c.createStatement()) {
+                stmt.execute("CREATE ALIAS IF NOT EXISTS matches FOR 'org.dspace.util.DSpaceH2Dialect.matches'");
+            }
         } catch (SQLException se) {
             log.error("Error initializing database", se);
             fail("Error initializing database: " + se.getMessage()

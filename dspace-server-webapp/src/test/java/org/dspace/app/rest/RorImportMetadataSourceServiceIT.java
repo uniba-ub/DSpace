@@ -11,6 +11,7 @@ import static org.dspace.app.matcher.LambdaMatcher.matches;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
 
 import java.io.InputStream;
@@ -54,16 +55,19 @@ public class RorImportMetadataSourceServiceIT extends AbstractLiveImportIntegrat
 
             context.restoreAuthSystemState();
             Collection<ImportRecord> recordsImported = rorServiceImpl.getRecords("test query", 0, 2);
-            assertThat(recordsImported, hasSize(10));
+            assertThat(recordsImported, hasSize(20));
 
             ImportRecord record = recordsImported.iterator().next();
 
             assertThat(record.getValueList(), hasSize(11));
 
-            assertThat(record.getSingleValue("dc.title"), is("The University of Texas"));
+            assertThat(
+                record.getSingleValue("organization.legalName"),
+                is("The University of Texas")
+            );
             assertThat(record.getSingleValue("organization.identifier.ror"), is("https://ror.org/02f6dcw23"));
-            assertThat(record.getSingleValue("oairecerif.acronym"), is("UTHSCSA"));
-            assertThat(record.getSingleValue("oairecerif.identifier.url"), is("http://www.uthscsa.edu/"));
+            assertThat(record.getSingleValue("organization.alternateName"), is("UTHSCSA"));
+            assertThat(record.getSingleValue("organization.url"), is("http://www.uthscsa.edu/"));
             assertThat(record.getSingleValue("dc.type"), is("Education"));
             assertThat(record.getSingleValue("organization.address.addressCountry"), is("US"));
             assertThat(record.getSingleValue("organization.foundingDate"), is("1959"));
@@ -115,10 +119,13 @@ public class RorImportMetadataSourceServiceIT extends AbstractLiveImportIntegrat
             context.restoreAuthSystemState();
             ImportRecord record = rorServiceImpl.getRecord("https://ror.org/01sps7q28");
             assertThat(record.getValueList(), hasSize(9));
-            assertThat(record.getSingleValue("dc.title"), is("The University of Texas Health Science Center at Tyler"));
+            assertThat(
+                record.getSingleValue("organization.legalName"),
+                is("The University of Texas Health Science Center at Tyler")
+            );
             assertThat(record.getSingleValue("organization.identifier.ror"), is("https://ror.org/01sps7q28"));
-            assertThat(record.getSingleValue("oairecerif.acronym"), is("UTHSCT"));
-            assertThat(record.getSingleValue("oairecerif.identifier.url"),
+            assertThat(record.getSingleValue("organization.alternateName"), is("UTHSCT"));
+            assertThat(record.getSingleValue("organization.url"),
                 is("https://www.utsystem.edu/institutions/university-texas-health-science-center-tyler"));
             assertThat(record.getSingleValue("dc.type"), is("Healthcare"));
             assertThat(record.getSingleValue("organization.address.addressCountry"), is("US"));
@@ -126,6 +133,26 @@ public class RorImportMetadataSourceServiceIT extends AbstractLiveImportIntegrat
             assertThat(record.getSingleValue("organization.identifier.isni"), is("0000 0000 9704 5790"));
             assertThat(record.getSingleValue("organization.parentOrganization"), is("The University of Texas System"));
 
+        } finally {
+            liveImportClient.setHttpClient(originalHttpClient);
+        }
+    }
+
+    @Test
+    public void tesGetRecordsCount() throws Exception {
+        context.turnOffAuthorisationSystem();
+        CloseableHttpClient originalHttpClient = liveImportClient.getHttpClient();
+        CloseableHttpClient httpClient = Mockito.mock(CloseableHttpClient.class);
+        try (InputStream rorResponse = getClass().getResourceAsStream("ror-records.json")) {
+            String rorJsonResponse = IOUtils.toString(rorResponse, Charset.defaultCharset());
+
+            liveImportClient.setHttpClient(httpClient);
+            CloseableHttpResponse response = mockResponse(rorJsonResponse, 200, "OK");
+            when(httpClient.execute(ArgumentMatchers.any())).thenReturn(response);
+
+            context.restoreAuthSystemState();
+            int tot = rorServiceImpl.getRecordsCount("test query");
+            assertEquals(200, tot);
         } finally {
             liveImportClient.setHttpClient(originalHttpClient);
         }
