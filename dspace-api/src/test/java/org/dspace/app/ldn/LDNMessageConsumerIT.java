@@ -119,6 +119,7 @@ public class LDNMessageConsumerIT extends AbstractIntegrationTestWithDatabase {
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
 
+        assertNotNull(ldnMessage);
         assertThat(notifyService, matchesNotifyServiceEntity(ldnMessage.getTarget()));
         assertEquals(workflowItem.getItem().getID(), ldnMessage.getObject().getID());
         assertEquals(QUEUE_STATUS_QUEUED, ldnMessage.getQueueStatus());
@@ -195,7 +196,7 @@ public class LDNMessageConsumerIT extends AbstractIntegrationTestWithDatabase {
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
-
+        assertNotNull(ldnMessage);
         assertThat(notifyService, matchesNotifyServiceEntity(ldnMessage.getTarget()));
         assertEquals(workflowItem.getItem().getID(), ldnMessage.getObject().getID());
         assertEquals(QUEUE_STATUS_QUEUED, ldnMessage.getQueueStatus());
@@ -267,12 +268,12 @@ public class LDNMessageConsumerIT extends AbstractIntegrationTestWithDatabase {
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
-
+        assertNotNull(ldnMessage);
         assertThat(notifyService, matchesNotifyServiceEntity(ldnMessage.getTarget()));
         assertEquals(workflowItem.getItem().getID(), ldnMessage.getObject().getID());
-        assertEquals(QUEUE_STATUS_QUEUED, ldnMessage.getQueueStatus());
         assertNull(ldnMessage.getOrigin());
         assertNotNull(ldnMessage.getMessage());
+        assertEquals(QUEUE_STATUS_QUEUED, ldnMessage.getQueueStatus());
 
         ObjectMapper mapper = new ObjectMapper();
         Notification notification = mapper.readValue(ldnMessage.getMessage(), Notification.class);
@@ -339,7 +340,7 @@ public class LDNMessageConsumerIT extends AbstractIntegrationTestWithDatabase {
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
-
+        assertNotNull(ldnMessage);
         assertThat(notifyService, matchesNotifyServiceEntity(ldnMessage.getTarget()));
         assertEquals(workflowItem.getItem().getID(), ldnMessage.getObject().getID());
         assertEquals(QUEUE_STATUS_QUEUED, ldnMessage.getQueueStatus());

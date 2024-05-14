@@ -10,6 +10,7 @@ package org.dspace.app.ldn.action;
 import static org.dspace.app.ldn.action.LDNActionStatus.ABORT;
 import static org.dspace.app.ldn.action.LDNActionStatus.CONTINUE;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -130,6 +131,7 @@ public class SendLDNMessageActionIT extends AbstractIntegrationTestWithDatabase 
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
+        assertNotNull(ldnMessage);
         ldnMessage.getQueueStatus();
 
         Notification notification = mapper.readValue(ldnMessage.getMessage(), Notification.class);
@@ -181,6 +183,8 @@ public class SendLDNMessageActionIT extends AbstractIntegrationTestWithDatabase 
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
 
+        assertNotNull(ldnMessage);
+
         Notification notification = mapper.readValue(ldnMessage.getMessage(), Notification.class);
 
         sendLDNMessageAction = new SendLDNMessageAction(mockedClient);
@@ -227,6 +231,8 @@ public class SendLDNMessageActionIT extends AbstractIntegrationTestWithDatabase 
 
         LDNMessageEntity ldnMessage =
             ldnMessageService.findAll(context).stream().findFirst().orElse(null);
+
+        assertNotNull(ldnMessage);
 
         Notification notification = mapper.readValue(ldnMessage.getMessage(), Notification.class);
         sendLDNMessageAction = new SendLDNMessageAction(mockedClient);

@@ -27,7 +27,7 @@ public class QAEventRest extends BaseObjectRest<String> {
 
     private static final long serialVersionUID = -5001130073350654793L;
     public static final String NAME = "qualityassuranceevent";
-    public static final String PLURAL_NAME = "qualityassuranceevents";
+    public static final String NAME_PLURAL = "qualityassuranceevents";
     public static final String CATEGORY = RestAddressableModel.INTEGRATION;
 
     public static final String TOPIC = "topic";
@@ -49,7 +49,7 @@ public class QAEventRest extends BaseObjectRest<String> {
 
     @Override
     public String getTypePlural() {
-        return PLURAL_NAME;
+        return NAME_PLURAL;
     }
 
     @Override

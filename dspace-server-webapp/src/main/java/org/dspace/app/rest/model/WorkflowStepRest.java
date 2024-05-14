@@ -27,7 +27,7 @@ public class WorkflowStepRest extends BaseObjectRest {
 
     public static final String CATEGORY = RestModel.CONFIGURATION;
     public static final String NAME = "workflowstep";
-    public static final String PLURAL_NAME = "workflowsteps";
+    public static final String NAME_PLURAL = "workflowSteps";
 
     public static final String ACTIONS = "workflowactions";
 
@@ -50,7 +50,7 @@ public class WorkflowStepRest extends BaseObjectRest {
 
     @Override
     public String getTypePlural() {
-        return PLURAL_NAME;
+        return NAME_PLURAL;
     }
 
     @JsonIgnore
