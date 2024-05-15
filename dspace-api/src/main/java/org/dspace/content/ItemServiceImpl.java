@@ -1720,9 +1720,9 @@ prevent the generation of resource policy entry values with null dspace_object a
         }
 
         if (Item.ANY.equals(value)) {
-            return itemDAO.findByMetadataField(context, mdf, null, true);
+            return itemDAO.findByMetadataField(context, mdf, null);
         }
-        return itemDAO.findByMetadataField(context, mdf, value, true);
+        return itemDAO.findByMetadataField(context, mdf, value);
     }
     /**
      * Returns an iterator of Items possessing the passed metadata field, or only

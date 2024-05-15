@@ -22,7 +22,6 @@ import javax.xml.parsers.FactoryConfigurationError;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.dspace.content.Collection;
-import org.dspace.content.Community;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.InProgressSubmission;
 import org.dspace.content.Item;
@@ -241,6 +240,51 @@ public class SubmissionConfigReader {
      * Returns the Item Submission process config used for a particular collection,
      * or the default if none is defined for the collection
      *
+     * @param  collectionHandle                collection's unique Handle
+     * @return                                 the SubmissionConfig representing the
+     *                                         item submission config
+     * @throws SubmissionConfigReaderException if no default submission process
+     *                                         configuration defined
+     */
+    public SubmissionConfig getSubmissionConfigByCollection(String collectionHandle) {
+        // get the name of the submission process config for this collection
+        String submitName = collectionToSubmissionConfig
+            .get(collectionHandle);
+        if (submitName == null) {
+            submitName = collectionToSubmissionConfig
+                .get(DEFAULT_COLLECTION);
+        }
+        if (submitName == null) {
+            throw new IllegalStateException(
+                "No item submission process configuration designated as 'default' in 'submission-map' section of " +
+                    "'item-submission.xml'.");
+        }
+        return getSubmissionConfigByName(submitName);
+    }
+
+
+    public SubmissionConfig getCorrectionSubmissionConfigByCollection(Collection collection) {
+        CollectionService collService = ContentServiceFactory.getInstance().getCollectionService();
+
+        String submitName =
+            collService.getMetadataFirstValue(
+                collection, "cris", "submission", "definition-correction", Item.ANY
+            );
+
+        if (submitName != null) {
+            SubmissionConfig subConfig = getSubmissionConfigByName(submitName);
+            if (subConfig != null) {
+                return subConfig;
+            }
+        }
+
+        return getSubmissionConfigByCollection(collection);
+    }
+
+    /**
+     * Returns the Item Submission process config used for a particular collection,
+     * or the default if none is defined for the collection
+     *
      * @param collection the collection
      * @return the SubmissionConfig representing the item submission config
      * @throws SubmissionConfigReaderException if no default submission process
@@ -300,49 +344,6 @@ public class SubmissionConfigReader {
 
         throw new IllegalStateException("No item submission process configuration designated as 'default' "
                                             + "in 'submission-map' section of 'item-submission.xml'.");
-    }
-
-
-    public SubmissionConfig getCorrectionSubmissionConfigByCollection(Collection collection) {
-        CollectionService collService = ContentServiceFactory.getInstance().getCollectionService();
-
-        String submitName =
-            collService.getMetadataFirstValue(
-                collection, "cris", "submission", "definition-correction", Item.ANY
-            );
-
-        if (submitName != null) {
-            SubmissionConfig subConfig = getSubmissionConfigByName(submitName);
-            if (subConfig != null) {
-                return subConfig;
-            }
-        }
-
-        return getSubmissionConfigByCollection(collection);
-    }
-
-    /**
-     * Recursive function to return the Item Submission process config
-     * used for a community or the closest community parent, or null
-     * if none is defined
-     *
-     * @param com community for which search Submission process config
-     * @return the SubmissionConfig representing the item submission config
-     */
-    private String getSubmissionConfigByCommunity(Community com) {
-        String submitName = communityToSubmissionConfig
-                .get(com.getHandle());
-        if (submitName != null) {
-            return submitName;
-        }
-        List<Community> communities = com.getParentCommunities();
-        for (Community parentCom : communities) {
-            submitName = getSubmissionConfigByCommunity(parentCom);
-            if (submitName != null) {
-                return submitName;
-            }
-        }
-        return null;
     }
 
     /**
