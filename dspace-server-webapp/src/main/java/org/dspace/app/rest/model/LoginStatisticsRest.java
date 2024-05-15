@@ -20,7 +20,7 @@ public class LoginStatisticsRest extends BaseObjectRest<String> {
 
     public static final String NAME = "login";
     public static final String CATEGORY = RestModel.STATISTICS;
-    public static final String NAME_PLURAL = "login";
+    public static final String NAME_PLURAL = "logins";
 
     private String name;
 

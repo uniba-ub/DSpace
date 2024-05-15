@@ -23,7 +23,7 @@ import org.dspace.app.rest.RestResourceController;
 public class WorkflowStepStatisticsRest extends BaseObjectRest<String> {
 
     public static final String NAME = "workflowStep";
-    public static final String NAME_PLURAL = "workflowStep";
+    public static final String NAME_PLURAL = "workflowSteps";
     public static final String CATEGORY = RestModel.STATISTICS;
 
     private String name;
