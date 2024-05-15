@@ -374,7 +374,7 @@ public class Utils {
         try {
             return applicationContext.getBean(apiCategory + "." + modelPlural + "." + rel, LinkRestRepository.class);
         } catch (NoSuchBeanDefinitionException e) {
-            throw new RepositoryNotFoundException(apiCategory, modelPlural);
+            throw new RepositoryNotFoundException(apiCategory, modelPlural, rel);
         }
     }
 
