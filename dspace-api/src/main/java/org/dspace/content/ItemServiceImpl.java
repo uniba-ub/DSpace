@@ -215,32 +215,11 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
 
     @Override
     public Thumbnail getThumbnail(Context context, Item item, boolean requireOriginal) throws SQLException {
-        Bitstream thumbBitstream;
-        List<Bundle> originalBundles = getBundles(item, "ORIGINAL");
-        Bitstream primaryBitstream = null;
-        if (CollectionUtils.isNotEmpty(originalBundles)) {
-            primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
+        // Search the thumbnail using the configuration
+        Thumbnail thumbnail = thumbnailLayoutTabConfigurationStrategy(context, item, requireOriginal);
+        if (thumbnail != null) {
+            return thumbnail;
         }
-        if (primaryBitstream != null) {
-            if (primaryBitstream.getFormat(context).getMIMEType().equals("text/html")) {
-                return null;
-            }
-
-            thumbBitstream = bitstreamService
-                .getBitstreamByName(item, "THUMBNAIL", primaryBitstream.getName() + ".jpg");
-
-        } else {
-            if (requireOriginal) {
-                primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
-            }
-
-            thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
-        }
-
-        if (thumbBitstream != null) {
-            return new Thumbnail(thumbBitstream, primaryBitstream);
-        }
-
         return null;
     }
 
@@ -249,7 +228,7 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
      * @param item
      * @throws SQLException
      */
-    private Thumbnail thumbnailLayoutTabConfigurationStrategy(Context context, Item item)
+    private Thumbnail thumbnailLayoutTabConfigurationStrategy(Context context, Item item, boolean requireOriginal)
         throws SQLException {
         List<CrisLayoutTab> crisLayoutTabs = crisLayoutTabService.findByItem(context, String.valueOf(item.getID()));
 
@@ -264,7 +243,10 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
                 primaryBitstream = originalBundles.get(0).getPrimaryBitstream();
             }
             if (primaryBitstream == null) {
-                primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
+                if (requireOriginal) {
+                    primaryBitstream = bitstreamService.getFirstBitstream(item, "ORIGINAL");
+                }
+                thumbBitstream = bitstreamService.getFirstBitstream(item, "THUMBNAIL");
             }
             if (primaryBitstream != null) {
                 thumbBitstream = bitstreamService.getThumbnail(context, primaryBitstream);
