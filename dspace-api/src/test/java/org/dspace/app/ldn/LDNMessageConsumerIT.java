@@ -17,6 +17,8 @@ import static org.junit.Assert.assertThat;
 
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -39,13 +41,17 @@ import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Constants;
 import org.dspace.eperson.EPerson;
+import org.dspace.event.factory.EventServiceFactory;
+import org.dspace.event.service.EventService;
 import org.dspace.services.ConfigurationService;
 import org.dspace.services.factory.DSpaceServicesFactory;
 import org.dspace.workflow.WorkflowItem;
 import org.dspace.workflow.WorkflowService;
 import org.dspace.workflow.factory.WorkflowServiceFactory;
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -55,13 +61,58 @@ import org.junit.Test;
  */
 public class LDNMessageConsumerIT extends AbstractIntegrationTestWithDatabase {
 
+    public static final String LDNMESSAGE_CONSUMER = "ldnmessage";
+    public static final String EVENT_DISPATCHER_EXCLUDE_DISCOVERY_CONSUMERS =
+        "event.dispatcher.exclude-discovery.consumers";
+    public static final String EVENT_DISPATCHER_DEFAULT_CONSUMERS = "event.dispatcher.default.consumers";
+
+    public static String[] excludedDiscoveryConsumers;
+    public static String[] consumers;
+
+    private static final ConfigurationService configurationService =
+        DSpaceServicesFactory.getInstance().getConfigurationService();
+    public static final EventService eventService = EventServiceFactory.getInstance().getEventService();
+
     private Collection collection;
     private EPerson submitter;
 
     private LDNMessageService ldnMessageService = NotifyServiceFactory.getInstance().getLDNMessageService();
-    private ConfigurationService configurationService = DSpaceServicesFactory.getInstance().getConfigurationService();
     private WorkflowService workflowService = WorkflowServiceFactory.getInstance().getWorkflowService();
     private ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+
+    @BeforeClass
+    public static void tearUp() {
+        excludedDiscoveryConsumers =
+            configurationService.getArrayProperty(EVENT_DISPATCHER_EXCLUDE_DISCOVERY_CONSUMERS);
+        consumers = configurationService.getArrayProperty(EVENT_DISPATCHER_DEFAULT_CONSUMERS);
+        Set<String> consumersSet = new HashSet<>(Arrays.asList(consumers));
+        if (!consumersSet.contains(LDNMESSAGE_CONSUMER)) {
+            consumersSet.add(LDNMESSAGE_CONSUMER);
+            configurationService.setProperty(EVENT_DISPATCHER_DEFAULT_CONSUMERS, consumersSet.toArray());
+        }
+        Set<String> excludedConsumerSet = new HashSet<>(Arrays.asList(excludedDiscoveryConsumers));
+        if (!excludedConsumerSet.contains(LDNMESSAGE_CONSUMER)) {
+            excludedConsumerSet.add(LDNMESSAGE_CONSUMER);
+            configurationService.setProperty(
+                EVENT_DISPATCHER_EXCLUDE_DISCOVERY_CONSUMERS,
+                excludedConsumerSet.toArray()
+            );
+        }
+        eventService.reloadConfiguration();
+    }
+
+    @AfterClass
+    public static void reset() {
+        configurationService.setProperty(
+            EVENT_DISPATCHER_DEFAULT_CONSUMERS,
+            consumers
+        );
+        configurationService.setProperty(
+            EVENT_DISPATCHER_EXCLUDE_DISCOVERY_CONSUMERS,
+            excludedDiscoveryConsumers
+        );
+        eventService.reloadConfiguration();
+    }
 
     @Before
     public void setUp() throws Exception {
