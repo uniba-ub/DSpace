@@ -74,9 +74,9 @@ public class ItemEnhancerScript extends DSpaceRunnable<ItemEnhancerScriptConfigu
             int total = itemService.countArchivedItems(context);
             for (int offset = 0; offset < total; offset += PAGE_SIZE) {
                 findItemsToEnhance(offset).forEachRemaining(this::enhanceItem);
+                context.commit();
+                context.clear();
             }
-            context.commit();
-            context.clear();
         } catch (SQLException e) {
             throw new SQLRuntimeException(e);
         }

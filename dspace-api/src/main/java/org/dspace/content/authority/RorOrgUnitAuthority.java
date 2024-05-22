@@ -66,8 +66,15 @@ public class RorOrgUnitAuthority extends ItemAuthority {
     private List<Choice> getChoiceFromRORQueryResults(Collection<ImportRecord> orgUnits, String locale) {
         return orgUnits
             .stream()
-            .map(orgUnit -> new Choice(composeAuthorityValue(getIdentifier(orgUnit)), getName(orgUnit),
-                getName(orgUnit), buildExtras(orgUnit, locale)))
+            .map(orgUnit ->
+                new Choice(
+                    composeAuthorityValue(getIdentifier(orgUnit)),
+                    getName(orgUnit),
+                    getName(orgUnit),
+                    buildExtras(orgUnit, locale),
+                    getSource()
+                )
+            )
             .collect(Collectors.toList());
     }
 
