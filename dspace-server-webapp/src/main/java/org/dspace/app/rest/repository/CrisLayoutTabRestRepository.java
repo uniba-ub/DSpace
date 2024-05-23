@@ -270,7 +270,7 @@ public class CrisLayoutTabRestRepository extends DSpaceRestRepository<CrisLayout
                     .forEach(cell -> cell.setFields(
                         cell.getFields()
                         .stream()
-                        .filter(field -> !field.getRendering().equals("advancedattachment"))
+                        .filter(field -> !"advancedattachment".equals(field.getRendering()))
                         .collect(Collectors.toList()))));
 
             // remove cells that contain empty fields
