@@ -501,6 +501,9 @@
                             </includes>
                             <excludes>
                                 <exclude>**/target/**</exclude>
+                                <exclude>.idea/**</exclude>
+                                <exclude>.settings/**</exclude>
+                                <exclude>.github/**</exclude>
                             </excludes>
                         </validationSet>
                     </validationSets>
