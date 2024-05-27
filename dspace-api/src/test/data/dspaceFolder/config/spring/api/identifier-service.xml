@@ -62,17 +62,15 @@
     </bean>
     
     <!-- Application rules -->
-    <bean id="configuredTrue" class="org.dspace.identifier.generators.FixedValueDoiApplicationRule" />
-    
-    <bean id="belongsToEUT" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
+    <bean id="belongsToEUT" class="org.dspace.content.logic.RelatedToCommunityFilter">
         <constructor-arg name="handles">
             <set>
                 <value>123456789/7520</value>
             </set>
         </constructor-arg>
     </bean>
-    
-    <bean id="belongsToThesis" class="org.dspace.identifier.generators.BelongingToCommunityDoiApplicationRule">
+
+    <bean id="belongsToThesis" class="org.dspace.content.logic.RelatedToCommunityFilter">
         <constructor-arg name="handles">
             <set>
                 <value>123456789/9</value>
@@ -105,22 +103,21 @@
     
     <!-- Below there are defined the generation strategy -->  
     <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-    	<constructor-arg name="doiApplicationRule" ref="configuredTrue" />
+    	<constructor-arg name="filter" ref="always_true_filter" />
     	<constructor-arg name="doiNamespaceGenerator" ref="defaultValueNamespace" />
     	<constructor-arg name="generationType" value="DEFAULT" />
     </bean>
     
     <bean id="thesisDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-    	<constructor-arg name="doiApplicationRule" ref="belongsToThesis" />
+    	<constructor-arg name="filter" ref="belongsToThesis" />
     	<constructor-arg name="doiNamespaceGenerator" ref="thesisCustomNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
     </bean>  
       
     <bean id="eutDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-    	<constructor-arg name="doiApplicationRule" ref="belongsToEUT" />
+    	<constructor-arg name="filter" ref="belongsToEUT" />
     	<constructor-arg name="doiNamespaceGenerator" ref="eutCustomNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
     </bean>
-    
-    
+
 </beans>

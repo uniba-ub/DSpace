@@ -10,6 +10,7 @@ package org.dspace.identifier.generators;
 
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.logic.Filter;
 import org.dspace.core.Context;
 import org.dspace.identifier.DOI;
 import org.dspace.identifier.service.DOIService;
@@ -23,26 +24,26 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class ConfigurableDoiGenerationStrategy implements DoiGenerationStrategy {
 
-    @Autowired(required = true)
+    @Autowired
     protected DOIService doiService;
 
-    protected final DoiApplicationRule doiApplicationRule;
+    protected final Filter filter;
     protected final DoiNamespaceGenerator doiNamespaceGenerator;
     protected final DoiGenType generationType;
 
     ConfigurableDoiGenerationStrategy(
-        DoiApplicationRule doiApplicationRule,
+        Filter filter,
         DoiNamespaceGenerator doiNamespaceGenerator,
         DoiGenType generationType
     ) {
-        this.doiApplicationRule = doiApplicationRule;
+        this.filter = filter;
         this.doiNamespaceGenerator = doiNamespaceGenerator;
         this.generationType = generationType;
     }
 
     @Override
     public boolean isApplicable(Context context, DSpaceObject dso) {
-        return doiApplicationRule.getApplicable(context, (Item) dso);
+        return filter.getResult(context, (Item) dso);
     }
 
     @Override

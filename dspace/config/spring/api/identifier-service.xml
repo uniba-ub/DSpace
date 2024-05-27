@@ -161,9 +161,6 @@
     </bean>
     -->
 
-    <!-- Application rules -->
-    <bean id="configuredTrue" class="org.dspace.identifier.generators.FixedValueDoiApplicationRule" />
-
     <!-- Namespace definition -->
     <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
         <property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
@@ -171,14 +168,16 @@
 
     <!-- Below there are defined the generation strategy -->
     <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-        <constructor-arg name="doiApplicationRule" ref="configuredTrue" />
+        <!-- Filter configured in item-filters.xml file -->
+        <constructor-arg name="filter" ref="always_true_filter" />
         <constructor-arg name="doiNamespaceGenerator" ref="defaultValueNamespace" />
         <constructor-arg name="generationType" value="DEFAULT" />
     </bean>
 
     <!-- CUSTOM GENERATORS -->
+    <!-- The following are some example configurations for the DOI filter generation strategies -->
     <!--
-    <bean id="publicationCollectionRule" class="org.dspace.identifier.generators.BelongingToCollectionDoiApplicationRule">
+    <bean id="publicationFilter" class="org.dspace.content.logic.RelatedToCollectionFilter">
         <constructor-arg name="handles">
             <set>
                 <value>123456789/6</value>
@@ -191,7 +190,7 @@
     </bean>
 
     <bean id="thesisDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-        <constructor-arg name="doiApplicationRule" ref="publicationCollectionRule" />
+        <constructor-arg name="filter" ref="publicationFilter" />
         <constructor-arg name="doiNamespaceGenerator" ref="publicationGenerator" />
         <constructor-arg name="generationType" value="CUSTOM" />
     </bean>

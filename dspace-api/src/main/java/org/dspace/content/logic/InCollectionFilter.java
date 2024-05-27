@@ -11,12 +11,16 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.dspace.content.Collection;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.Item;
+import org.dspace.content.logic.condition.AbstractInHandlesCondition;
+import org.dspace.content.logic.condition.InCollectionCondition;
+import org.dspace.content.logic.supplier.HandleSupplierFactory;
 import org.dspace.content.service.CollectionService;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
@@ -30,7 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
  * @author Kim Shepherd
  * @author Giuseppe Digilio
  */
-public class InCollectionFilter implements Filter {
+public class InCollectionFilter extends AbstractInHandlesFilter implements Filter {
 
     @Autowired(required = true)
     protected ItemService itemService;
@@ -41,7 +45,27 @@ public class InCollectionFilter implements Filter {
 
     private String name;
     private Map<String, Object> parameters = new HashMap<>();
+    private AbstractInHandlesCondition handleCondition;
     private static Logger log = LogManager.getLogger(InCollectionFilter.class);
+
+    InCollectionFilter() {
+        super(HandleSupplierFactory.getInstance().collectionHandleSupplier());
+        this.handleCondition = new InCollectionCondition(parameters);
+    }
+
+    InCollectionFilter(Set<String> handles) {
+        super(HandleSupplierFactory.getInstance().collectionHandleSupplier());
+        this.setHandles(handles);
+    }
+
+    public void setHandles(Set<String> handles) {
+        this.parameters.put("collections", handles);
+    }
+
+    public Set<String> getHandles() {
+        List<String> collectionHandles = (List<String>)getParameters().get("collections");
+        return collectionHandles.stream().collect(Collectors.toSet());
+    }
 
     /**
      * Get parameters set by spring configuration in item-filters.xml
@@ -64,6 +88,7 @@ public class InCollectionFilter implements Filter {
         this.parameters = parameters;
     }
 
+
     /**
      * Return true if item is in one of the specified collections
      * Return false if not
@@ -75,14 +100,8 @@ public class InCollectionFilter implements Filter {
     @Override
     public Boolean getResult(Context context, Item item) throws LogicalStatementException {
 
-        List<String> collectionHandles = (List<String>)getParameters().get("collections");
-        List<Collection> itemCollections = item.getCollections();
-        for (Collection collection : itemCollections) {
-            if (collectionHandles.contains(collection.getHandle())) {
-                log.debug("item " + item.getHandle() + " is in collection "
-                    + collection.getHandle() + ", returning true");
-                return true;
-            }
+        if (super.getResult(context, item)) {
+            return true;
         }
 
         // Look for the parent object of the item. This is important as the item.getOwningCollection method
@@ -92,7 +111,7 @@ public class InCollectionFilter implements Filter {
             if (parent != null) {
                 log.debug("Got parent DSO for item: " + parent.getID().toString());
                 log.debug("Parent DSO handle: " + parent.getHandle());
-                if (collectionHandles.contains(parent.getHandle())) {
+                if (getHandles().contains(parent.getHandle())) {
                     log.debug("item " + item.getHandle() + " is in collection "
                         + parent.getHandle() + ", returning true");
                     return true;
