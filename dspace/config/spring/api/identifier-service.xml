@@ -64,6 +64,7 @@
                   ref="org.dspace.services.ConfigurationService"/>
         <property name="DOIConnector"
                   ref="org.dspace.identifier.doi.DOIConnector"/>
+        <property name="filter" ref="doi-filter" />
     </bean>
     -->
     <!--
@@ -162,17 +163,17 @@
     -->
 
     <!-- Namespace definition -->
-    <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
+<!--    <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
         <property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
     </bean>
 
-    <!-- Below there are defined the generation strategy -->
+    &lt;!&ndash; Below there are defined the generation strategy &ndash;&gt;
     <bean id="defaultDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-        <!-- Filter configured in item-filters.xml file -->
+        &lt;!&ndash; Filter configured in item-filters.xml file &ndash;&gt;
         <constructor-arg name="filter" ref="always_true_filter" />
         <constructor-arg name="doiNamespaceGenerator" ref="defaultValueNamespace" />
         <constructor-arg name="generationType" value="DEFAULT" />
-    </bean>
+    </bean>-->
 
     <!-- CUSTOM GENERATORS -->
     <!-- The following are some example configurations for the DOI filter generation strategies -->
