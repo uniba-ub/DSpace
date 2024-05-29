@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.dspace.content.Item;
-import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.logic.LogicalStatementException;
 import org.dspace.content.logic.supplier.HandleSupplier;
 import org.dspace.content.service.ItemService;
