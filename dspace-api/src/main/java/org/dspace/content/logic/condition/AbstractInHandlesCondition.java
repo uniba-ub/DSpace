@@ -18,6 +18,7 @@ import org.dspace.content.logic.LogicalStatementException;
 import org.dspace.content.logic.supplier.HandleSupplier;
 import org.dspace.content.service.ItemService;
 import org.dspace.core.Context;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * This is an {@link AbstractCondition} that checks if a given {@link Collection} of {@code handles}, contains at least
@@ -40,7 +41,8 @@ public abstract class AbstractInHandlesCondition implements Condition {
                              .orElse(false);
     }
 
-    protected ItemService itemService = ContentServiceFactory.getInstance().getItemService();
+    @Autowired
+    protected ItemService itemService;
 
     protected Map<String, Object> parameters = new HashMap<>();
     protected HandleSupplier handleSupplier;
