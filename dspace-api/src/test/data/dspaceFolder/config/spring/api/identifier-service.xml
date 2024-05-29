@@ -68,11 +68,11 @@
     	<property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
     </bean>
     
-    <bean id="thesisCustomNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
+    <bean id="unitsCustomNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
     	<property name="configurationValue" value="units/custom/" />
     </bean>
 
-    <bean id="eutCustomNamespace" class="org.dspace.identifier.generators.MetadataValueNamespaceGenerator">
+    <bean id="customSeparatorNamespace" class="org.dspace.identifier.generators.MetadataValueNamespaceGenerator">
         <constructor-arg name="postValue" value="/" />
         <constructor-arg name="namespaceSeparator" value="${identifier.doi.namespaceseparator}" />
         <constructor-arg name="metadataFields">
@@ -93,16 +93,22 @@
     	<constructor-arg name="generationType" value="DEFAULT" />
     </bean>
     
-    <bean id="thesisDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+    <bean id="communityDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
     	<constructor-arg name="filter" ref="belongsToComm" />
-    	<constructor-arg name="doiNamespaceGenerator" ref="thesisCustomNamespace" />
+    	<constructor-arg name="doiNamespaceGenerator" ref="unitsCustomNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
     </bean>  
       
-    <bean id="eutDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+    <bean id="collectionDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
     	<constructor-arg name="filter" ref="belongsToColl" />
-    	<constructor-arg name="doiNamespaceGenerator" ref="eutCustomNamespace" />
+    	<constructor-arg name="doiNamespaceGenerator" ref="customSeparatorNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
+    </bean>
+
+    <bean id="inHandleCollectionGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
+        <constructor-arg name="filter" ref="belongsToInHandleColl" />
+        <constructor-arg name="doiNamespaceGenerator" ref="customSeparatorNamespace" />
+        <constructor-arg name="generationType" value="CUSTOM" />
     </bean>
 
 </beans>

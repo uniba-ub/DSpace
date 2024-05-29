@@ -178,12 +178,19 @@
     <!-- CUSTOM GENERATORS -->
     <!-- The following are some example configurations for the DOI filter generation strategies -->
     <!--
-    <bean id="publicationFilter" class="org.dspace.content.logic.RelatedToCollectionFilter">
-        <constructor-arg name="handles">
-            <set>
-                <value>123456789/6</value>
-            </set>
-        </constructor-arg>
+    <bean id="publicationCollectionCond" class="org.dspace.content.logic.condition.InCollectionCondition">
+        <property name="parameters">
+            <map>
+                <entry key="collections">
+                    <list>
+                        <value>123456789/6</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="publicationFilter" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="publicationCollectionCond"/>
     </bean>
 
     <bean id="publicationGenerator" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">

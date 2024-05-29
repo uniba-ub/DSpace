@@ -473,6 +473,48 @@ public class DOIIdentifierProviderTest
     }
 
     @Test
+    public void testGet_DOI_Belongs_To_GenericCollection() throws Exception {
+        context.turnOffAuthorisationSystem();
+
+        collection = collectionService.create(context, community, "123456789/9000");
+        collectionService.setMetadataSingleValue(
+            context, collection, CollectionService.MD_NAME, null,
+            "A Test Collection With Generic Handles"
+        );
+        collectionService.update(context, collection);
+
+        context.restoreAuthSystemState();
+
+        Item item = newItem();
+
+        context.turnOffAuthorisationSystem();
+        itemService.addMetadata(context, item, "dc", "identifier", "isbn", null, "generic-handle-identifier");
+        itemService.update(context, item);
+        context.restoreAuthSystemState();
+
+        String doi = DOI.SCHEME + PREFIX + "/" +
+            itemService.getMetadata(item, "dc.identifier.isbn") + "/" +
+            Long.toHexString(new Date().getTime());
+
+        context.turnOffAuthorisationSystem();
+
+        itemService.addMetadata(context, item, provider.MD_SCHEMA,
+                                provider.DOI_ELEMENT,
+                                provider.DOI_QUALIFIER,
+                                null,
+                                doiService.DOIToExternalForm(doi));
+        itemService.update(context, item);
+
+        context.restoreAuthSystemState();
+
+        assertEquals(
+            "Failed to recognize DOI in item metadata with generic collection configuration.",
+            doi,
+            provider.getDOIOutOfObject(context, item)
+        );
+    }
+
+    @Test
     public void testRemove_DOI_from_item_metadata()
         throws SQLException, AuthorizeException, IOException, IdentifierException, WorkflowException,
         IllegalAccessException {
