@@ -61,23 +61,8 @@
       </property>
     </bean>
     
-    <!-- Application rules -->
-    <bean id="belongsToEUT" class="org.dspace.content.logic.RelatedToCommunityFilter">
-        <constructor-arg name="handles">
-            <set>
-                <value>123456789/7520</value>
-            </set>
-        </constructor-arg>
-    </bean>
+    <!-- DOI Application rules -->
 
-    <bean id="belongsToThesis" class="org.dspace.content.logic.RelatedToCommunityFilter">
-        <constructor-arg name="handles">
-            <set>
-                <value>123456789/9</value>
-            </set>
-        </constructor-arg>
-    </bean>
-    
     <!-- Namespace definition -->
     <bean id="defaultValueNamespace" class="org.dspace.identifier.generators.FixedConfigurationValueNamespaceGenerator">
     	<property name="configurationValue" value="${identifier.doi.namespaceseparator}" />
@@ -109,13 +94,13 @@
     </bean>
     
     <bean id="thesisDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-    	<constructor-arg name="filter" ref="belongsToThesis" />
+    	<constructor-arg name="filter" ref="belongsToComm" />
     	<constructor-arg name="doiNamespaceGenerator" ref="thesisCustomNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
     </bean>  
       
     <bean id="eutDoiGenerationStrategy" class="org.dspace.identifier.generators.ConfigurableDoiGenerationStrategy">
-    	<constructor-arg name="filter" ref="belongsToEUT" />
+    	<constructor-arg name="filter" ref="belongsToColl" />
     	<constructor-arg name="doiNamespaceGenerator" ref="eutCustomNamespace" />
     	<constructor-arg name="generationType" value="CUSTOM" />
     </bean>

@@ -367,4 +367,35 @@
         </property>
     </bean>
 
+    <bean id="collectionCond" class="org.dspace.content.logic.condition.InCollectionCondition">
+        <property name="parameters">
+            <map>
+                <entry key="collections">
+                    <list>
+                        <value>123456789/7520</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="belongsToColl" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="collectionCond"/>
+    </bean>
+
+
+    <bean id="communityCond" class="org.dspace.content.logic.condition.InCommunityCondition">
+        <property name="parameters">
+            <map>
+                <entry key="communities">
+                    <list>
+                        <value>123456789/9</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="belongsToComm" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="communityCond"/>
+    </bean>
 </beans>
