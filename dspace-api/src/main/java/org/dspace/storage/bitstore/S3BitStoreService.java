@@ -189,10 +189,12 @@ public class S3BitStoreService extends BaseBitStoreService {
      * Utility method for generate AmazonS3 builder
      *
      * @param clientConfigurationSupplier client connection details
+     * @param regions the region of the configured endpoint
      * @param endpoint optional custom endpoint
      * @return builder with the specified parameters
      */
     protected static Supplier<AmazonS3> amazonClientBuilderBy(
+        @NotNull Regions regions,
         @NotNull Supplier<ClientConfiguration> clientConfigurationSupplier,
         String endpoint
     ) {
@@ -200,7 +202,7 @@ public class S3BitStoreService extends BaseBitStoreService {
             withEndpointConfiguration(
                 AmazonS3ClientBuilder.standard()
                                      .withClientConfiguration(clientConfigurationSupplier.get()),
-                Regions.DEFAULT_REGION,
+                regions,
                 endpoint
             ).build();
     }
@@ -282,17 +284,17 @@ public class S3BitStoreService extends BaseBitStoreService {
         }
 
         try {
+            // region
+            Regions regions = Regions.DEFAULT_REGION;
+            if (StringUtils.isNotBlank(awsRegionName)) {
+                try {
+                    regions = Regions.fromName(awsRegionName);
+                } catch (IllegalArgumentException e) {
+                    log.warn("Invalid aws_region: " + awsRegionName);
+                }
+            }
             if (StringUtils.isNotBlank(getAwsAccessKey()) && StringUtils.isNotBlank(getAwsSecretKey())) {
                 log.warn("Use local defined S3 credentials");
-                // region
-                Regions regions = Regions.DEFAULT_REGION;
-                if (StringUtils.isNotBlank(awsRegionName)) {
-                    try {
-                        regions = Regions.fromName(awsRegionName);
-                    } catch (IllegalArgumentException e) {
-                        log.warn("Invalid aws_region: " + awsRegionName);
-                    }
-                }
                 // init client
                 s3Service =
                     FunctionalUtils.getDefaultOrBuild(
@@ -304,18 +306,19 @@ public class S3BitStoreService extends BaseBitStoreService {
                             endpoint
                         )
                     );
-                log.warn("S3 Region set to: " + regions.getName());
             } else {
                 log.info("Using a IAM role or aws environment credentials");
                 s3Service =
                     FunctionalUtils.getDefaultOrBuild(
                         this.s3Service,
                         amazonClientBuilderBy(
+                            regions,
                             getClientConfiguration(maxConnections, connectionTimeout),
                             endpoint
                         )
                     );
             }
+            log.warn("S3 Region set to: " + regions.getName());
 
             // bucket name
             if (StringUtils.isEmpty(bucketName)) {
