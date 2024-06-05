@@ -7,6 +7,14 @@
  */
 package org.dspace.validation;
 
+import static org.dspace.validation.service.ValidationService.OPERATION_PATH_SECTIONS;
+import static org.dspace.validation.util.ValidationUtils.addError;
+
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
+import javax.inject.Inject;
+
 import org.dspace.app.util.SubmissionStepConfig;
 import org.dspace.content.InProgressSubmission;
 import org.dspace.content.Item;
@@ -18,13 +26,6 @@ import org.dspace.services.ConfigurationService;
 import org.dspace.validation.model.ValidationError;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.inject.Inject;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
-
-import static org.dspace.validation.service.ValidationService.OPERATION_PATH_SECTIONS;
-import static org.dspace.validation.util.ValidationUtils.addError;
 
 /**
  * This class validates that the Creative Commons License has been granted for the
