@@ -127,6 +127,24 @@ public class DataCiteImportMetadataSourceServiceIT extends AbstractLiveImportInt
         MetadatumDTO author8 = createMetadatumDTO("dc", "contributor", "author", "Schleicher, Dierk");
         MetadatumDTO author9 = createMetadatumDTO("dc", "contributor", "author", "Stock, Benedikt");
         MetadatumDTO author10 = createMetadatumDTO("dc", "contributor", "author", "Zelmanov, Efim");
+        MetadatumDTO dateissued = createMetadatumDTO("dc", "date", "issued", "2022");
+        MetadatumDTO publisher = createMetadatumDTO("dc", "publisher", null, "arXiv");
+        MetadatumDTO type = createMetadatumDTO("dc", "type", null, "Working Paper");
+        MetadatumDTO abstrct = createMetadatumDTO("dc", "description", "abstract", "A proof is one of the most" +
+            " important concepts of mathematics. However, there is a striking difference between how a proof " +
+            "is defined in theory and how it " +
+            "is used in practice. This puts the unique status of mathematics as exact science into peril. " +
+            "Now may be the time to reconcile theory and practice, i.e. precision and intuition, through the" +
+            " advent of computer proof assistants. For the most time this has been a topic for experts in specialized" +
+            " communities. However, mathematical proofs have become increasingly sophisticated, stretching the" +
+            " boundaries of what is humanly comprehensible, so that leading mathematicians have asked for formal" +
+            " verification of their proofs. At the same time, major theorems in mathematics have recently been" +
+            " computer-verified by people from outside of these communities, even by beginning students. This" +
+            " article investigates the gap between the different definitions of a proof and possibilities to" +
+            " build bridges. It is written as a polemic or a collage by different members of the communities in" +
+            " mathematics and computer science at different stages of their careers, challenging well-known" +
+            " preconceptions and exploring new perspectives.");
+        MetadatumDTO description = createMetadatumDTO("dc", "description", null, "17 pages, 1 figure");
         metadatums.add(title);
         metadatums.add(doi);
         metadatums.add(author1);
@@ -139,6 +157,11 @@ public class DataCiteImportMetadataSourceServiceIT extends AbstractLiveImportInt
         metadatums.add(author8);
         metadatums.add(author9);
         metadatums.add(author10);
+        metadatums.add(dateissued);
+        metadatums.add(publisher);
+        metadatums.add(type);
+        metadatums.add(abstrct);
+        metadatums.add(description);
 
         ImportRecord firstRecord = new ImportRecord(metadatums);
 
