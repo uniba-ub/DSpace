@@ -28,7 +28,7 @@ import org.dspace.external.model.ExternalDataObject;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
- * Implementation of {@see org.dspace.app.suggestion.oaire.EvidenceScorer} which evaluate ImportRecords
+ * Implementation of {@link org.dspace.app.suggestion.openaire.EvidenceScorer} which evaluate ImportRecords
  * based on Author's name.
  * 
  * @author Andrea Bollini (andrea.bollini at 4science dot it)
