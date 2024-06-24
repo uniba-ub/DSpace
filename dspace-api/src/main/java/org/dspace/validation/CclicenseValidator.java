@@ -65,8 +65,6 @@ public class CclicenseValidator implements SubmissionStepValidator {
 
     private String name;
 
-    private Boolean required;
-
     /**
      * Perform validation on the item and config(ccLicense).
      * @param item The item to be validated.
@@ -75,13 +73,11 @@ public class CclicenseValidator implements SubmissionStepValidator {
      * @throws SQLException If there is a problem accessing the database.
      */
     private List<ValidationError> performValidation(Item item, SubmissionStepConfig config) throws SQLException {
-        List<ValidationError> errors = new ArrayList<>();
-
         if (this.isRequired()) {
-            errors.addAll(validateLicense(item, config));
+            return validateLicense(item, config);
+        } else {
+            return List.of();
         }
-
-        return errors;
     }
 
     /**
@@ -91,7 +87,7 @@ public class CclicenseValidator implements SubmissionStepValidator {
      * @return A list of validation errors.
      */
     private List<ValidationError> validateLicense(Item item, SubmissionStepConfig config) {
-        List<ValidationError> errors = new ArrayList<>();
+        List<ValidationError> errors = new ArrayList<>(1);
 
         String licenseURI = creativeCommonsService.getLicenseURI(item);
         if (licenseURI == null || licenseURI.isBlank()) {
@@ -114,18 +110,7 @@ public class CclicenseValidator implements SubmissionStepValidator {
      * @return true if a Creative Commons License is required setting true for the property cc.license.required.
      */
     public Boolean isRequired() {
-        if (required == null) {
-            return configurationService.getBooleanProperty("cc.license.required", false);
-        }
-        return required;
-    }
-
-    /**
-     * Set whether at least one Creative Commons License is required when submitting a new Item.
-     * @param required true if a Creative Commons License is required.
-     */
-    public void setRequired(Boolean required) {
-        this.required = required;
+        return configurationService.getBooleanProperty("cc.license.required", false);
     }
 
     @Override
