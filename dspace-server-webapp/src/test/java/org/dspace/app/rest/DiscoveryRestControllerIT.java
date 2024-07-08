@@ -7756,7 +7756,7 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                 .andExpect(jsonPath("$._embedded.searchResult.page.totalElements", is(1)))
                 .andExpect(jsonPath("$._embedded.searchResult._embedded.objects",
                         Matchers.containsInAnyOrder(
-                                SearchResultMatcher.matchOnItemName("item", "items", orgUnitItem.getName()))));
+                                SearchResultMatcher.matchOnItemName("item", "items", publicationItem.getName()))));
 
     }
 
