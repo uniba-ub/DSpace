@@ -367,6 +367,53 @@
         </property>
     </bean>
 
+    <bean id="collectionCond" class="org.dspace.content.logic.condition.InCollectionCondition">
+        <property name="parameters">
+            <map>
+                <entry key="collections">
+                    <list>
+                        <value>123456789/7520</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+    <bean id="belongsToColl" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="collectionCond"/>
+    </bean>
+
+
+    <bean id="communityCond" class="org.dspace.content.logic.condition.InCommunityCondition">
+        <property name="parameters">
+            <map>
+                <entry key="communities">
+                    <list>
+                        <value>123456789/9</value>
+                    </list>
+                </entry>
+            </map>
+        </property>
+    </bean>
+
+    <bean id="belongsToComm" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="communityCond"/>
+    </bean>
+
+    <bean id="inCollectionHandleCondition" class="org.dspace.content.logic.condition.InHandlesCondition">
+        <constructor-arg name="handles">
+            <set>
+                <value>123456789/9000</value>
+            </set>
+        </constructor-arg>
+        <constructor-arg
+            name="handleSupplier"
+            value="#{T(org.dspace.content.logic.supplier.HandleSupplierFactory).getInstance().relatedCollectionHandleSupplier()}"
+        />
+    </bean>
+    <bean id="belongsToInHandleColl" class="org.dspace.content.logic.DefaultFilter">
+        <property name="statement" ref="inCollectionHandleCondition"/>
+    </bean>
+
     <util:map id="ldnItemFilters" key-type="java.lang.String"
               value-type="org.dspace.content.logic.LogicalStatement">
        <entry key="always_true_filter" value-ref="always_true_filter"/>
