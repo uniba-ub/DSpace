@@ -1511,7 +1511,7 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
      * that uses an user that is configured as admin collection and then check for its valid status!
      */
     @Test
-    public void collectionExportWithCollectionAdmin() throws Exception {
+    public void collectionExportProcessExecutionWithCollectionAdmin() throws Exception {
 
         context.turnOffAuthorisationSystem();
         parentCommunity =
@@ -1643,6 +1643,130 @@ public class ScriptRestRepositoryIT extends AbstractControllerIntegrationTest {
                 ProcessBuilder.deleteProcess(idRef.get());
             }
         }
+
+    }
+
+
+    /**
+     * schedules collection-export process through {@link org.dspace.app.rest.repository.ScriptRestRepository}
+     * with an admin user and checks its validity!
+     */
+    @Test
+    public void collectionExportProcessExecutionWithAdmin() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        parentCommunity =
+            CommunityBuilder.createCommunity(context)
+                            .withName("Parent Community")
+                            .build();
+
+        Collection collection =
+            createCollection(context, parentCommunity)
+                .withSubmissionDefinition("patent")
+                .build();
+
+        Item item =
+            ItemBuilder.createItem(context, collection)
+                       .withTitle("Test patent")
+                       .withAuthor("White, Walter")
+                       .withIssueDate("2020-01-01")
+                       .withLanguage("it")
+                       .withSubject("test")
+                       .withSubject("export")
+                       .build();
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        AtomicReference<Integer> idRef = new AtomicReference<>();
+
+        try {
+
+
+            String adminToken = getAuthToken(admin.getEmail(), password);
+
+            DSpaceCommandLineParameter collectionParam =
+                new DSpaceCommandLineParameter("-c", collection.getID().toString());
+
+            var parameters =
+                Stream.of(collectionParam)
+                      .map(lineParam -> dSpaceRunnableParameterConverter.convert(lineParam, Projection.DEFAULT))
+                      .collect(Collectors.toList());
+
+            getClient(adminToken)
+                .perform(
+                    post("/api/system/scripts/collection-export/processes")
+                        .contentType("multipart/form-data")
+                        .param("properties", new Gson().toJson(parameters))
+                )
+                .andExpect(status().isAccepted())
+                .andExpect(
+                    jsonPath(
+                        "$", is(
+                            ProcessMatcher.matchProcess(
+                                "collection-export",
+                                String.valueOf(admin.getID()),
+                                List.of(collectionParam),
+                                List.of(
+                                    ProcessStatus.SCHEDULED,
+                                    ProcessStatus.RUNNING,
+                                    ProcessStatus.COMPLETED
+                                )
+                            )
+                        )
+                    )
+                )
+                .andDo(
+                    result ->
+                        idRef.set(read(result.getResponse().getContentAsString(), "$.processId"))
+                );
+
+        } finally {
+            if (idRef.get() != null) {
+                ProcessBuilder.deleteProcess(idRef.get());
+            }
+        }
+
+    }
+
+    /**
+     * Fails to schedule the collection-export process through {@link org.dspace.app.rest.repository.ScriptRestRepository}
+     * whenever launched with a non collectionAdmin user.!
+     */
+    @Test
+    public void collectionExportProcessExecutionFailsWithNonAdmin() throws Exception {
+
+        context.turnOffAuthorisationSystem();
+        parentCommunity =
+            CommunityBuilder.createCommunity(context)
+                            .withName("Parent Community")
+                            .build();
+
+        Collection collection =
+            createCollection(context, parentCommunity)
+                .withSubmissionDefinition("patent")
+                .build();
+
+        context.commit();
+        context.restoreAuthSystemState();
+
+        String epersonToken = getAuthToken(eperson.getEmail(), password);
+
+        DSpaceCommandLineParameter collectionParam =
+            new DSpaceCommandLineParameter("-c", collection.getID().toString());
+
+        var parameters =
+            Stream.of(collectionParam)
+                  .map(lineParam -> dSpaceRunnableParameterConverter.convert(lineParam, Projection.DEFAULT))
+                  .collect(Collectors.toList());
+
+        getClient(epersonToken)
+            .perform(
+                post("/api/system/scripts/collection-export/processes")
+                    .contentType("multipart/form-data")
+                    .param("properties", new Gson().toJson(parameters))
+            )
+            .andExpect(status().isForbidden());
 
     }
 
