@@ -181,7 +181,6 @@ public class SolrBrowseDAO implements BrowseDAO {
         if (sResponse == null) {
             DiscoverQuery query = new DiscoverQuery();
             addLocationScopeFilter(query);
-            addStatusFilter(query);
             addExtraFilter(query);
             addDefaultFilterQueries(query);
             if (distinct) {
@@ -238,18 +237,6 @@ public class SolrBrowseDAO implements BrowseDAO {
         String filter = configurationService.getProperty("browse.solr." + facetField + ".filter");
         if (StringUtils.isNotBlank(filter)) {
             query.addFilterQueries(filter);
-        }
-    }
-
-    private void addStatusFilter(DiscoverQuery query) {
-        try {
-            if (!authorizeService.isAdmin(context)
-                && (authorizeService.isCommunityAdmin(context)
-                || authorizeService.isCollectionAdmin(context))) {
-                query.addFilterQueries(searcher.createLocationQueryForAdministrableItems(context));
-            }
-        } catch (SQLException ex) {
-            log.error("Error looking up authorization rights of current user", ex);
         }
     }
 
@@ -356,7 +343,6 @@ public class SolrBrowseDAO implements BrowseDAO {
         throws BrowseException {
         DiscoverQuery query = new DiscoverQuery();
         addLocationScopeFilter(query);
-        addStatusFilter(query);
         addExtraFilter(query);
         addDefaultFilterQueries(query);
         query.setMaxResults(0);
