@@ -62,7 +62,8 @@ public class ConfigurationRestRepository extends DSpaceRestRepository<PropertyRe
     @Override
     @PreAuthorize("permitAll()")
     public PropertyRest findOne(Context context, String property) {
-        if (!exposedProperties.contains(property) || !configurationService.hasProperty(property)
+        if ((!exposedProperties.contains(property) && !isCurrentUserAdmin(context))
+            || !configurationService.hasProperty(property)
             || (isCurrentUserAdmin(context) && !adminRestrictedProperties.contains(property))) {
             throw new ResourceNotFoundException("No such configuration property: " + property);
         }
