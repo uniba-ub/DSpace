@@ -474,8 +474,8 @@
             <name>E. Brevetto</name>
             <collection>
                 <name>E1. Brevetto</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Patent</entity-type>
+                <submission-type>patent</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>patent</value>
@@ -518,8 +518,8 @@
             <name>G. Altra tipologia</name>
             <collection>
                 <name>G01. Composizione</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -537,8 +537,8 @@
             </collection>
             <collection>
                 <name>G02. Disegno</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -556,8 +556,8 @@
             </collection>
             <collection>
                 <name>G03. Progetto architettonico</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -575,8 +575,8 @@
             </collection>
             <collection>
                 <name>G04. Design</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -594,8 +594,8 @@
             </collection>
             <collection>
                 <name>G05. Performance</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -613,8 +613,8 @@
             </collection>
             <collection>
                 <name>G06. Esposizione</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -632,8 +632,8 @@
             </collection>
             <collection>
                 <name>G07. Mostra</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -651,8 +651,8 @@
             </collection>
             <collection>
                 <name>G08. Manufatto</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -670,8 +670,8 @@
             </collection>
             <collection>
                 <name>G09. Prototipo d'arte e relativi progetti</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -689,8 +689,8 @@
             </collection>
             <collection>
                 <name>G10. Cartografia</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -708,8 +708,8 @@
             </collection>
             <collection>
                 <name>G11. Banca dati</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -727,8 +727,8 @@
             </collection>
             <collection>
                 <name>G12. Software</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
@@ -746,8 +746,8 @@
             </collection>
             <collection>
                 <name>G13. Altro</name>
-                <entity-type>Publication</entity-type>
-                <submission-type>publication</submission-type>
+                <entity-type>Product</entity-type>
+                <submission-type>product</submission-type>
                 <templateItem>
                     <metadata schema="dc" element="type">
                         <value>other</value>
