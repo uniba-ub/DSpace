@@ -25,6 +25,9 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
@@ -37,6 +40,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
 
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.lang3.ArrayUtils;
@@ -71,6 +75,7 @@ import org.hamcrest.Matchers;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 
 /**
  * Integration tests for the {@link XlsCollectionCrosswalk}.
@@ -648,11 +653,12 @@ public class XlsCollectionCrosswalkIT extends AbstractIntegrationTestWithDatabas
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-        IllegalArgumentException argumentException = Assert.assertThrows(IllegalArgumentException.class,
-            () -> xlsCollectionCrosswalk.disseminate(context, itemIterator, baos));
+        XlsCollectionCrosswalk spy = spy(xlsCollectionCrosswalk);
 
-        assertThat(argumentException.getMessage(), is("It is not possible to export items from two different"
-            + " collections: item " + secondItem.getID() + " is not in collection " + collection1.getID()));
+        spy.disseminate(context, itemIterator, baos);
+
+        verify(spy, times(1))
+            .logMessage(ArgumentMatchers.eq(Level.WARNING), ArgumentMatchers.contains(secondItem.getID().toString()));
     }
 
     @Test
@@ -983,6 +989,99 @@ public class XlsCollectionCrosswalkIT extends AbstractIntegrationTestWithDatabas
         rows.add(mainSheetRow);
         asserThatSheetHas(mainSheet, "items", 2, mainSheetHeader, rows);
 
+    }
+
+    @Test
+    public void testCollectionDisseminateWithBitstreamSheetWithMetadataLanguages() throws Exception {
+        context.turnOffAuthorisationSystem();
+        Collection collection = createCollection(context, community)
+                .withSubmissionDefinition("publication")
+                .withAdminGroup(eperson)
+                .build();
+
+        Item firstItem = ItemBuilder.createItem(context, collection)
+                .withEntityType("Publication")
+                .withTitle("Test Publication")
+                .withDescription("Description")
+                .build();
+
+        Bundle bundle = BundleBuilder.createBundle(context, firstItem)
+                .withName("TEST-BUNDLE")
+                .build();
+
+        // add metadata dc.description[en]
+        Bitstream bitstream = createBitstream(context, bundle, getBitstreamSample("First bitstream sample"))
+                .withName("test.txt")
+                .withMetadata("dc", "description", null, "test description 1", "en")
+                .withMetadata("dc", "date", null, "2023-02-23")
+                .withMetadata("dc", "contributor", null, "Unknown author")
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.READ)
+                .withDescription("Test policy")
+                .withName("administrator")
+                .withPolicyType(ResourcePolicy.TYPE_CUSTOM)
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.WRITE)
+                .withName("administrator")
+                .withPolicyType(ResourcePolicy.TYPE_CUSTOM)
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.READ)
+                .withName("openaccess")
+                .withPolicyType(ResourcePolicy.TYPE_INHERITED)
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.READ)
+                .withPolicyType(ResourcePolicy.TYPE_CUSTOM)
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.READ)
+                .withName("embargo")
+                .withStartDate(parse("2025-03-25"))
+                .withPolicyType(ResourcePolicy.TYPE_CUSTOM)
+                .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context)
+                .withDspaceObject(bitstream)
+                .withAction(Constants.READ)
+                .withName("lease")
+                .withDescription("Test")
+                .withEndDate(parse("2025-03-25"))
+                .withPolicyType(ResourcePolicy.TYPE_CUSTOM)
+                .build();
+
+        context.restoreAuthSystemState();
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        xlsCollectionCrosswalk.disseminate(context, collection, baos);
+
+        Workbook workbook = WorkbookFactory.create(new ByteArrayInputStream(baos.toByteArray()));
+        assertThat(workbook.getNumberOfSheets(), equalTo(5));
+
+        String firstItemId = firstItem.getID().toString();
+        String bitstreamLocation = getBitstreamLocationUrl(bitstream);
+        String expectedPolicies = "administrator$$Test policy||embargo$$2025-03-25||lease$$2025-03-25$$Test";
+
+        String[] bitstreamHeaders = ArrayUtils.addAll(BITSTREAMS_SHEET_HEADERS, "dc.title", "dc.description");
+        String[] firstRow = { firstItemId, bitstreamLocation, "TEST-BUNDLE", "1", expectedPolicies, "N",
+                "test.txt"};
+
+        List<String[]> rowList = new ArrayList<>();
+        rowList.add(firstRow);
+
+        asserThatSheetHas(workbook.getSheetAt(4), "bitstream-metadata", 2, bitstreamHeaders, rowList);
     }
 
     private InputStream getBitstreamSample(String text) {

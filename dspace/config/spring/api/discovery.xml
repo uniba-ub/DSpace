@@ -53,6 +53,22 @@
     		</list>
     	</property>
     </bean>
+    <bean id="objectNameIndexPlugin" class="org.dspace.discovery.ObjectNameIndexPlugin">
+    	<property name="fields">
+    		<list>
+				<value>dc.title</value>
+        		<value>crisrp.name</value>
+        		<value>crisrp.name.variant</value>
+        		<value>crisrp.name.translated</value>
+				<value>crisrp.fullName</value>
+				<value>crisproject.title</value>
+				<value>crisou.name</value>
+				<value>unibe.document.title</value>
+				<value>crisdo.name</value>
+				<value>crisfunding.fundingname</value>
+    		</list>
+    	</property>
+    </bean>
     <bean id="solrServiceBestMatchIndexingPlugin" class="org.dspace.discovery.SolrServiceBestMatchIndexingPlugin"/>
     <bean id="solrServiceBestMatchStrictIndexingPlugin" class="org.dspace.discovery.SolrServiceStrictBestMatchIndexingPlugin"/>
     <bean id="sharedWorkspaceSolrIndexPlugin" class="org.dspace.discovery.SharedWorkspaceSolrIndexPlugin">
@@ -1710,6 +1726,7 @@
                 <ref bean="searchFilterKnowsLanguage"/>
                 <ref bean="searchFilterPersonOrgUnit"/>
                 <ref bean="searchFilterBirthdate"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -1767,6 +1784,7 @@
                 <ref bean="searchFilterIsPublicationOfProjectRelation"/>
                 <ref bean="searchFilterProjectInvestigator"/>
                 <ref bean="searchFilterProjectOrganisation"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -1803,7 +1821,7 @@
         <!-- When true a "did you mean" example will be displayed, value can be true or false -->
         <property name="spellCheckEnabled" value="true"/>
     </bean>
-
+	
     <bean id="projectRelationships" class="org.dspace.discovery.configuration.DiscoveryConfiguration" scope="prototype">
         <property name="id" value="project"/>
         <property name="indexAlways" value="true"/>
@@ -1879,6 +1897,7 @@
                 <ref bean="searchFilterInvestigators"/>
                 <ref bean="searchFilterProjectOrgUnits"/>
                 <ref bean="searchFilterIdentifier"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -1936,6 +1955,7 @@
                 <ref bean="searchFilterOrganizationAddressCountry"/>
                 <ref bean="searchFilterOrganizationAddressLocality"/>
                 <ref bean="searchFilterOrganizationFoundingDate"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -2004,6 +2024,7 @@
                 <ref bean="searchFilterTitle"/>
                 <ref bean="searchFilterFunderName"/>
                 <ref bean="searchFilterFundingProgram"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--Any default filter queries, these filter queries will be used for all
@@ -2033,6 +2054,7 @@
             <list>
                 <ref bean="searchFilterEquipmentOwner"/>
                 <ref bean="searchFilterEquipmentOrgUnit"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -2092,6 +2114,7 @@
                 <ref bean="searchFilterCreativeWorkKeywords"/>
                 <ref bean="searchFilterCreativeWorkDatePublished"/>
                 <ref bean="searchFilterIsPublicationOfJournalIssueRelation"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -2151,6 +2174,7 @@
                 <ref bean="searchFilterCreativeWorkDatePublished"/>
                 <ref bean="searchFilterIsIssueOfJournalVolumeRelation"/>
                 <ref bean="searchFilterIsJournalVolumeRelation"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
@@ -2211,6 +2235,7 @@
                 <ref bean="searchFilterCreativeWorkEditor"/>
                 <ref bean="searchFilterIsIssueOfJournalVolumeRelation"/>
                 <ref bean="searchFilterIsVolumeOfJournalRelation"/>
+                <ref bean="searchFilterEntityType"/>
             </list>
         </property>
         <!--The sort filters for the discovery search-->
