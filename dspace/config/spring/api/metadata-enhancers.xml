@@ -78,6 +78,7 @@
         <property name="relatedItemMetadataFields">
             <list>
                 <value>miur.journal.ance</value>
+                <value>miur.identifier.ance</value>
             </list>
         </property>
         <property name="virtualQualifier" value="journalance" />
