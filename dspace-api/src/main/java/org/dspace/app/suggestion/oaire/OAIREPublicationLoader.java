@@ -35,16 +35,16 @@ import org.springframework.beans.factory.annotation.Autowired;
  */
 public class OAIREPublicationLoader extends SolrSuggestionProvider {
 
-    private List<String> names;
+    protected List<String> names;
 
-    private ExternalDataProvider primaryProvider;
+    protected ExternalDataProvider primaryProvider;
 
-    private List<ExternalDataProvider> otherProviders;
+    protected List<ExternalDataProvider> otherProviders;
 
     @Autowired
-    private ConfigurationService configurationService;
+    protected ConfigurationService configurationService;
 
-    private List<EvidenceScorer> pipeline;
+    protected List<EvidenceScorer> pipeline;
 
     public void setPrimaryProvider(ExternalDataProvider primaryProvider) {
         this.primaryProvider = primaryProvider;
@@ -103,8 +103,9 @@ public class OAIREPublicationLoader extends SolrSuggestionProvider {
      * @throws SolrServerException
      * @throws IOException
      */
-    public void importAuthorRecords(Context context, Item researcher)
-            throws SolrServerException, IOException {
+    @Override
+    public void importRecords(Context context, Item researcher)
+            throws Exception {
         List<ExternalDataObject> metadata = getImportRecords(researcher);
         List<Suggestion> records = reduceAndTransform(researcher, metadata);
         for (Suggestion record : records) {
@@ -214,7 +215,7 @@ public class OAIREPublicationLoader extends SolrSuggestionProvider {
      * @param researcher DSpace item
      * @return list of metadata values
      */
-    private List<String> searchMetadataValues(Item researcher) {
+    public List<String> searchMetadataValues(Item researcher) {
         List<String> authors = new ArrayList<String>();
         for (String name : names) {
             String value = itemService.getMetadata(researcher, name);
@@ -235,6 +236,11 @@ public class OAIREPublicationLoader extends SolrSuggestionProvider {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public void importRecords(Context context, String query) throws Exception {
+        throw new UnsupportedOperationException("This operation is not supported by OAIRE loader");
     }
 
 }
