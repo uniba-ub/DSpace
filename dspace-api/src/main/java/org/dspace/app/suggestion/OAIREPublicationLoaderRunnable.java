@@ -73,7 +73,7 @@ public class OAIREPublicationLoaderRunnable
 
         for (Item researcher : researchers) {
 
-            oairePublicationLoader.importAuthorRecords(context, researcher);
+            oairePublicationLoader.importRecords(context, researcher);
         }
 
     }
