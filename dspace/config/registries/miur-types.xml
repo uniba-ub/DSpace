@@ -74,6 +74,13 @@
 
     <dc-type>
         <schema>miur</schema>
+        <element>journal</element>
+        <qualifier>ance</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>miur</schema>
         <element>type</element>
         <scope_note></scope_note>
     </dc-type>
