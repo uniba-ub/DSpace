@@ -31,6 +31,7 @@ import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSCredentialsProvider;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
+import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.DefaultAWSCredentialsProviderChain;
 import com.amazonaws.client.builder.AwsClientBuilder.EndpointConfiguration;
 import com.amazonaws.regions.DefaultAwsRegionProviderChain;
@@ -119,6 +120,7 @@ public class S3BitStoreService extends BaseBitStoreService {
     private String awsAccessKey;
     private String awsSecretKey;
     private String awsRegionName;
+    private String awsSessionToken;
     private boolean useRelativePath;
     private Integer maxConnections;
     private Integer connectionTimeout;
@@ -301,6 +303,18 @@ public class S3BitStoreService extends BaseBitStoreService {
         return () -> new AWSStaticCredentialsProvider(credentials);
     }
 
+    protected static Supplier<AWSStaticCredentialsProvider> getBasicCredentialsSupplier(
+        String awsAccessKey, String awsSecretKey, String awsSessionToken
+    ) {
+        BasicSessionCredentials credentials = new BasicSessionCredentials(awsAccessKey, awsSecretKey, awsSessionToken);
+        log.info(
+            "AmazonS3Client credentials - accessKey: {}, secretKey: {}",
+            credentials.getAWSAccessKeyId().replaceFirst("^(.{3})(.*)(.{3})$", "$1***$3"),
+            credentials.getAWSSecretKey().replaceFirst("^(.{3})(.*)(.{3})$", "$1***$3")
+        );
+        return getAwsCredentialsSupplier(credentials);
+    }
+
     protected static Regions getDefaultRegion() {
         return Optional.ofNullable(new DefaultAwsRegionProviderChain().getRegion())
                        .filter(StringUtils::isNotBlank)
@@ -351,7 +365,7 @@ public class S3BitStoreService extends BaseBitStoreService {
             Supplier<? extends AWSCredentialsProvider> awsCredentialsSupplier;
             if (StringUtils.isNotBlank(getAwsAccessKey()) && StringUtils.isNotBlank(getAwsSecretKey())) {
                 log.warn("Use local defined S3 credentials");
-                awsCredentialsSupplier = getAwsCredentialsSupplier(getAwsAccessKey(), getAwsSecretKey());
+                awsCredentialsSupplier = getBasicCredentialsSupplier(getAwsAccessKey(), getAwsSecretKey(), getAwsSessionToken());
             } else {
                 log.info("Use an IAM role or aws environment credentials");
                 awsCredentialsSupplier = DefaultAWSCredentialsProviderChain::new;
@@ -686,6 +700,14 @@ public class S3BitStoreService extends BaseBitStoreService {
 
     public void setEndpoint(String endpoint) {
         this.endpoint = endpoint;
+    }
+
+    public String getAwsSessionToken() {
+        return awsSessionToken;
+    }
+
+    public void setAwsSessionToken(String awsSessionToken) {
+        this.awsSessionToken = awsSessionToken;
     }
 
     /**
