@@ -64,4 +64,7 @@ public class CurrentProfileValueGenerator implements TemplateValueGenerator {
               .asList(new MetadataValueVO(""));
     }
 
+    public void setResearcherProfileService(ResearcherProfileService researcherProfileService) {
+        this.researcherProfileService = researcherProfileService;
+    }
 }
