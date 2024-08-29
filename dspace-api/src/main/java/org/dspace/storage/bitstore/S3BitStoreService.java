@@ -365,7 +365,8 @@ public class S3BitStoreService extends BaseBitStoreService {
             Supplier<? extends AWSCredentialsProvider> awsCredentialsSupplier;
             if (StringUtils.isNotBlank(getAwsAccessKey()) && StringUtils.isNotBlank(getAwsSecretKey())) {
                 log.warn("Use local defined S3 credentials");
-                awsCredentialsSupplier = getBasicCredentialsSupplier(getAwsAccessKey(), getAwsSecretKey(), getAwsSessionToken());
+                awsCredentialsSupplier = getBasicCredentialsSupplier(getAwsAccessKey(), getAwsSecretKey(),
+                    getAwsSessionToken());
             } else {
                 log.info("Use an IAM role or aws environment credentials");
                 awsCredentialsSupplier = DefaultAWSCredentialsProviderChain::new;
