@@ -162,9 +162,9 @@ public class OAIREPublicationLoader extends SolrSuggestionProvider {
     private List<ExternalDataObject> getImportRecords(Item researcher, String additionalQuery) {
         List<String> searchValues = searchMetadataValues(researcher);
         if (StringUtils.isNotBlank(additionalQuery)) {
-            final String addQuerySpace = " " + additionalQuery;
             searchValues = searchValues.stream()
-                .map(value -> String.join(value, addQuerySpace)).collect(Collectors.toList());
+                .map(value -> StringUtils.join(new String[] {value, additionalQuery}, " "))
+                .collect(Collectors.toList());
         }
         List<ExternalDataObject> matchingRecords = new ArrayList<>();
         for (String searchValue : searchValues) {
