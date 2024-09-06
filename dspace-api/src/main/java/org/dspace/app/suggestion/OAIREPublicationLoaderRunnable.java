@@ -68,11 +68,10 @@ public class OAIREPublicationLoaderRunnable
 
         DiscoverQuery discoverQuery = new DiscoverQuery();
         discoverQuery.setDSpaceObjectFilter(IndexableItem.TYPE);
-        discoverQuery.setMaxResults(1000);
         if (StringUtils.isNotBlank(profile)) {
             discoverQuery.setQuery("search.resourceid:" + profile);
         }
-        discoverQuery.setSortField("lastModified", DiscoverQuery.SORT_ORDER.desc);
+        discoverQuery.setSortField("lastModified", DiscoverQuery.SORT_ORDER.asc);
         discoverQuery.addFilterQueries("search.resourcetype:Item");
         discoverQuery.addFilterQueries("dspace.entity.type:Person");
 
