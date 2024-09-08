@@ -30,7 +30,6 @@ import org.dspace.content.edit.EditItem;
 import org.dspace.content.factory.ContentServiceFactory;
 import org.dspace.content.service.CollectionService;
 import org.dspace.core.Context;
-import org.dspace.discovery.SearchServiceException;
 import org.dspace.handle.factory.HandleServiceFactory;
 import org.dspace.services.RequestService;
 import org.dspace.services.factory.DSpaceServicesFactory;
@@ -110,6 +109,13 @@ public class SubmissionConfigReader {
     private Map<String, String> communityToSubmissionConfig = null;
 
     /**
+     * Hashmap which stores which submission process configuration is used by
+     * which entityType, computed from the item submission config file
+     * (specifically, the 'submission-map' tag)
+     */
+    private Map<String, String> entityTypeToSubmissionConfig = null;
+
+    /**
      * Reference to the global submission step definitions defined in the
      * "step-definitions" section
      */
@@ -157,6 +163,7 @@ public class SubmissionConfigReader {
     public void reload() throws SubmissionConfigReaderException {
         collectionToSubmissionConfig = null;
         communityToSubmissionConfig = null;
+        entityTypeToSubmissionConfig = null;
         stepDefns = null;
         submitDefns = null;
         buildInputs(configDir + SUBMIT_DEF_FILE_PREFIX + SUBMIT_DEF_FILE_SUFFIX);
@@ -176,6 +183,7 @@ public class SubmissionConfigReader {
     private void buildInputs(String fileName) throws SubmissionConfigReaderException {
         collectionToSubmissionConfig = new HashMap<String, String>();
         communityToSubmissionConfig = new HashMap<String, String>();
+        entityTypeToSubmissionConfig = new HashMap<String, String>();
         submitDefns = new LinkedHashMap<String, List<Map<String, String>>>();
 
         String uri = "file:" + new File(fileName).getAbsolutePath();
@@ -193,9 +201,6 @@ public class SubmissionConfigReader {
         } catch (FactoryConfigurationError fe) {
             throw new SubmissionConfigReaderException(
                 "Cannot create Item Submission Configuration parser", fe);
-        } catch (SearchServiceException se) {
-            throw new SubmissionConfigReaderException(
-                "Cannot perform a discovery search for Item Submission Configuration", se);
         } catch (Exception e) {
             throw new SubmissionConfigReaderException(
                 "Error creating Item Submission Configuration: " + e);
@@ -460,7 +465,7 @@ public class SubmissionConfigReader {
      * should correspond to the collection-form maps, the form definitions, and
      * the display/storage word pairs.
      */
-    private void doNodes(Node n) throws SAXException, SearchServiceException, SubmissionConfigReaderException {
+    private void doNodes(Node n) throws SAXException, SubmissionConfigReaderException {
         if (n == null) {
             return;
         }
@@ -510,9 +515,7 @@ public class SubmissionConfigReader {
      * the collection handle and item submission name, put name in hashmap keyed
      * by the collection handle.
      */
-    private void processMap(Node e) throws SAXException, SearchServiceException {
-        // create a context
-        Context context = new Context();
+    private void processMap(Node e) throws SAXException {
 
         NodeList nl = e.getChildNodes();
         int len = nl.getLength();
@@ -533,7 +536,7 @@ public class SubmissionConfigReader {
                     throw new SAXException(
                         "name-map element is missing submission-name attribute in 'item-submission.xml'");
                 }
-                if (content != null && content.length() > 0) {
+                if (content != null && !content.isEmpty()) {
                     throw new SAXException(
                         "name-map element has content in 'item-submission.xml', it should be empty.");
                 }
