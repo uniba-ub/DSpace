@@ -692,7 +692,9 @@ public class DatabaseUtils {
             // Set whether Flyway will run migrations "out of order". By default, this is false,
             // and Flyway ONLY runs migrations that have a higher version number.
             flywayConfiguration.outOfOrder(outOfOrder);
-            flywayConfiguration.ignoreMissingMigrations(missing);
+            if (missing) {
+            	flywayConfiguration.ignoreMigrationPatterns("*:ignored");
+            }
 
             // If a target version was specified, tell Flyway to ONLY migrate to that version
             // (i.e. all later migrations are left as "pending"). By default we always migrate to latest version.

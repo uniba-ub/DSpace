@@ -15,6 +15,7 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStreamWriter;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.apache.commons.cli.ParseException;

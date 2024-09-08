@@ -18,8 +18,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import javax.ws.rs.core.MediaType;
 
+import jakarta.ws.rs.core.MediaType;
 import org.dspace.app.rest.model.patch.AddOperation;
 import org.dspace.app.rest.model.patch.MoveOperation;
 import org.dspace.app.rest.model.patch.Operation;
@@ -819,10 +819,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Smith, Maria")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
@@ -909,10 +908,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withIssueDate("2015-06-25")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         MetadataField author = mfss.findByElement(context, "dc", "contributor", "author");
@@ -1023,10 +1021,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Smith, Maria")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
@@ -1123,10 +1120,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withDescriptionAbstract("A secured abstract")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
@@ -1221,12 +1217,15 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Smith, Maria")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, userA, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(userA)
-                             .withGroup(groupA)
                              .build();
+
+        ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
+					        .withDspaceObject(itemA)
+					        .withAction(Constants.WRITE)
+					        .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
         itemService.addMetadata(context, itemA, "cris", "policy", "eperson", null, userA.getFullName(),
@@ -1328,10 +1327,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Smith, Maria")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
@@ -1442,17 +1440,18 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Smith, Maria")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, userA, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(userA)
-                             .withGroup(groupA)
                              .build();
+        ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
+					        .withDspaceObject(itemA)
+					        .withAction(Constants.WRITE)
+					        .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
@@ -1589,15 +1588,15 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withDescriptionAbstract("A secured abstract")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson).build();
+                             .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, userA, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(userA).build();
+                             .build();
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
         MetadataField title = mfss.findByElement(context, "dc", "title", null);
@@ -1698,10 +1697,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Doe, John")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "First Abstract description");
@@ -1814,10 +1812,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withDescriptionAbstract("Second Abstract description")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson)
                              .build();
 
         MetadataField abs = mfss.findByElement(context, "dc", "description", "abstract");
@@ -1938,16 +1935,19 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                                 .withAuthor("Doe, John")
                                 .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, userA, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(userA)
-                             .withGroup(groupA).build();
+                             .build();
+        ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
+					        .withDspaceObject(itemA)
+					        .withAction(Constants.WRITE)
+					        .build();
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
-                             .withUser(eperson).build();
+                             .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "First Abstract description");
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "Second Abstract description");

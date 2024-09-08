@@ -4746,8 +4746,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             Group group = GroupBuilder.createGroup(context).build();
             configurationService.setProperty("edit.metadata.allowed-group", group.getID());
             // add write rights to the user
-            ResourcePolicyBuilder.createResourcePolicy(context)
-                    .withUser(eperson)
+            ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                     .withAction(WRITE)
                     .withDspaceObject(itemService.find(context, UUID.fromString(itemUuidString)))
                     .build();
@@ -4815,8 +4814,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             itemRest.setUuid(itemUuidString);
             itemRest.setHandle(itemHandleString);
             // add write rights to the user
-            ResourcePolicyBuilder.createResourcePolicy(context)
-                    .withUser(eperson)
+            ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                     .withAction(WRITE)
                     .withDspaceObject(itemService.find(context, UUID.fromString(itemUuidString)))
                     .build();
@@ -5121,8 +5119,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             .withSubject("ExtraEntry")
             .build();
         // add write permission to the user admin
-        ResourcePolicyBuilder.createResourcePolicy(context)
-            .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
             .withAction(WRITE)
             .withDspaceObject(itemService.find(context, item.getID()))
             .build();
@@ -5168,8 +5165,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
                 .withSubject("ExtraEntry")
                 .build();
         // add write rights to the user admin
-        ResourcePolicyBuilder.createResourcePolicy(context)
-                .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                 .withAction(WRITE)
                 .withDspaceObject(itemService.find(context, item.getID()))
                 .build();
