@@ -19,9 +19,9 @@ import java.util.UUID;
 import java.util.stream.Stream;
 
 import com.google.common.collect.AbstractIterator;
+import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Query;
-import jakarta.persistence.Column;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;

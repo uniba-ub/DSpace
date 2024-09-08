@@ -10,8 +10,8 @@ package org.dspace.authorize.dao.impl;
 import static java.util.Collections.emptyList;
 
 import java.sql.SQLException;
-import java.util.Date;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.UUID;

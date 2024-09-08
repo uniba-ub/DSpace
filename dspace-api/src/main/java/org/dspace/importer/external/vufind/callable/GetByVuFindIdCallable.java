@@ -12,7 +12,6 @@ import java.util.concurrent.Callable;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
 import jakarta.ws.rs.core.Response;
-
 import org.apache.http.HttpException;
 
 public class GetByVuFindIdCallable implements Callable<String> {

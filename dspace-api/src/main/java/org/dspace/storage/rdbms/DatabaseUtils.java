@@ -693,7 +693,7 @@ public class DatabaseUtils {
             // and Flyway ONLY runs migrations that have a higher version number.
             flywayConfiguration.outOfOrder(outOfOrder);
             if (missing) {
-            	flywayConfiguration.ignoreMigrationPatterns("*:ignored");
+                flywayConfiguration.ignoreMigrationPatterns("*:ignored");
             }
 
             // If a target version was specified, tell Flyway to ONLY migrate to that version

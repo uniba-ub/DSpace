@@ -97,7 +97,7 @@ public class XlsCollectionCrosswalkIT extends AbstractIntegrationTestWithDatabas
     private Community community;
 
     private Group anonymousGroup;
-    
+
     private Group adminGroup;
 
     private static final String BITSTREAM_URL_FORMAT = "%s/api/core/bitstreams/%s/content";

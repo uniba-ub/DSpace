@@ -14,14 +14,12 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
 import org.dspace.content.MetadataField;
 import org.dspace.core.ReloadableEntity;
 import org.hibernate.Length;
-import org.hibernate.annotations.Type;
 
 /**
  * Metadata related to a registration data {@link RegistrationData}

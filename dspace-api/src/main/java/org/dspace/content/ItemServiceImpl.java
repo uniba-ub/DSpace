@@ -2001,7 +2001,7 @@ prevent the generation of resource policy entry values with null dspace_object a
 
     @Override
     protected void getAuthoritiesAndConfidences(String fieldKey, int dsoType, Collection collection,
-                                                List<String> values, List<String> authorities, 
+                                                List<String> values, List<String> authorities,
                                                 List<Integer> confidences, int i) {
         Choices c = choiceAuthorityService.getBestMatch(fieldKey, values.get(i), dsoType, collection, null);
         authorities.add(c.values.length > 0 && c.values[0] != null ? c.values[0].authority : null);

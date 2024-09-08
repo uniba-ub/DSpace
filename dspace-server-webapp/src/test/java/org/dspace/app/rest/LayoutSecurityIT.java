@@ -1223,9 +1223,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
-					        .withDspaceObject(itemA)
-					        .withAction(Constants.WRITE)
-					        .build();
+                            .withDspaceObject(itemA)
+                            .withAction(Constants.WRITE)
+                            .build();
 
         itemService.addMetadata(context, itemA, "dc", "description", "abstract", null, "A secured abstract");
         itemService.addMetadata(context, itemA, "cris", "policy", "eperson", null, userA.getFullName(),
@@ -1445,9 +1445,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withAction(Constants.WRITE)
                              .build();
         ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
-					        .withDspaceObject(itemA)
-					        .withAction(Constants.WRITE)
-					        .build();
+                            .withDspaceObject(itemA)
+                            .withAction(Constants.WRITE)
+                            .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)
@@ -1940,9 +1940,9 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withAction(Constants.WRITE)
                              .build();
         ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
-					        .withDspaceObject(itemA)
-					        .withAction(Constants.WRITE)
-					        .build();
+                            .withDspaceObject(itemA)
+                            .withAction(Constants.WRITE)
+                            .build();
 
         ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withDspaceObject(itemA)

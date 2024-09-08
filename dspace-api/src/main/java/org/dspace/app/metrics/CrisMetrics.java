@@ -14,7 +14,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -51,7 +50,7 @@ public class CrisMetrics  implements ReloadableEntity<Integer> {
 
     private boolean last;
 
-	@Column(name="remark", length = Length.LONG32)
+    @Column(name = "remark", length = Length.LONG32)
     private String remark;
 
     private Double deltaPeriod1;

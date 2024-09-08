@@ -29,7 +29,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import jakarta.servlet.http.Cookie;
 import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.UUID;
@@ -39,6 +38,7 @@ import java.util.regex.Pattern;
 import com.jayway.jsonpath.JsonPath;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.Cookie;
 import org.dspace.app.rest.matcher.MetadataMatcher;
 import org.dspace.app.rest.model.AuthnRest;
 import org.dspace.app.rest.security.OrcidLoginFilter;

@@ -12,7 +12,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import jakarta.inject.Inject;
 import org.dspace.AbstractIntegrationTestWithDatabase;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;

@@ -9,9 +9,9 @@ package org.dspace.metrics.scopus;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.google.gson.Gson;
 import jakarta.persistence.Lob;
 import jakarta.persistence.Transient;
-import com.google.gson.Gson;
 
 /**
  * 
