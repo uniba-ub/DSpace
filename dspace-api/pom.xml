@@ -633,7 +633,7 @@
         <dependency>
             <groupId>dnsjava</groupId>
             <artifactId>dnsjava</artifactId>
-            <version>2.1.9</version>
+            <version>3.6.0</version>
         </dependency>
 
         <dependency>
@@ -825,22 +825,30 @@
         </dependency>
 
         <dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>fop</artifactId>
-		    <version>2.5</version>
-		    <exclusions>
-		        <exclusion>
-		        	<groupId>javax.servlet</groupId>
-	      			<artifactId>servlet-api</artifactId>
-		        </exclusion>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>fop</artifactId>
+            <version>2.9</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>javax.servlet</groupId>
+                      <artifactId>servlet-api</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>xml-apis</groupId>
+                    <artifactId>xml-apis-ext</artifactId>
+                </exclusion>
             </exclusions>
-		</dependency>
+        </dependency>
 
-		<dependency>
-		    <groupId>org.apache.xmlgraphics</groupId>
-		    <artifactId>fop-pdf-images</artifactId>
-		    <version>2.5</version>
-		</dependency>
+        <dependency>
+            <groupId>org.apache.xmlgraphics</groupId>
+            <artifactId>fop-pdf-images</artifactId>
+            <version>2.9</version>
+        </dependency>
 
         <dependency>
 	        <groupId>de.undercouch</groupId>
