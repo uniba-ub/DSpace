@@ -244,7 +244,7 @@ public abstract class DSpaceRunnable<T extends ScriptConfiguration> implements R
                 handler.handleException("Cannot determine if the script is run as an admin", e);
             }
         }
-        if (this.isAdmin) {
+        if (Boolean.TRUE.equals(this.isAdmin)) {
             if (context.ignoreAuthorization()) {
                 context.restoreAuthSystemState();
             } else {
