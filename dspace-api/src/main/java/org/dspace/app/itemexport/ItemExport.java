@@ -128,7 +128,8 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
         validate();
 
         Context context = new Context();
-        context.turnOffAuthorisationSystem();
+        setEPerson(context);
+        assignSpecialGroupsInContext(context);
 
         if (type == Constants.ITEM) {
             // first, is myIDString a handle?
@@ -171,8 +172,12 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
                 .getItemExportService();
         try {
             itemExportService.setHandler(handler);
+            handleAuthorizationSystem(context);
+
             process(context, itemExportService);
+
             context.complete();
+            handleAuthorizationSystem(context);
         } catch (Exception e) {
             context.abort();
             throw new Exception(e);
@@ -200,7 +205,6 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
      * @throws Exception
      */
     protected void process(Context context, ItemExportService itemExportService) throws Exception {
-        setEPerson(context);
         setDestDirName(context, itemExportService);
         setZip(context);
 
@@ -260,5 +264,11 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
         }
 
         context.setCurrentUser(myEPerson);
+    }
+
+    private void assignSpecialGroupsInContext(Context context) throws SQLException {
+        for (UUID uuid : handler.getSpecialGroups()) {
+            context.setSpecialGroup(uuid);
+        }
     }
 }
