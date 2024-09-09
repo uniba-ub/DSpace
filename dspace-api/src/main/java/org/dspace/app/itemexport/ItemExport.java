@@ -128,8 +128,6 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
         validate();
 
         Context context = new Context();
-        setEPerson(context);
-        assignSpecialGroupsInContext(context);
 
         if (type == Constants.ITEM) {
             // first, is myIDString a handle?
@@ -205,6 +203,8 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
      * @throws Exception
      */
     protected void process(Context context, ItemExportService itemExportService) throws Exception {
+        setEPerson(context);
+        assignSpecialGroupsInContext(context);
         setDestDirName(context, itemExportService);
         setZip(context);
 
@@ -254,7 +254,7 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
         }
     }
 
-    private void setEPerson(Context context) throws SQLException {
+    protected void setEPerson(Context context) throws SQLException {
         EPerson myEPerson = epersonService.find(context, this.getEpersonIdentifier());
 
         // check eperson

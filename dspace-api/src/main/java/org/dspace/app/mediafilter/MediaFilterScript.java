@@ -261,7 +261,7 @@ public class MediaFilterScript extends DSpaceRunnable<MediaFilterScriptConfigura
         }
     }
 
-    private void assignCurrentUserInContext(Context context) throws SQLException {
+    protected void assignCurrentUserInContext(Context context) throws SQLException {
         UUID uuid = getEpersonIdentifier();
         if (uuid != null) {
             EPerson ePerson = EPersonServiceFactory.getInstance().getEPersonService().find(context, uuid);
