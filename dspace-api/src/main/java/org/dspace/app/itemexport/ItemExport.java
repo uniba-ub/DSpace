@@ -211,7 +211,7 @@ public class ItemExport extends DSpaceRunnable<ItemExportScriptConfiguration> {
         Iterator<Item> items;
         if (item != null) {
             List<Item> myItems = new ArrayList<>();
-            myItems.add(item);
+            myItems.add(context.reloadEntity(item));
             items = myItems.iterator();
         } else {
             handler.logInfo("Exporting from collection: " + idString);
