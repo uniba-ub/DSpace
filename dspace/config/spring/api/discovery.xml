@@ -74,6 +74,7 @@
     <bean id="sharedWorkspaceSolrIndexPlugin" class="org.dspace.discovery.SharedWorkspaceSolrIndexPlugin">
         <constructor-arg name="additionalReadMetadata" ref="sharedWorkspaceAuthorMetadataFields"/>
     </bean>
+    <bean id="solrServiceAdministrativeSearchRestrictionPlugin" class="org.dspace.discovery.SolrServiceAdministrativeSearchRestrictionPlugin"/>
 
     <util:list id="sharedWorkspaceAuthorMetadataFields" value-type="java.lang.String">
         <value>dc.contributor.author</value>
