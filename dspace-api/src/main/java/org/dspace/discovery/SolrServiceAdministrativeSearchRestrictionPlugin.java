@@ -21,33 +21,48 @@ import org.dspace.core.LogHelper;
 import org.dspace.eperson.service.GroupService;
 import org.springframework.beans.factory.annotation.Autowired;
 
+/**
+ * Plugin that filters out non-administered items from administrative searches for collections and communities admins.
+ *
+ * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
+ */
 public class SolrServiceAdministrativeSearchRestrictionPlugin implements SolrServiceSearchPlugin {
 
     private static final Logger log =
         org.apache.logging.log4j.LogManager.getLogger(SolrServiceAdministrativeSearchRestrictionPlugin.class);
+    public static final String SEARCH_CONFIGURATION_PREFIX = "administrative";
 
-    @Autowired(required = true)
+    @Autowired
     protected AuthorizeService authorizeService;
-    @Autowired(required = true)
+    @Autowired
     protected GroupService groupService;
 
     private static boolean isAdministrativeConfiguration(DiscoverQuery discoveryQuery) {
         return discoveryQuery != null &&
             StringUtils.isNotBlank(discoveryQuery.getDiscoveryConfigurationName()) &&
-            discoveryQuery.getDiscoveryConfigurationName().startsWith("administrative");
+            discoveryQuery.getDiscoveryConfigurationName().startsWith(SEARCH_CONFIGURATION_PREFIX);
     }
 
     @Override
     public void additionalSearchParameters(Context context, DiscoverQuery discoveryQuery, SolrQuery solrQuery) {
         try {
+
+            // Only apply this plugin to administrative searches
+            if (!isAdministrativeConfiguration(discoveryQuery)) {
+                return;
+            }
+
+            // Only apply this plugin to non-administrators
             if (isAdmin(context)) {
                 return;
             }
 
-            if (!isAdministrativeConfiguration(discoveryQuery) || !isCommunityCollAdmin(context)) {
+            // Only apply this plugin to community / collection administrators
+            if (!isCommunityCollAdmin(context)) {
                 return;
             }
 
+            // Applies filter query to restrict search results to only those that are administrate by the current user
             solrQuery.addFilterQuery(
                 Stream.concat(
                           groupService.allMemberGroupsSet(context, context.getCurrentUser())
