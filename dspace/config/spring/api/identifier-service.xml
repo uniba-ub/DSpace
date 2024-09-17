@@ -11,14 +11,6 @@
           class="org.dspace.identifier.IdentifierServiceImpl"
           autowire="byType"
           scope="singleton">
-        <!-- ADDITIONAL PROVIDERS -->
-        <property name="providers">
-            <list>
-                <ref bean="org.dspace.identifier.HandleIdentifierProvider"/>
-<!--                <ref bean="org.dspace.identifier.DOIIdentifierProvider"/>-->
-            </list>
-        </property>
-        <!-- ADDITIONAL PROVIDERS -->
     </bean>
 
       <!-- If you enabled versioning, you should use one of the versioned
