@@ -5669,7 +5669,9 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                                                          )
                                                      )
                                  ))
-                                 .andExpect(jsonPath("$._links.self.href", containsString("/api/discover/search/objects")));
+                                 .andExpect(jsonPath("$._links.self.href",
+                                     containsString("/api/discover/search/objects"))
+                                 );
 
         String subCommAdminToken = getAuthToken(subCommAdmin.getEmail(), password);
 
@@ -5694,7 +5696,9 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                                                          )
                                                      )
                                  ))
-                                 .andExpect(jsonPath("$._links.self.href", containsString("/api/discover/search/objects")));
+                                 .andExpect(jsonPath("$._links.self.href",
+                                     containsString("/api/discover/search/objects"))
+                                 );
     }
 
     @Test
