@@ -661,7 +661,7 @@ public class ItemTest extends AbstractDSpaceObjectTest {
         // Now, update tests values to append a third value which is NOT virtual metadata
         String newValue = "new-metadata-value";
         String newAuthority = "auth0";
-        Integer newConfidence = 0;
+        int newConfidence = 0;
         values.add(newValue);
         authorities.add(newAuthority);
         confidences.add(newConfidence);
@@ -680,8 +680,9 @@ public class ItemTest extends AbstractDSpaceObjectTest {
         assertEquals(element, dc.get(0).getMetadataField().getElement());
         assertEquals(qualifier, dc.get(0).getMetadataField().getQualifier());
         assertEquals(newValue, dc.get(0).getValue());
-        assertNull(dc.get(0).getAuthority());
-        assertEquals(-1, dc.get(0).getConfidence());
+        // Is authority controlled, thus the authority will be there!
+        assertEquals(newAuthority, dc.get(0).getAuthority());
+        assertEquals(newConfidence, dc.get(0).getConfidence());
     }
 
     /**
