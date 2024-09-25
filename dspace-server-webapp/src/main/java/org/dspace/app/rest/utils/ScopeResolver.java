@@ -19,7 +19,6 @@ import org.dspace.core.Context;
 import org.dspace.discovery.IndexableObject;
 import org.dspace.discovery.indexobject.IndexableCollection;
 import org.dspace.discovery.indexobject.IndexableCommunity;
-import org.dspace.discovery.indexobject.IndexableItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -70,9 +69,6 @@ public class ScopeResolver {
                         );
                         scopeObj = null;
                     }
-                }
-                if (scopeObj.getIndexedObject() == null) {
-                    scopeObj = new IndexableItem(itemService.find(context, uuid));
                 }
             } catch (IllegalArgumentException ex) {
                 log.warn("The given scope string " + StringUtils.trimToEmpty(scope) + " is not a UUID", ex);
