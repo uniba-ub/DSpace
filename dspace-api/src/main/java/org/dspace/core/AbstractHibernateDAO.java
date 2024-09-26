@@ -22,6 +22,8 @@ import com.google.common.collect.AbstractIterator;
 import jakarta.persistence.Column;
 import jakarta.persistence.Id;
 import jakarta.persistence.Query;
+import jakarta.persistence.Tuple;
+import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Expression;
@@ -128,16 +130,22 @@ public abstract class AbstractHibernateDAO<T> implements GenericDAO<T> {
 
         Field idField = optionalField.get();
         CriteriaBuilder criteriaBuilder = getCriteriaBuilder(context);
-        CriteriaQuery criteriaQuery = getCriteriaQuery(criteriaBuilder, clazz);
+        CriteriaQuery<Tuple> criteriaQuery = criteriaBuilder.createTupleQuery();
 
-        Root root = criteriaQuery.from(clazz);
-        Path idColumn = root.get(idField.getName());
-        criteriaQuery.select(idColumn);
-        criteriaQuery.where(criteriaBuilder.equal(idColumn, id));
+        Root<T> root = criteriaQuery.from(clazz);
+        Path<?> idPath = root.get(idField.getName());
+        criteriaQuery.multiselect(idPath);
+        criteriaQuery.where(
+            criteriaBuilder.equal(
+                idPath,
+                id
+            )
+        );
 
-        org.hibernate.query.Query query = getHibernateSession(context).createQuery(criteriaQuery);
+        TypedQuery<Tuple> query =
+            getHibernateSession(context).createQuery(criteriaQuery);
         query.setMaxResults(1);
-        return query.uniqueResult() != null;
+        return !query.getResultList().isEmpty();
     }
 
     @Override
