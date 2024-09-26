@@ -327,16 +327,19 @@ public class SubmissionConfigReader {
             }
         }
 
-        submitName = collService.getMetadataFirstValue(collection, "dspace", "entity", "type", null);
-        if (submitName != null) {
-            try {
-                SubmissionConfig subConfig = getSubmissionConfigByName(submitName.toLowerCase());
-                if (subConfig != null) {
-                    return subConfig;
+        if (!entityTypeToSubmissionConfig.isEmpty()) {
+            String entityType = collService.getMetadataFirstValue(collection, "dspace", "entity", "type", Item.ANY);
+            submitName = entityTypeToSubmissionConfig.get(entityType);
+            if (submitName != null) {
+                try {
+                    SubmissionConfig subConfig = getSubmissionConfigByName(submitName.toLowerCase());
+                    if (subConfig != null) {
+                        return subConfig;
+                    }
+                } catch (IllegalStateException e) {
+                    log.warn("The collection " + collection.getID().toString() + " has an entity type " + submitName
+                                 + " without an explicit mapping, fallback to the default");
                 }
-            } catch (IllegalStateException e) {
-                log.warn("The collection " + collection.getID().toString() + " has an entity type " + submitName
-                             + " without an explicit mapping, fallback to the default");
             }
         }
 
@@ -545,7 +548,7 @@ public class SubmissionConfigReader {
                 } else if (communityId != null) {
                     communityToSubmissionConfig.put(communityId, value);
                 } else {
-                    collectionToSubmissionConfig.putIfAbsent(entityType, value);
+                    entityTypeToSubmissionConfig.putIfAbsent(entityType, value);
                 }
             } // ignore any child node that isn't a "name-map"
         }
