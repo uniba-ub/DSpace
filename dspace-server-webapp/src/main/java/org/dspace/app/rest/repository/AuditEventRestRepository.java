@@ -64,9 +64,10 @@ public class AuditEventRestRepository extends DSpaceRestRepository<AuditEventRes
             "or hasPermission(#collUuid, 'COLLECTION', 'WRITE') " +
             "or hasAuthority('ADMIN')")
     @SearchRestMethod(name = "findByObject")
-    public Page<AuditEventRest> findByObject(@Parameter(value = "object", required = true) UUID uuid,
-            Pageable pageable, @Parameter(value = "commUuid") UUID commUuid, @Parameter(value = "collUuid") UUID collUuid
-                                             ) throws AuthorizeException, SQLException {
+    public Page<AuditEventRest> findByObject(
+            @Parameter(value = "object", required = true) UUID uuid, Pageable pageable,
+            @Parameter(value = "commUuid") UUID commUuid, @Parameter(value = "collUuid") UUID collUuid
+    ) throws AuthorizeException, SQLException {
         returnNotFoundIfDisabled();
         Context context = obtainContext();
         Sort sort = pageable.getSort();
