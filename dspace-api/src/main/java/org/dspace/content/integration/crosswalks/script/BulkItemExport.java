@@ -278,7 +278,8 @@ public class BulkItemExport extends DSpaceRunnable<BulkItemExportScriptConfigura
     private DiscoverQuery buildDiscoveryQuery(DiscoveryConfiguration discoveryConfiguration,
         IndexableObject<?, ?> scope, boolean onlyPublic) throws SQLException, SearchServiceException {
 
-        List<String> dsoTypes = List.of(IndexableItem.TYPE, IndexableWorkspaceItem.TYPE, IndexableWorkflowItem.TYPE, IndexablePoolTask.TYPE, IndexableClaimedTask.TYPE);
+        List<String> dsoTypes = List.of(IndexableItem.TYPE, IndexableWorkspaceItem.TYPE, IndexableWorkflowItem.TYPE,
+            IndexablePoolTask.TYPE, IndexableClaimedTask.TYPE);
 
         String sortBy = null;
         String sortOrder = null;
