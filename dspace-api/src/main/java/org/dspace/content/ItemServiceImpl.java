@@ -2178,12 +2178,13 @@ prevent the generation of resource policy entry values with null dspace_object a
     protected void moveSingleMetadataValue(Context context, Item dso, int place, MetadataValue rr) {
         // If this is a (virtual) metadata value representing a relationship,
         // then we must also update the corresponding Relationship with the new place
+        // wut?
         if (rr instanceof RelationshipMetadataValue) {
             try {
                 //Retrieve the applicable relationship
                 Relationship rs = relationshipService.find(context,
                         ((RelationshipMetadataValue) rr).getRelationshipId());
-                if (rs.getLeftItem() == dso) {
+                if (rs.getLeftItem().getID().equals(dso.getID())) {
                     rs.setLeftPlace(place);
                 } else {
                     rs.setRightPlace(place);
@@ -2193,10 +2194,10 @@ prevent the generation of resource policy entry values with null dspace_object a
                 //should not occur, otherwise metadata can't be updated either
                 log.error("An error occurred while moving " + rr.getAuthority() + " for item " + dso.getID(), e);
             }
+        }  else {
+            //just move the metadata
+            rr.setPlace(place);
         }
-
-        // Update the MetadataValue object with the new place setting
-        rr.setPlace(place);
     }
 
     @Override
