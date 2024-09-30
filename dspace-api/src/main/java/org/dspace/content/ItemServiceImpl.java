@@ -1631,8 +1631,8 @@ prevent the generation of resource policy entry values with null dspace_object a
     }
 
     /**
-     * Check whether or not there is already an RP on the given dso, which has actionId={@link Constants.READ} and
-     * resourceTypeId={@link ResourcePolicy.TYPE_CUSTOM}
+     * Check whether or not there is already an RP on the given dso, which has actionId={@link Constants#READ} and
+     * resourceTypeId={@link ResourcePolicy#TYPE_CUSTOM}
      *
      * @param context DSpace context
      * @param dso     DSpace object to check for custom read RP
@@ -2139,12 +2139,14 @@ prevent the generation of resource policy entry values with null dspace_object a
      */
     @Override
     protected void moveSingleMetadataValue(Context context, Item dso, int place, MetadataValue rr) {
+        // If this is a (virtual) metadata value representing a relationship,
+        // then we must also update the corresponding Relationship with the new place
         if (rr instanceof RelationshipMetadataValue) {
             try {
                 //Retrieve the applicable relationship
                 Relationship rs = relationshipService.find(context,
                         ((RelationshipMetadataValue) rr).getRelationshipId());
-                if (rs.getLeftItem() == dso) {
+                if (rs.getLeftItem().getID().equals(dso.getID())) {
                     rs.setLeftPlace(place);
                 } else {
                     rs.setRightPlace(place);
