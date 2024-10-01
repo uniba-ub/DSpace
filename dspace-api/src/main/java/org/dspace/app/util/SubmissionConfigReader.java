@@ -15,6 +15,7 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -303,18 +304,6 @@ public class SubmissionConfigReader {
             }
         }
 
-
-        // get the name of the submission process based on the entity type of this collections
-        if (!entityTypeToSubmissionConfig.isEmpty()) {
-            String entityType = collectionService.getMetadataFirstValue(collection, "dspace", "entity", "type",
-                                                                        Item.ANY);
-            submitName = entityTypeToSubmissionConfig.get(entityType);
-            SubmissionConfig subConfig = getSubmissionConfigByName(submitName);
-            if (subConfig != null) {
-                return subConfig;
-            }
-        }
-
         // get the name of the submission process config for this collection
         submitName = collectionToSubmissionConfig.get(collection.getHandle());
         if (submitName != null) {
@@ -329,10 +318,11 @@ public class SubmissionConfigReader {
             }
         }
 
-        submitName = collService.getMetadataFirstValue(collection, "dspace", "entity", "type", null);
+        // get entity-type based configuration
+        submitName = getEntityTypeSubmission(collection, collService);
         if (submitName != null) {
             try {
-                SubmissionConfig subConfig = getSubmissionConfigByName(submitName.toLowerCase());
+                SubmissionConfig subConfig = getSubmissionConfigByName(submitName);
                 if (subConfig != null) {
                     return subConfig;
                 }
@@ -355,14 +345,34 @@ public class SubmissionConfigReader {
     }
 
     /**
+     * Returns the submission name for the given collection based on the entity type.
+     * It checks for the {@code collection-entity-type} configuration (standard DSpace), otherwise defaults to the
+     * {@code entityType} in lowercase (standard CRIS).
+     *
+     * @param collection Collection of which check the submission configuration
+     * @param collService CollectionService
+     * @return Submission Definition found.
+     */
+    private String getEntityTypeSubmission(Collection collection, CollectionService collService) {
+        String submitName = null;
+        String entityType = collService.getMetadataFirstValue(collection, "dspace", "entity", "type", Item.ANY);
+        if (entityType != null) {
+            // collection-entity-type configuration (DSpace configuration)
+            submitName = Optional.ofNullable(entityTypeToSubmissionConfig.get(entityType))
+                                 // entity-type lowercase configuration (CRIS configuration)
+                                 .orElseGet(entityType::toLowerCase);
+        }
+        return submitName;
+    }
+
+    /**
      * Returns the Item Submission process config
      *
      * @param submitName submission process unique name
      * @return the SubmissionConfig representing the item submission config
      */
     public SubmissionConfig getSubmissionConfigByName(String submitName) {
-        log.debug("Loading submission process config named '" + submitName
-                      + "'");
+        log.debug("Loading submission process config named '" + submitName + "'");
 
         // check mini-cache, and return if match
         if (lastSubmissionConfig != null
@@ -385,8 +395,8 @@ public class SubmissionConfigReader {
         log.debug("Submission process config '" + submitName
                       + "' not in cache. Reloading from scratch.");
 
-        lastSubmissionConfig = new SubmissionConfig(StringUtils.equals(getDefaultSubmissionConfigName(), submitName),
-                                                    submitName, steps);
+        lastSubmissionConfig =
+            new SubmissionConfig(StringUtils.equals(getDefaultSubmissionConfigName(), submitName), submitName, steps);
 
         log.debug("Submission process config has "
                       + lastSubmissionConfig.getNumberOfSteps() + " steps listed.");
@@ -500,7 +510,7 @@ public class SubmissionConfigReader {
                 if (id != null) {
                     collectionToSubmissionConfig.put(id, value);
                 } else {
-                    collectionToSubmissionConfig.putIfAbsent(entityType, value);
+                    entityTypeToSubmissionConfig.putIfAbsent(entityType, value);
                 }
             } // ignore any child node that isn't a "name-map"
         }
