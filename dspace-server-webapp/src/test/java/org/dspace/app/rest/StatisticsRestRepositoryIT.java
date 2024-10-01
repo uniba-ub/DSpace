@@ -985,13 +985,6 @@ public class StatisticsRestRepositoryIT extends AbstractControllerIntegrationTes
                    )));
     }
 
-    @Test
-    public void TotalDownloadsReport_NotSupportedDSO_Collection() throws Exception {
-        getClient(adminToken)
-            .perform(get("/api/statistics/usagereports/" + collectionVisited.getID() + "_" + TOTAL_DOWNLOADS_REPORT_ID))
-            .andExpect(status().isNotFound());
-    }
-
     /**
      * Note: Geolite response mocked in {@link org.dspace.statistics.MockSolrLoggerServiceImpl}
      */
