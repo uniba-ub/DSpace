@@ -7,19 +7,33 @@
  */
 package org.dspace.app.rest;
 
+import static org.dspace.app.matcher.ResourcePolicyMatcher.matches;
+import static org.dspace.authorize.ResourcePolicy.TYPE_CUSTOM;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.Map;
+import java.util.UUID;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.dspace.app.rest.test.AbstractControllerIntegrationTest;
+import org.dspace.authorize.ResourcePolicy;
+import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.builder.CollectionBuilder;
 import org.dspace.builder.CommunityBuilder;
+import org.dspace.content.Bitstream;
 import org.dspace.content.Collection;
+import org.dspace.content.service.BitstreamService;
+import org.dspace.core.Constants;
+import org.dspace.eperson.Group;
+import org.dspace.eperson.service.GroupService;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.web.servlet.MvcResult;
@@ -32,6 +46,15 @@ public class CollectionLogoControllerIT extends AbstractControllerIntegrationTes
     private String bitstreamContent;
     private MockMultipartFile bitstreamFile;
     private Collection childCollection;
+
+    @Autowired
+    private GroupService groupService;
+
+    @Autowired
+    private AuthorizeService authorizeService;
+
+    @Autowired
+    private BitstreamService bitstreamService;
 
     @Before
     public void createStructure() throws Exception {
@@ -140,6 +163,37 @@ public class CollectionLogoControllerIT extends AbstractControllerIntegrationTes
         String userToken = getAuthToken(eperson.getEmail(), password);
         getClient(userToken).perform(delete(getBitstreamUrlTemplate(postUuid)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    public void collectionLogoPoliciesTest() throws Exception {
+        context.turnOffAuthorisationSystem();
+        Group group = groupService.findByName(context, Group.ANONYMOUS);
+        authorizeService.removeAllPolicies(context, childCollection);
+        authorizeService.addPolicy(context, childCollection, Constants.READ, group, ResourcePolicy.TYPE_CUSTOM);
+        authorizeService.addPolicy(context, childCollection, Constants.WRITE, group, ResourcePolicy.TYPE_CUSTOM);
+        context.commit();
+        context.restoreAuthSystemState();
+
+        String postUuid = createLogoInternal();
+        assert (postUuid != null);
+
+        childCollection = context.reloadEntity(childCollection);
+
+        assertThat(childCollection.getResourcePolicies(), hasSize(2));
+        assertThat(childCollection.getResourcePolicies(), Matchers.hasItems(
+                matches(Constants.READ, group, TYPE_CUSTOM),
+                matches(Constants.WRITE, group, TYPE_CUSTOM)
+        ));
+
+        Bitstream logo = bitstreamService.find(context, UUID.fromString(postUuid));
+
+        // logo polices are equal to parent collection polices
+        assertThat(logo.getResourcePolicies(), hasSize(2));
+        assertThat(logo.getResourcePolicies(), Matchers.hasItems(
+                matches(Constants.READ, group, TYPE_CUSTOM),
+                matches(Constants.WRITE, group, TYPE_CUSTOM)
+        ));
     }
 
     private String getLogoUrlTemplate(String uuid) {
