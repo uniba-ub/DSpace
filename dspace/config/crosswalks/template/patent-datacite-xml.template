@@ -51,6 +51,12 @@
   <resourceType resourceTypeGeneral="@virtual.mapConverter.type2datacite.dc-type@">
   @virtual.mapConverter.type2datacitelabel.dc-type@
   </resourceType>
+  @if.metadata.dc-type.end@
+  @if.not.metadata.dc-type.start@
+  <resourceType resourceTypeGeneral="Other">
+    Unknown
+  </resourceType>
+  @if.not.metadata.dc-type.end@
   <alternateIdentifiers>
     <alternateIdentifier alternateIdentifierType="url">@dc.identifier.uri@</alternateIdentifier>
     <alternateIdentifier alternateIdentifierType="doi">@virtual.alternative-doi.dc-identifier-doi@</alternateIdentifier>
