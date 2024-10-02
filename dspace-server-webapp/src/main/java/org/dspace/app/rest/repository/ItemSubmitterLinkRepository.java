@@ -27,7 +27,7 @@ import org.springframework.stereotype.Component;
 /**
  * Link repository for "submitter" subresource of an item.
  */
-@Component(ItemRest.CATEGORY + "." + ItemRest.PLURAL_NAME + "." + ItemRest.SUBMITTER)
+@Component(ItemRest.CATEGORY + "." + ItemRest.NAME + "." + ItemRest.SUBMITTER)
 public class ItemSubmitterLinkRepository extends AbstractDSpaceRestRepository
         implements LinkRestRepository {
 
