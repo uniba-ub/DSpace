@@ -14,23 +14,24 @@ import org.dspace.app.rest.RestResourceController;
  *
  * @author Andrea Bollini (andrea.bollini at 4science.it)
  */
+@SuppressWarnings("checkstyle:Indentation")
 @LinksRest(links = {
-    @LinkRest(
-        name = WorkspaceItemRest.SUPERVISION_ORDERS,
-        method = "getSupervisionOrders"
-    ),
-    @LinkRest(
-        name = WorkspaceItemRest.SUBMITTER,
-        method = "getWorkspaceItemSubmitter"
-    ),
-    @LinkRest(
-        name = WorkspaceItemRest.ITEM,
-        method = "getWorkspaceItemItem"
-    ),
-    @LinkRest(
-        name = WorkspaceItemRest.COLLECTION,
-        method = "getWorkspaceItemCollection"
-    )
+        @LinkRest(
+            name = WorkspaceItemRest.SUPERVISION_ORDERS,
+            method = "getSupervisionOrders"
+        ),
+        @LinkRest(
+            name = WorkspaceItemRest.SUBMITTER,
+            method = "getWorkspaceItemSubmitter"
+        ),
+        @LinkRest(
+            name = WorkspaceItemRest.ITEM,
+            method = "getWorkspaceItemItem"
+        ),
+        @LinkRest(
+            name = WorkspaceItemRest.COLLECTION,
+            method = "getWorkspaceItemCollection"
+        )
 })
 public class WorkspaceItemRest extends AInprogressSubmissionRest<Integer> {
     public static final String NAME = "workspaceitem";

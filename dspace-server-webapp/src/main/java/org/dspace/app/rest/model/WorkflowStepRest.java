@@ -21,7 +21,7 @@ import org.dspace.app.rest.RestResourceController;
     @LinkRest(
         name = WorkflowStepRest.ACTIONS,
         method = "getActions"
-    ),
+    )
 })
 public class WorkflowStepRest extends BaseObjectRest {
 

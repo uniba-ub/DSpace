@@ -46,13 +46,14 @@ import org.hibernate.annotations.CacheConcurrencyStrategy;
     @NamedAttributeNode(value = "rows", subgraph = "CrisLayoutTab.cells_and_content"),
     @NamedAttributeNode(value = "entity")
     }, subgraphs = {
-    @NamedSubgraph(name = "CrisLayoutTab.cells_and_content", attributeNodes = {
-        @NamedAttributeNode(value = "cells", subgraph = "CrisLayoutTab.boxes_and_content")
-    }),
-    @NamedSubgraph(name = "CrisLayoutTab.boxes_and_content", attributeNodes = {
-        @NamedAttributeNode(value = "boxes")
-    })
-})
+        @NamedSubgraph(name = "CrisLayoutTab.cells_and_content", attributeNodes = {
+            @NamedAttributeNode(value = "cells", subgraph = "CrisLayoutTab.boxes_and_content")
+        }),
+        @NamedSubgraph(name = "CrisLayoutTab.boxes_and_content", attributeNodes = {
+            @NamedAttributeNode(value = "boxes")
+        })
+    }
+)
 public class CrisLayoutTab implements ReloadableEntity<Integer> {
 
     public static final String ROWS_AND_CONTENT_GRAPH = "CrisLayoutTab.rows_and_content";

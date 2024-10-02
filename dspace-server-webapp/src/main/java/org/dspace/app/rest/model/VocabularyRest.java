@@ -19,7 +19,7 @@ import org.dspace.app.rest.RestResourceController;
 @LinksRest(links = {
     @LinkRest(name = VocabularyRest.ENTRIES,
             method = "filter"
-    ),
+    )
 })
 public class VocabularyRest extends BaseObjectRest<String> {
 
