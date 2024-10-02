@@ -49,15 +49,6 @@
     <subject>@dc.subject@</subject>
   </subjects>
   @if.metadata.dc-subject.end@
-  @if.metadata.unibe-contributor-corresponding.start@
-  <contributors>
-        @group.unibe-contributor-corresponding.start@
-        <contributor contributorType="Other">
-            <contributorName>@unibe.contributor.corresponding@</contributorName>
-        </contributor>
-        @group.unibe-contributor-corresponding.end@
-  </contributors>
-  @if.metadata.unibe-contributor-corresponding.end@
   <dates>
     <date dateType="Issued">@dc.date.issued@</date>
     @if.metadata.datacite-available.start@
