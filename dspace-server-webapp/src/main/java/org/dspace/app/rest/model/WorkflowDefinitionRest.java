@@ -17,7 +17,8 @@ import org.dspace.app.rest.RestResourceController;
  *
  * @author Maria Verdonck (Atmire) on 11/12/2019
  */
-@LinksRest(links = {
+@LinksRest(links =
+    {
         @LinkRest(
             name = WorkflowDefinitionRest.COLLECTIONS_MAPPED_TO,
             method = "getCollections"
@@ -26,7 +27,8 @@ import org.dspace.app.rest.RestResourceController;
             name = WorkflowDefinitionRest.STEPS,
             method = "getSteps"
         )
-})
+    }
+)
 public class WorkflowDefinitionRest extends BaseObjectRest<String> {
 
     public static final String CATEGORY = RestModel.CONFIGURATION;

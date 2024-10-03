@@ -12,7 +12,8 @@ import org.dspace.app.rest.RestResourceController;
 /**
  * The REST object for the {@link org.dspace.versioning.VersionHistory} object
  */
-@LinksRest(links = {
+@LinksRest(links =
+    {
         @LinkRest(
             name = VersionHistoryRest.VERSIONS,
             method = "getVersions"
@@ -21,7 +22,8 @@ import org.dspace.app.rest.RestResourceController;
             name = VersionHistoryRest.DRAFT_VERSION,
             method = "getDraftVersion"
         )
-})
+    }
+)
 public class VersionHistoryRest extends BaseObjectRest<Integer> {
 
     private static final long serialVersionUID = -6466315011690554740L;
