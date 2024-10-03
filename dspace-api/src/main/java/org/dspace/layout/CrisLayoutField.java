@@ -53,7 +53,7 @@ public class CrisLayoutField implements ReloadableEntity<Integer> {
     private Integer id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "metadata_field_id", nullable = false)
+    @JoinColumn(name = "metadata_field_id")
     private MetadataField metadataField;
 
     @Column(name = "rendering")
