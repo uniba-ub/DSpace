@@ -126,8 +126,7 @@ public class SolrLoggerServiceImplIT
      * @throws IOException passed through.
      */
     @Test
-    public void testMarkRobots()
-            throws SolrServerException, IOException, Exception {
+    public void testMarkRobots() throws Exception {
         System.out.println("markRobots");
 
         EmbeddedSolrClientFactory clientFactory = new EmbeddedSolrClientFactory();
@@ -224,8 +223,7 @@ public class SolrLoggerServiceImplIT
      * @throws IOException passed through.
      */
     @Test
-    public void testDeleteRobots()
-            throws SolrServerException, IOException, Exception {
+    public void testDeleteRobots() throws Exception {
         System.out.println("deleteRobots");
 
         EmbeddedSolrClientFactory clientFactory = new EmbeddedSolrClientFactory();
@@ -289,6 +287,9 @@ public class SolrLoggerServiceImplIT
         // Scan the core for marked robot entries and delete them.
         instance.deleteRobots();
 
+        // forces the commit of deleted documents
+        client.commit(true, true);
+
         // Check that the correct documents (and only those) are gone.
         QueryResponse response = instance.query(Q_ALL, null, null,
                 Integer.MAX_VALUE, -1,
@@ -300,8 +301,7 @@ public class SolrLoggerServiceImplIT
             Object isBotRaw = document.getFieldValue(F_IS_BOT);
             boolean isBot = (null == isBotRaw) ? false : (Boolean) isBotRaw;
 
-            assertEquals("Marked document was not removed --",
-                    false, isBot);
+            assertEquals("Marked document was not removed --", false, isBot);
         }
         assertEquals("Wrong number of documents remaining --", 1, nDocs);
     }
