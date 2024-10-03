@@ -105,6 +105,26 @@ public class SolrDatabaseResyncCli extends DSpaceRunnable<SolrDatabaseResyncCliS
         solrQuery.addFilterQuery(dateRangeFilter);
         solrQuery.addField(SearchUtils.RESOURCE_ID_FIELD);
         solrQuery.addField(SearchUtils.RESOURCE_UNIQUE_ID);
+        solrQuery.setRows(0);
+        QueryResponse response = solrSearchCore.getSolr().query(solrQuery, solrSearchCore.REQUEST_METHOD);
+        if (response != null && response.getResults() != null) {
+            long nrOfPreDBResults = response.getResults().getNumFound();
+            if (nrOfPreDBResults > 0) {
+                logInfoAndOut(nrOfPreDBResults + " items found to process");
+                int batchSize = configurationService.getIntProperty("script.solr-database-resync.batch-size", 100);
+                for (int start = 0; start < nrOfPreDBResults; start += batchSize) {
+                    solrQuery.setStart(start);
+                    solrQuery.setRows(batchSize);
+                    performStatusUpdateOnNextBatch(context, solrQuery);
+                }
+            }
+        }
+
+        indexingService.commit();
+    }
+
+    private void performStatusUpdateOnNextBatch(Context context, SolrQuery solrQuery)
+        throws SolrServerException, IOException, SearchServiceException {
         QueryResponse response = solrSearchCore.getSolr().query(solrQuery, solrSearchCore.REQUEST_METHOD);
 
         if (response != null) {

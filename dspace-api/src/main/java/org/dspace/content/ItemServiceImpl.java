@@ -402,6 +402,55 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     }
 
     @Override
+    public void populateWithTemplateItemMetadata(Context context, Collection collection, boolean template, Item item)
+        throws SQLException {
+
+        Item templateItem = collection.getTemplateItem();
+
+        Optional<MetadataValue> colEntityType = getDSpaceEntityType(collection);
+        Optional<MetadataValue> templateItemEntityType = getDSpaceEntityType(templateItem);
+
+        if (template && colEntityType.isPresent() && templateItemEntityType.isPresent() &&
+            !StringUtils.equals(colEntityType.get().getValue(), templateItemEntityType.get().getValue())) {
+            throw new IllegalStateException("The template item has entity type : (" +
+                templateItemEntityType.get().getValue() + ") different than collection entity type : " +
+                colEntityType.get().getValue());
+        }
+
+        if (template && colEntityType.isPresent() && templateItemEntityType.isEmpty()) {
+            MetadataValue original = colEntityType.get();
+            MetadataField metadataField = original.getMetadataField();
+            MetadataSchema metadataSchema = metadataField.getMetadataSchema();
+            // NOTE: dspace.entity.type = <blank> does not make sense
+            //       the collection entity type is by default blank when a collection is first created
+            if (StringUtils.isNotBlank(original.getValue())) {
+                addMetadata(context, item, metadataSchema.getName(), metadataField.getElement(),
+                    metadataField.getQualifier(), original.getLanguage(), original.getValue());
+            }
+        }
+
+        if (template && (templateItem != null)) {
+            List<MetadataValue> md = getMetadata(templateItem, Item.ANY, Item.ANY, Item.ANY, Item.ANY);
+
+            for (MetadataValue aMd : md) {
+                MetadataField metadataField = aMd.getMetadataField();
+                MetadataSchema metadataSchema = metadataField.getMetadataSchema();
+                addMetadata(context, item, metadataSchema.getName(), metadataField.getElement(),
+                    metadataField.getQualifier(), aMd.getLanguage(), aMd.getValue());
+            }
+        }
+    }
+
+    private Optional<MetadataValue> getDSpaceEntityType(DSpaceObject dSpaceObject) {
+        return Objects.nonNull(dSpaceObject) ? dSpaceObject.getMetadata()
+            .stream()
+            .filter(x -> x.getMetadataField().toString('.')
+                .equalsIgnoreCase("dspace.entity.type"))
+            .findFirst()
+            : Optional.empty();
+    }
+
+    @Override
     public Iterator<Item> findAll(Context context) throws SQLException {
         return itemDAO.findAll(context, true);
     }
@@ -1697,6 +1746,45 @@ prevent the generation of resource policy entry values with null dspace_object a
         }
     }
 
+    /**
+     * Returns an iterator of Items possessing the passed metadata field, or only
+     * those matching the passed value, if value is not Item.ANY
+     *
+     * @param context   DSpace context object
+     * @param schema    metadata field schema
+     * @param element   metadata field element
+     * @param qualifier metadata field qualifier
+     * @param value     field value or Item.ANY to match any value
+     * @return an iterator over the items matching that authority value
+     * @throws SQLException       if database error
+     *                            An exception that provides information on a database access error or other errors.
+     * @throws AuthorizeException if authorization error
+     *                            Exception indicating the current user of the context does not have permission
+     *                            to perform a particular action.
+     * @throws IOException        if IO error
+     *                            A general class of exceptions produced by failed or interrupted I/O operations.
+     */
+    @Override
+    public Iterator<Item> findByMetadataField(Context context,
+                                              String schema, String element, String qualifier, String value)
+        throws SQLException, AuthorizeException, IOException {
+        MetadataSchema mds = metadataSchemaService.find(context, schema);
+        if (mds == null) {
+            throw new IllegalArgumentException("No such metadata schema: " + schema);
+        }
+        MetadataField mdf = metadataFieldService.findByElement(context, mds, element, qualifier);
+        if (mdf == null) {
+            throw new IllegalArgumentException(
+                "No such metadata field: schema=" + schema + ", element=" + element + ", qualifier=" + qualifier);
+        }
+
+        if (Item.ANY.equals(value)) {
+            return itemDAO.findByMetadataField(context, mdf, null, true);
+        }
+        return itemDAO.findByMetadataField(context, mdf, value, true);
+    }
+
+
     @Override
     public Iterator<Item> findByMetadataQuery(Context context, List<List<MetadataField>> listFieldList,
                                               List<String> query_op, List<String> query_val, List<UUID> collectionUuids,
@@ -1854,13 +1942,13 @@ prevent the generation of resource policy entry values with null dspace_object a
 
     @Override
     public int countItems(Context context, Collection collection) throws SQLException {
-        return itemDAO.countItems(context, collection, true, false);
+        return itemDAO.countItems(context, collection, true, false, true);
     }
 
     @Override
     public int countAllItems(Context context, Collection collection) throws SQLException {
-        return itemDAO.countItems(context, collection, true, false) + itemDAO.countItems(context, collection,
-                false, true);
+        return itemDAO.countItems(context, collection, true, false, true) + itemDAO.countItems(context, collection,
+                                                                                         false, true, true);
     }
 
     @Override
@@ -1869,7 +1957,7 @@ prevent the generation of resource policy entry values with null dspace_object a
         List<Collection> collections = communityService.getAllCollections(context, community);
 
         // Now, lets count unique items across that list of collections
-        return itemDAO.countItems(context, collections, true, false);
+        return itemDAO.countItems(context, collections, true, false, true);
     }
 
     @Override
@@ -1878,16 +1966,21 @@ prevent the generation of resource policy entry values with null dspace_object a
         List<Collection> collections = communityService.getAllCollections(context, community);
 
         // Now, lets count unique items across that list of collections
-        return itemDAO.countItems(context, collections, true, false) + itemDAO.countItems(context, collections,
-                false, true);
+        return itemDAO.countItems(context, collections, true, false, true) + itemDAO.countItems(context, collections,
+                                                                                          false, false, true);
     }
 
     @Override
     public Item findByIdOrLegacyId(Context context, String id) throws SQLException {
-        if (StringUtils.isNumeric(id)) {
-            return findByLegacyId(context, Integer.parseInt(id));
-        } else {
-            return find(context, UUID.fromString(id));
+        try {
+            if (StringUtils.isNumeric(id)) {
+                return findByLegacyId(context, Integer.parseInt(id));
+            } else {
+                return find(context, UUID.fromString(id));
+            }
+        } catch (IllegalArgumentException e) {
+            // Not a valid legacy ID or valid UUID
+            return null;
         }
     }
 
@@ -1910,19 +2003,19 @@ prevent the generation of resource policy entry values with null dspace_object a
     @Override
     public int countNotArchivedItems(Context context) throws SQLException {
         // return count of items not in archive and also not withdrawn
-        return itemDAO.countItems(context, false, false);
+        return itemDAO.countItems(context, false, false, true);
     }
 
     @Override
     public int countArchivedItems(Context context) throws SQLException {
         // return count of items in archive and also not withdrawn
-        return itemDAO.countItems(context, true, false);
+        return itemDAO.countItems(context, true, false, true);
     }
 
     @Override
     public int countWithdrawnItems(Context context) throws SQLException {
         // return count of items that are not in archive and withdrawn
-        return itemDAO.countItems(context, false, true);
+        return itemDAO.countItems(context, false, true, true );
     }
 
     @Override
