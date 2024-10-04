@@ -59,7 +59,9 @@ import org.dspace.content.service.ItemService;
 import org.dspace.content.service.MetadataSchemaService;
 import org.dspace.content.service.RelationshipService;
 import org.dspace.content.service.WorkspaceItemService;
+import org.dspace.content.template.TemplateItemValueService;
 import org.dspace.content.virtual.VirtualMetadataPopulator;
+import org.dspace.content.vo.MetadataValueVO;
 import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.core.LogHelper;
@@ -160,6 +162,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
     protected WorkspaceItemService workspaceItemService;
     @Autowired(required = true)
     protected WorkflowItemService workflowItemService;
+    @Autowired
+    private TemplateItemValueService templateItemValueService;
 
     @Autowired(required = true)
     protected RelationshipService relationshipService;
@@ -396,9 +400,8 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
                                               + template.getID()));
 
             return template;
-        } else {
-            return collection.getTemplateItem();
         }
+        return collection.getTemplateItem();
     }
 
     @Override
@@ -435,8 +438,15 @@ public class ItemServiceImpl extends DSpaceObjectServiceImpl<Item> implements It
             for (MetadataValue aMd : md) {
                 MetadataField metadataField = aMd.getMetadataField();
                 MetadataSchema metadataSchema = metadataField.getMetadataSchema();
-                addMetadata(context, item, metadataSchema.getName(), metadataField.getElement(),
-                    metadataField.getQualifier(), aMd.getLanguage(), aMd.getValue());
+                List<MetadataValueVO> metadataValueFromTemplateList = templateItemValueService.value(context, item,
+                        templateItem, aMd);
+
+                for (MetadataValueVO metadataValueFromTemplate : metadataValueFromTemplateList) {
+                    addMetadata(context, item, metadataSchema.getName(), metadataField.getElement(),
+                        metadataField.getQualifier(), aMd.getLanguage(),
+                        metadataValueFromTemplate.getValue(), metadataValueFromTemplate.getAuthority(),
+                        metadataValueFromTemplate.getConfidence());
+                }
             }
         }
     }
