@@ -32,7 +32,7 @@ import org.springframework.stereotype.Component;
 /**
  * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  **/
-@Component(EditItemRest.CATEGORY + "." + EditItemRest.NAME_PLURAL + "." + EditItemRest.ITEM)
+@Component(EditItemRest.CATEGORY + "." + EditItemRest.NAME + "." + EditItemRest.ITEM)
 public class EditItemItemLinkRestRepository extends AbstractDSpaceRestRepository implements LinkRestRepository {
 
     private static final Logger log = LoggerFactory.getLogger(EditItemItemLinkRestRepository.class);
