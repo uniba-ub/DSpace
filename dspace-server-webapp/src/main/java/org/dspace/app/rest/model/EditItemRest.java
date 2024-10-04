@@ -14,20 +14,23 @@ import org.dspace.app.rest.RestResourceController;
  * 
  * @author Danilo Di Nuzzo (danilo.dinuzzo at 4science.it)
  */
-@LinksRest(links = {
-    @LinkRest(
-        name = EditItemRest.MODE,
-        method = "getModes"
-    ),
-    @LinkRest(
-        name = EditItemRest.ITEM,
-        method = "getEditItemItem"
-    )
-})
+@LinksRest(links =
+    {
+        @LinkRest(
+            name = EditItemRest.MODE,
+            method = "getModes"
+        ),
+        @LinkRest(
+            name = EditItemRest.ITEM,
+            method = "getEditItemItem"
+        )
+    }
+)
 public class EditItemRest extends AInprogressSubmissionRest<String> {
 
     private static final long serialVersionUID = 964876735342568998L;
     public static final String NAME = "edititem";
+    public static final String NAME_PLURAL = "edititems";
     public static final String MODE = "modes";
     public static final String CATEGORY = RestAddressableModel.CORE;
 
