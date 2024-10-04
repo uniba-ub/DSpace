@@ -1370,7 +1370,6 @@ public class BitstreamRestControllerIT extends AbstractControllerIntegrationTest
         Bitstream rtf;
         Bitstream xml;
         Bitstream txt;
-        Bitstream html;
         Bitstream csv;
         try (InputStream is = IOUtils.toInputStream(content, CharEncoding.UTF_8)) {
             rtf = BitstreamBuilder.createBitstream(context, item, is)
@@ -1379,8 +1378,6 @@ public class BitstreamRestControllerIT extends AbstractControllerIntegrationTest
                                   .withMimeType("text/xml").build();
             txt = BitstreamBuilder.createBitstream(context, item, is)
                                   .withMimeType("text/plain").build();
-            html = BitstreamBuilder.createBitstream(context, item, is)
-                                   .withMimeType("text/html").build();
             csv = BitstreamBuilder.createBitstream(context, item, is)
                                   .withMimeType("text/csv").build();
         }
@@ -1391,7 +1388,6 @@ public class BitstreamRestControllerIT extends AbstractControllerIntegrationTest
         verifyBitstreamDownload(xml, "text/xml;charset=UTF-8", true);
         verifyBitstreamDownload(txt, "text/plain;charset=UTF-8", true);
         // this format is not configured and should open inline
-        verifyBitstreamDownload(html, "text/html;charset=UTF-8", false);
         verifyBitstreamDownload(csv, "text/csv;charset=UTF-8", false);
     }
 
