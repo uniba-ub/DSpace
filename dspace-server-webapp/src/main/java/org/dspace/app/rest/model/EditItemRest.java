@@ -23,6 +23,10 @@ import org.dspace.app.rest.RestResourceController;
         @LinkRest(
             name = EditItemRest.ITEM,
             method = "getEditItemItem"
+        ),
+        @LinkRest(
+            name = EditItemRest.COLLECTION,
+            method = "getEditItemCollection"
         )
     }
 )
@@ -35,6 +39,7 @@ public class EditItemRest extends AInprogressSubmissionRest<String> {
     public static final String CATEGORY = RestAddressableModel.CORE;
 
     public static final String ITEM = "item";
+    public static final String COLLECTION = "collection";
 
     @Override
     public String getCategory() {
