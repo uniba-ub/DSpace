@@ -35,7 +35,6 @@ import org.dspace.authorize.AuthorizeException;
 import org.dspace.authorize.ResourcePolicy;
 import org.dspace.authorize.service.AuthorizeService;
 import org.dspace.authorize.service.ResourcePolicyService;
-import org.dspace.browse.ItemCountException;
 import org.dspace.browse.ItemCounter;
 import org.dspace.content.dao.CollectionDAO;
 import org.dspace.content.service.BitstreamService;
@@ -135,6 +134,9 @@ public class CollectionServiceImpl extends DSpaceObjectServiceImpl<Collection> i
 
     @Autowired(required = true)
     protected WorkflowItemService<?> workflowItemService;
+
+    @Autowired
+    protected ItemCounter itemCounter;
 
     protected CollectionServiceImpl() {
         super();
@@ -908,10 +910,15 @@ public class CollectionServiceImpl extends DSpaceObjectServiceImpl<Collection> i
 
     @Override
     public Collection findByIdOrLegacyId(Context context, String id) throws SQLException {
-        if (StringUtils.isNumeric(id)) {
-            return findByLegacyId(context, Integer.parseInt(id));
-        } else {
-            return find(context, UUID.fromString(id));
+        try {
+            if (StringUtils.isNumeric(id)) {
+                return findByLegacyId(context, Integer.parseInt(id));
+            } else {
+                return find(context, UUID.fromString(id));
+            }
+        } catch (IllegalArgumentException e) {
+            // Not a valid legacy ID or valid UUID
+            return null;
         }
     }
 
@@ -1241,13 +1248,13 @@ public class CollectionServiceImpl extends DSpaceObjectServiceImpl<Collection> i
     /**
      * Returns total collection archived items
      *
+     * @param context          DSpace Context
      * @param collection       Collection
      * @return                 total collection archived items
-     * @throws ItemCountException
      */
     @Override
-    public int countArchivedItems(Collection collection) throws ItemCountException {
-        return ItemCounter.getInstance().getCount(collection);
+    public int countArchivedItems(Context context, Collection collection) {
+        return itemCounter.getCount(context, collection);
     }
 
     @Override
