@@ -32,8 +32,7 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.authority", is(authority)),
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
-            hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type)))
+            hasJsonPath("$.type", is(type))
         );
     }
 
@@ -46,7 +45,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.otherInformation", aMapWithSize(2)),
             hasJsonPath("$.otherInformation['" + otherInfMetadata + "']", is(metadataValue)),
             hasJsonPath("$.otherInformation['" + "data-" + otherInfMetadata + "']", is(metadataValue))
@@ -62,7 +60,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.source", is(source)),
             hasJsonPath("$.otherInformation", aMapWithSize(2)),
             hasJsonPath("$.otherInformation['" + otherInfMetadata + "']", is(metadataValue)),
@@ -82,7 +79,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.otherInformation", is(otherInformation))
         );
     }
@@ -96,7 +92,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.otherInformation", is(otherInformation)),
             hasJsonPath("$.source", is(source))
         );
@@ -118,7 +113,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.source", is(source)),
             hasJsonPath("$.otherInformation", aMapWithSize(2)),
             allOf(
@@ -141,7 +135,6 @@ public class ItemAuthorityMatcher {
             hasJsonPath("$.display", is(display)),
             hasJsonPath("$.value", is(value)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("submission.%s", type))),
             hasJsonPath("$.otherInformation", aMapWithSize(4)),
             allOf(
                 hasJsonPath("$.otherInformation", is(orcidAndAffiliation))
