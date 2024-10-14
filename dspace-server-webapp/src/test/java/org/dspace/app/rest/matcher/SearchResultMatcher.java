@@ -27,7 +27,7 @@ public class SearchResultMatcher {
             hasJsonPath("$._links.indexableObject.href", containsString("/api/" + category + "/" + typePlural)),
             hasJsonPath("$._embedded", notNullValue()),
             hasJsonPath("$._embedded.indexableObject", is(
-                matchEmbeddedObject(type)
+                matchEmbeddedObject(category, type)
             ))
         );
     }
@@ -39,7 +39,7 @@ public class SearchResultMatcher {
         );
     }
 
-    private static Matcher<? super Object> matchEmbeddedObject(String type) {
+    private static Matcher<? super Object> matchEmbeddedObject(String category, String type) {
         return allOf(
             Matchers.anyOf(
                 allOf(
@@ -49,7 +49,7 @@ public class SearchResultMatcher {
                 hasJsonPath("$.id", notNullValue())
             ),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is("discover.discover"))
+            hasJsonPath("$.uniqueType", is(String.format("%s.%s", category, type)))
         );
     }
 
@@ -92,12 +92,12 @@ public class SearchResultMatcher {
 
     public static Matcher<? super Object> matchEmbeddedFacetValues(String label, int count,
                                                                    String type,
-                                                                   String search_href) {
+                                                                   String search_href, String category) {
         return allOf(
             hasJsonPath("$.label", is(label)),
             hasJsonPath("$.count", is(count)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("discover.%s",type))),
+            hasJsonPath("$.uniqueType", is(String.format("%s.%s", category, type))),
             hasJsonPath("$._links.search.href", containsString(search_href))
         );
     }
