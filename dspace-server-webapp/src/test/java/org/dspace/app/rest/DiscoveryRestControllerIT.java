@@ -760,7 +760,7 @@ public class DiscoveryRestControllerIT extends AbstractControllerIntegrationTest
                 .andExpect(status().isUnprocessableEntity());
 
         getClient().perform(get("/api/discover/facets/author_editor").param("query", "title:"))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isBadRequest());
     }
 
     @Test
