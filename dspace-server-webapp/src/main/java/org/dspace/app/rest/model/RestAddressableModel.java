@@ -46,7 +46,6 @@ public abstract class RestAddressableModel implements RestModel {
         this.projection = projection;
     }
 
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     /**
      * 
      * @return an unique string useful to unambiguously identify the type of rest
@@ -54,6 +53,7 @@ public abstract class RestAddressableModel implements RestModel {
      *         singular form. Examples include core.item, core.community,
      *         submission.workspaceitem, etc.
      */
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     public String getUniqueType() {
         return getCategory() + "." + getType();
     }
