@@ -70,7 +70,7 @@ public class SearchResultMatcher {
             hasJsonPath("$.uuid", notNullValue()),
             hasJsonPath("$.name", is(itemName)),
             hasJsonPath("$.type", is(type)),
-            hasJsonPath("$.uniqueType", is(String.format("discover.%s",type)))
+            hasJsonPath("$.uniqueType", is(String.format("core.%s",type)))
         );
     }
 
