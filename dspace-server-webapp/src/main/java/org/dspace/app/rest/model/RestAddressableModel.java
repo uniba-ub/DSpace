@@ -8,6 +8,7 @@
 package org.dspace.app.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import org.dspace.app.rest.projection.Projection;
 
 /**
@@ -45,7 +46,7 @@ public abstract class RestAddressableModel implements RestModel {
         this.projection = projection;
     }
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     /**
      * 
      * @return an unique string useful to unambiguously identify the type of rest
