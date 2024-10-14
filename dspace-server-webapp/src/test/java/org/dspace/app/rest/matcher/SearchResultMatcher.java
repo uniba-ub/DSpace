@@ -23,6 +23,7 @@ public class SearchResultMatcher {
     public static Matcher<? super Object> match(String category, String type, String typePlural) {
         return allOf(
             hasJsonPath("$.type", is("discover")),
+            hasJsonPath("$.uniqueType", is("discover.discover")),
             hasJsonPath("$._links.indexableObject.href", containsString("/api/" + category + "/" + typePlural)),
             hasJsonPath("$._embedded", notNullValue()),
             hasJsonPath("$._embedded.indexableObject", is(
@@ -33,7 +34,8 @@ public class SearchResultMatcher {
 
     public static Matcher<? super Object> match() {
         return allOf(
-            hasJsonPath("$.type", is("discover"))
+            hasJsonPath("$.type", is("discover")),
+            hasJsonPath("$.uniqueType", is("discover.discover"))
         );
     }
 
@@ -46,13 +48,15 @@ public class SearchResultMatcher {
                 ),
                 hasJsonPath("$.id", notNullValue())
             ),
-            hasJsonPath("$.type", is(type))
+            hasJsonPath("$.type", is(type)),
+            hasJsonPath("$.uniqueType", is("discover.discover"))
         );
     }
 
     public static Matcher<? super Object> matchOnItemName(String type, String typePlural, String itemName) {
         return allOf(
             hasJsonPath("$.type", is("discover")),
+            hasJsonPath("$.uniqueType", is("discover.discover")),
             hasJsonPath("$._links.indexableObject.href", containsString("/api/core/" + typePlural)),
             hasJsonPath("$._embedded", notNullValue()),
             hasJsonPath("$._embedded.indexableObject", is(
@@ -65,7 +69,8 @@ public class SearchResultMatcher {
         return allOf(
             hasJsonPath("$.uuid", notNullValue()),
             hasJsonPath("$.name", is(itemName)),
-            hasJsonPath("$.type", is(type))
+            hasJsonPath("$.type", is(type)),
+            hasJsonPath("$.uniqueType", is(String.format("discover.%s",type)))
         );
     }
 
@@ -74,6 +79,7 @@ public class SearchResultMatcher {
                                                                          String expectedFieldInHitHighlightning) {
         return allOf(
             hasJsonPath("$.type", is("discover")),
+            hasJsonPath("$.uniqueType", is("discover.discover")),
             hasJsonPath("$.hitHighlights", is(
                 HitHighlightMatcher.entry(hitHighlightQuery, expectedFieldInHitHighlightning))),
             hasJsonPath("$._links.indexableObject.href", containsString("/api/core/" + typePlural)),
@@ -91,6 +97,7 @@ public class SearchResultMatcher {
             hasJsonPath("$.label", is(label)),
             hasJsonPath("$.count", is(count)),
             hasJsonPath("$.type", is(type)),
+            hasJsonPath("$.uniqueType", is(String.format("discover.%s",type))),
             hasJsonPath("$._links.search.href", containsString(search_href))
         );
     }
