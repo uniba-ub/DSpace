@@ -22,7 +22,7 @@ import org.springframework.stereotype.Component;
  *
  * @author Vincenzo Mecca (vins01-4science - vincenzo.mecca at 4science.com)
  **/
-@Component(EditItemRest.CATEGORY + "." + EditItemRest.NAME + "." + EditItemRest.ITEM)
+@Component(EditItemRest.CATEGORY + "." + EditItemRest.NAME_PLURAL + "." + EditItemRest.ITEM)
 public class EditItemItemLinkRestRepository extends AbstractEditItemLinkRestRepository implements LinkRestRepository {
 
     /**
