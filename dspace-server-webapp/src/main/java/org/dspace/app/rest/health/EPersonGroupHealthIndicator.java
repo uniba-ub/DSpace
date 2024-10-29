@@ -1,6 +1,13 @@
 package org.dspace.app.rest.health;
 
-import org.apache.commons.lang3.NotImplementedException;
+import java.sql.SQLException;
+import java.util.Map;
+
+import org.dspace.core.Context;
+import org.dspace.eperson.Group;
+import org.dspace.eperson.service.GroupService;
+import org.dspace.web.ContextUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.actuate.health.AbstractHealthIndicator;
 import org.springframework.boot.actuate.health.Health;
 import org.springframework.boot.actuate.health.HealthIndicator;
@@ -16,9 +23,30 @@ import org.springframework.boot.actuate.health.HealthIndicator;
  */
 public class EPersonGroupHealthIndicator extends AbstractHealthIndicator {
 
+    @Autowired
+    private GroupService groupService;
+
+    private static final Map<Map<Boolean, Boolean>, String> ERROR_MESSAGES = Map.of(
+        Map.of(false, false), "Both 'Anonymous' and 'Administrators' groups are missing",
+        Map.of(true, false), "The 'Administrators' group is missing",
+        Map.of(false, true), "The 'Anonymous' group is missing"
+    );
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {
-        throw new NotImplementedException();
+        Context context = ContextUtil.obtainCurrentRequestContext();
+        try {
+            boolean hasAnonymous = groupService.findByName(context, Group.ANONYMOUS) != null;
+            boolean hasAdministrators = groupService.findByName(context, Group.ADMIN) != null;
+
+            if (hasAnonymous && hasAdministrators) {
+                builder.up();
+            } else {
+                builder.down()
+                       .withDetail("error", ERROR_MESSAGES.get(Map.of(hasAnonymous, hasAdministrators)));
+            }
+        } catch (SQLException e) {
+            builder.down(e);
+        }
     }
 }
