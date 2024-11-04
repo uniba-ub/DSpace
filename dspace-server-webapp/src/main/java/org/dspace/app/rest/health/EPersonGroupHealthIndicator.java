@@ -30,14 +30,13 @@ import org.springframework.boot.actuate.health.HealthIndicator;
  */
 public class EPersonGroupHealthIndicator extends AbstractHealthIndicator {
 
-    @Autowired
-    private GroupService groupService;
-
     private static final Map<Map<Boolean, Boolean>, String> ERROR_MESSAGES = Map.of(
         Map.of(false, false), "Both 'Anonymous' and 'Administrators' groups are missing",
         Map.of(true, false), "The 'Administrators' group is missing",
         Map.of(false, true), "The 'Anonymous' group is missing"
     );
+    @Autowired
+    private GroupService groupService;
 
     @Override
     protected void doHealthCheck(Health.Builder builder) throws Exception {

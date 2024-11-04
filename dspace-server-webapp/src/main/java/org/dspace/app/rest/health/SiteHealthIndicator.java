@@ -25,7 +25,6 @@ import org.springframework.boot.actuate.health.HealthIndicator;
  * has exactly one row.
  *
  * @author Adamo Fapohunda (adamo.fapohunda at 4science.com)
- *
  */
 public class SiteHealthIndicator extends AbstractHealthIndicator {
 

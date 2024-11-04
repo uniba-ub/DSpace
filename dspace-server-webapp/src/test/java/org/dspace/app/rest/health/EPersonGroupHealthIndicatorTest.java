@@ -16,11 +16,8 @@ import java.util.Collections;
 import java.util.Map;
 
 import org.dspace.AbstractUnitTest;
-import org.dspace.builder.GroupBuilder;
 import org.dspace.eperson.Group;
 import org.dspace.eperson.service.GroupService;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -31,43 +28,21 @@ import org.springframework.boot.actuate.health.Status;
  * Unit tests for {@link EPersonGroupHealthIndicator}.
  *
  * @author Adamo Fapohunda (adamo.fapohunda at 4science.com)
- *
  */
 public class EPersonGroupHealthIndicatorTest extends AbstractUnitTest {
 
     @Mock
     private GroupService groupService;
 
+    @Mock
+    private Group anonymousGroup;
+
+    @Mock
+    private Group administratorsGroup;
+
     @InjectMocks
     private EPersonGroupHealthIndicator ePersonGroupHealthIndicator;
 
-    private Group anonymousGroup;
-    private Group administratorsGroup;
-
-    @Before
-    public void setup() throws SQLException {
-        super.init();
-        GroupBuilder.init();
-        context.turnOffAuthorisationSystem();
-
-        // Use GroupBuilder to create the necessary groups
-        anonymousGroup = GroupBuilder.createGroup(context)
-                                     .withName("Anonymous")
-                                     .build();
-
-        administratorsGroup = GroupBuilder.createGroup(context)
-                                          .withName("Administrators")
-                                          .build();
-
-        context.restoreAuthSystemState();
-    }
-
-    @After
-    public void cleanup() throws Exception {
-        // Cleanup groups created by GroupBuilder after each test
-        groupService.delete(context, anonymousGroup);
-        groupService.delete(context, administratorsGroup);
-    }
 
     @Test
     public void testRequiredGroupsExist() throws SQLException {
