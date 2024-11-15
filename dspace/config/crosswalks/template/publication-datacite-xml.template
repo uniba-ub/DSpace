@@ -31,7 +31,7 @@
   @relation.dc-publisher.end@
   >@dc.publisher@</publisher>
   @if.metadata.dc-publisher.end@
-  <publicationYear>@virtual.date.dc-date-issued.YYYY@</publicationYear>
+  <publicationYear>@virtual.date.dc-date-issued.yyyy@</publicationYear>
   @if.metadata.dc-subject.start@
   <subjects>
     <subject>@dc.subject@</subject>

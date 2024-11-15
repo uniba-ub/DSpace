@@ -16,7 +16,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  *
  * @author Andrea Bollini (andrea.bollini at 4science.it)
  */
-@LinksRest(links = {
+@LinksRest(links =
+    {
         @LinkRest(
                 name = ItemRest.ACCESS_STATUS,
                 method = "getAccessStatus"
@@ -57,7 +58,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
             name = ItemRest.THUMBNAIL,
             method = "getThumbnail"
         )
-})
+    }
+)
 public class ItemRest extends DSpaceObjectRest {
     public static final String NAME = "item";
     public static final String PLURAL_NAME = "items";
