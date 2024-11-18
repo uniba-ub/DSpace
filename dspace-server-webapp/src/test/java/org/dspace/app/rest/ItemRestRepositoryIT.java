@@ -329,7 +329,6 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
                    .andExpect(jsonPath("$.page.totalPages", is(2)))
                    .andExpect(jsonPath("$.page.number", is(0)))
                    .andExpect(jsonPath("$.page.totalElements", is(3)));
-        ;
 
         getClient(token).perform(get("/api/core/items")
                    .param("size", "2")
@@ -681,7 +680,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         // is used in the provenance note.
         String token = getAuthToken(admin.getEmail(), password);
 
-        List<Operation> ops = new ArrayList<Operation>();
+        List<Operation> ops = new ArrayList<>();
         ReplaceOperation replaceOperation = new ReplaceOperation("/withdrawn", true);
         ops.add(replaceOperation);
         String patchBody = getPatchContent(ops);
@@ -736,7 +735,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
                                .build();
 
         context.restoreAuthSystemState();
-        List<Operation> ops = new ArrayList<Operation>();
+        List<Operation> ops = new ArrayList<>();
         ReplaceOperation replaceOperation = new ReplaceOperation("/withdrawn", true);
         ops.add(replaceOperation);
         String patchBody = getPatchContent(ops);
@@ -3059,7 +3058,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
                        BitstreamMatcher.matchBitstreamEntryWithoutEmbed(bitstream2.getID(), bitstream2.getSizeBytes())
                    )))
                    .andExpect(jsonPath("$._embedded.owningCollection._embedded.mappedItems." +
-                                           "_embedded.mappedItems[0]_embedded.relationships").doesNotExist())
+                                           "_embedded.mappedItems[0]._embedded.relationships").doesNotExist())
                    .andExpect(jsonPath("$._embedded.owningCollection._embedded.mappedItems" +
                                            "._embedded.mappedItems[0]._embedded.bundles._embedded.bundles[0]." +
                                            "_embedded.primaryBitstream").doesNotExist())
@@ -3137,8 +3136,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         context.restoreAuthSystemState();
 
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
-                             .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                              .withAction(WRITE)
                              .withDspaceObject(item)
                              .build();
@@ -3170,8 +3168,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         context.restoreAuthSystemState();
 
 
-        ResourcePolicyBuilder.createResourcePolicy(context)
-            .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
             .withAction(READ)
             .withDspaceObject(item)
             .build();
@@ -4748,8 +4745,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             Group group = GroupBuilder.createGroup(context).build();
             configurationService.setProperty("edit.metadata.allowed-group", group.getID());
             // add write rights to the user
-            ResourcePolicyBuilder.createResourcePolicy(context)
-                    .withUser(eperson)
+            ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                     .withAction(WRITE)
                     .withDspaceObject(itemService.find(context, UUID.fromString(itemUuidString)))
                     .build();
@@ -4817,8 +4813,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             itemRest.setUuid(itemUuidString);
             itemRest.setHandle(itemHandleString);
             // add write rights to the user
-            ResourcePolicyBuilder.createResourcePolicy(context)
-                    .withUser(eperson)
+            ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                     .withAction(WRITE)
                     .withDspaceObject(itemService.find(context, UUID.fromString(itemUuidString)))
                     .build();
@@ -5123,8 +5118,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
             .withSubject("ExtraEntry")
             .build();
         // add write permission to the user admin
-        ResourcePolicyBuilder.createResourcePolicy(context)
-            .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
             .withAction(WRITE)
             .withDspaceObject(itemService.find(context, item.getID()))
             .build();
@@ -5170,8 +5164,7 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
                 .withSubject("ExtraEntry")
                 .build();
         // add write rights to the user admin
-        ResourcePolicyBuilder.createResourcePolicy(context)
-                .withUser(eperson)
+        ResourcePolicyBuilder.createResourcePolicy(context, eperson, null)
                 .withAction(WRITE)
                 .withDspaceObject(itemService.find(context, item.getID()))
                 .build();
@@ -5289,6 +5282,14 @@ public class ItemRestRepositoryIT extends AbstractControllerIntegrationTest {
         getClient(token).perform(get("/api/core/items/search/findByCustomURL")
             .param("q", UUID.randomUUID().toString()))
             .andExpect(status().isNoContent());
+
+        getClient(token).perform(get("/api/core/items/search/findByCustomURL")
+                .param("q", "http://example.com/sample"))
+                .andExpect(status().isNoContent());
+
+        getClient(token).perform(get("/api/core/items/search/findByCustomURL")
+                .param("q", ""))
+                .andExpect(status().isNoContent());
 
     }
 
