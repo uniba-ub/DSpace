@@ -894,11 +894,11 @@ public class OAIHarvester {
                 for (String server : acceptedHandleServers) {
                     if (urlPieces[2].equals(server)) {
                         if (Arrays.stream(rejectedHandlePrefixes).noneMatch(prefix -> prefix.equals(urlPieces[3]))) {
-                        return urlPieces[3] + "/" + urlPieces[4];
+                            return urlPieces[3] + "/" + urlPieces[4];
+                        }
                     }
                 }
             }
-        }
         }
 
         return null;
