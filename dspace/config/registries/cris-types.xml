@@ -207,6 +207,20 @@
     <dc-type>
         <schema>cris</schema>
         <element>lastimport</element>
+        <qualifier>ads</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
+        <qualifier>loader-ads</qualifier>
+        <scope_note></scope_note>
+    </dc-type>
+
+    <dc-type>
+        <schema>cris</schema>
+        <element>lastimport</element>
         <qualifier>scopus</qualifier>
         <scope_note></scope_note>
     </dc-type>
