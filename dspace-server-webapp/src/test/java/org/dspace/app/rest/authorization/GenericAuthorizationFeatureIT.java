@@ -667,7 +667,7 @@ public class GenericAuthorizationFeatureIT extends AbstractControllerIntegration
         // grant item 1 admin REMOVE permissions on the item’s owning collection
         // verify item 1 admin has this feature on item 1
         context.turnOffAuthorisationSystem();
-        ResourcePolicy removePermission = ResourcePolicyBuilder.createResourcePolicy(context, item1Writer, null)
+        ResourcePolicyBuilder.createResourcePolicy(context, item1Writer, null)
             .withDspaceObject(collectionX)
             .withAction(Constants.REMOVE)
             .build();
@@ -686,7 +686,7 @@ public class GenericAuthorizationFeatureIT extends AbstractControllerIntegration
 
         // grant item 1 write REMOVE permissions on the item’s owning collection
         context.turnOffAuthorisationSystem();
-        ResourcePolicy removePermission = ResourcePolicyBuilder.createResourcePolicy(context, item1Writer, null)
+        ResourcePolicyBuilder.createResourcePolicy(context, item1Writer, null)
             .withDspaceObject(collectionX)
             .withAction(Constants.REMOVE)
             .build();
@@ -1464,4 +1464,3 @@ public class GenericAuthorizationFeatureIT extends AbstractControllerIntegration
             );
     }
 }
-

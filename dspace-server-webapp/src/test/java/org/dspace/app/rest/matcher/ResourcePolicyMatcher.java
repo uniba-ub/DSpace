@@ -42,6 +42,7 @@ public class ResourcePolicyMatcher {
                 hasJsonPath("$.policyType", is(rpType)) :
                 hasNoJsonPath("$.policyType"),
             hasJsonPath("$.type", is("resourcepolicy")),
+            hasJsonPath("$.uniqueType", is("authz.resourcepolicy")),
             hasJsonPath("$._embedded.resource.uuid", is(dso.getID().toString())),
             eperson != null ?
                 hasJsonPath("$._embedded.eperson.id",
@@ -65,6 +66,7 @@ public class ResourcePolicyMatcher {
                         hasJsonPath("$.policyType", is(resourcePolicy.getRpType())) :
                                hasNoJsonPath("$.policyType"),
                 hasJsonPath("$.type", is("resourcepolicy")),
+                hasJsonPath("$.uniqueType", is("authz.resourcepolicy")),
                 hasJsonPath("$._embedded.resource.id", is(resourcePolicy.getdSpaceObject().getID().toString())),
                 resourcePolicy.getEPerson() != null ?
                                hasJsonPath("$._embedded.eperson.id",

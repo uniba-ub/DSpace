@@ -123,6 +123,13 @@ public class SubmissionConfigReader {
     private Map<String, Map<String, String>> stepDefns = null;
 
     /**
+     * Hashmap which stores which submission process configuration is used by
+     * which entityType, computed from the item submission config file
+     * (specifically, the 'submission-map' tag)
+     */
+    private Map<String, String> entityTypeToSubmissionConfig = null;
+
+    /**
      * Reference to the item submission definitions defined in the
      * "submission-definitions" section
      */

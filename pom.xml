@@ -61,7 +61,7 @@
         <jena.version>4.9.0</jena.version>
 
         <!--=== ADDON DEPENDENCIES ===-->
-        <addons.version>[cris-2023.02.06-SNAPSHOT,cris-2023.02.07-SNAPSHOT)</addons.version>
+        <addons.version>[cris-2024.02.00,cris-2024.02.01)</addons.version>
         <addon-iiif.version>${addons.version}</addon-iiif.version>
         <addon-ocr.version>${addons.version}</addon-ocr.version>
         <addon-docviewer.version>${addons.version}</addon-docviewer.version>
@@ -70,7 +70,8 @@
         <addon-networklab.version>${addons.version}</addon-networklab.version>
         <addon-orchestrator.version>${addons.version}</addon-orchestrator.version>
         <addon-loginmiur.version>${addons.version}</addon-loginmiur.version>
-        
+        <addon-importplus.version>${addons.version}</addon-importplus.version>
+
         <!--=== MAVEN SETTINGS ===-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
@@ -1047,6 +1048,23 @@
                     </dependency>
                 </dependencies>
             </dependencyManagement>
+        </profile>
+
+        <profile>
+          <id>addon-importplus</id>
+          <activation>
+            <activeByDefault>false</activeByDefault>
+          </activation>
+          <dependencyManagement>
+            <dependencies>
+              <dependency>
+                <groupId>it.4science.dspace</groupId>
+                <artifactId>addon-importplus</artifactId>
+                <version>${addon-importplus.version}</version>
+                <type>jar</type>
+              </dependency>
+            </dependencies>
+          </dependencyManagement>
         </profile>
 
         <!--
@@ -2154,7 +2172,7 @@
         <connection>scm:git:git@github.com:4Science/DSpace.git</connection>
         <developerConnection>scm:git:git@github.com:4Science/DSpace.git</developerConnection>
         <url>git@github.com:4Science/DSpace.git</url>
-        <tag>dspace-cris-2024.01.00</tag>
+        <tag>dspace-cris-2024.02.00</tag>
     </scm>
 
 

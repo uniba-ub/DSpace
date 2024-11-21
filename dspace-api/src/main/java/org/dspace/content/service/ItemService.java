@@ -761,9 +761,9 @@ public interface ItemService
      * @throws AuthorizeException if authorization error
      * @throws IOException        if IO error
      */
-    Iterator<Item> findByMetadataField(Context context,
-                                              String schema, String element, String qualifier, String value)
-        throws SQLException, AuthorizeException, IOException;
+    Iterator<Item> findByMetadataField(
+        Context context, String schema, String element, String qualifier, String value
+    ) throws SQLException, AuthorizeException, IOException;
 
     /**
      * Returns a list of items that match the given predicates, within the
