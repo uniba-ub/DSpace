@@ -77,8 +77,6 @@ public class IndexClient extends DSpaceRunnable<IndexDiscoveryScriptConfiguratio
          */
 
         Optional<List<IndexableObject>> indexableObjects = Optional.empty();
-        // limit the index update to a specific indexable object type
-        String type = null;
 
         if (indexClientOptions == IndexClientOptions.UPDATE
                 || indexClientOptions == IndexClientOptions.UPDATEANDSPELLCHECK

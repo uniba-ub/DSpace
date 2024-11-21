@@ -105,14 +105,14 @@ public class PublicationLoader extends SolrSuggestionProvider {
      * @throws IOException
      */
     @Override
-    public void importRecords(Context context, Item researcher)
+    public void importRecords(Context context, Item researcher, String additionalQuery)
             throws Exception {
         int offset = 0;
         int limit = 10;
         int loaded = limit;
         List<String> searchValues = searchMetadataValues(researcher);
         while (loaded > 0) {
-            List<ExternalDataObject> metadata = getImportRecords(searchValues, researcher, offset, limit);
+            List<ExternalDataObject> metadata = getImportRecords(searchValues, offset, limit, additionalQuery);
             if (metadata.isEmpty()) {
                 loaded = 0;
                 continue;

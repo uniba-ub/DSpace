@@ -2735,7 +2735,7 @@ public class TaskRestRepositoriesIT extends AbstractControllerIntegrationTest {
 
         getClient(reviewer2Token).perform(patch("/api/workflow/workflowitems/" + witem.getID())
                 .content(patchBody)
-                .contentType(javax.ws.rs.core.MediaType.APPLICATION_JSON_PATCH_JSON))
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON_PATCH_JSON))
                 .andExpect(status().isForbidden());
 
         // try to patch with an unrelated eperson while it is unclaimed
@@ -2896,7 +2896,7 @@ public class TaskRestRepositoriesIT extends AbstractControllerIntegrationTest {
 
         getClient(reviewer1Token).perform(patch("/api/workflow/workflowitems/" + witem.getID())
                 .content(patchBody)
-                .contentType(javax.ws.rs.core.MediaType.APPLICATION_JSON_PATCH_JSON))
+                .contentType(jakarta.ws.rs.core.MediaType.APPLICATION_JSON_PATCH_JSON))
                 .andExpect(status().isForbidden());
 
         getClient(authToken).perform(patch("/api/workflow/workflowitems/" + witem.getID())
