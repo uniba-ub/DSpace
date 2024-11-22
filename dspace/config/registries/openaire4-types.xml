@@ -102,16 +102,4 @@
         <scope_note>The date when the conference took place. This property is considered to be part of the bibliographic citation. Recommended best practice for encoding the date value is defined in a profile of ISO 8601 [W3CDTF] and follows the YYYY-MM-DD format.</scope_note>
     </dc-type>
 
-    <dc-type>
-        <schema>datacite</schema>
-        <element>rights</element>
-        <scope_note>Name of the TYPE_CUSTOM policy for target Bitstream, derived from OpenAIRE Access Rights</scope_note>
-    </dc-type>
-
-    <dc-type>
-        <schema>datacite</schema>
-        <element>available</element>
-        <scope_note>Ending date of the policy for target Bitstream, used with datacite.rights</scope_note>
-    </dc-type>
-
 </dspace-dc-types>
