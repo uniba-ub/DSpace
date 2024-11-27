@@ -275,6 +275,13 @@ public abstract class DSpaceObjectServiceImpl<T extends DSpaceObject> implements
         List<String> values, List<String> authorities, List<Integer> confidences, Supplier<Integer> placeSupplier,
         Integer securityLevel) throws SQLException {
 
+        // Throw an error if we are attempting to add empty values
+        if (values == null || values.isEmpty()) {
+            throw new IllegalArgumentException("Cannot add empty values to a new metadata field " +
+                                                   metadataField.toString() + " on object with uuid = " +
+                                                   dso.getID().toString() + " and type = " + getTypeText(dso));
+        }
+
         Collection collection = getCollection(context, dso);
         boolean authorityControlled = metadataAuthorityService.isAuthorityAllowed(metadataField,
                 dso.getType(), collection);

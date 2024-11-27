@@ -227,7 +227,7 @@ public class ScopusImportMetadataSourceServiceImpl extends AbstractImportMetadat
                     return null;
                 }
             }
-            return null;
+            throw new RuntimeException("APIKEY for Scopus is not set");
         }
     }
 

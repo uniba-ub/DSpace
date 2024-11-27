@@ -248,8 +248,7 @@ public class CommunityServiceImpl extends DSpaceObjectServiceImpl<Community> imp
 
             // now create policy for logo bitstream
             // to match our READ policy
-            List<ResourcePolicy> policies = authorizeService
-                    .getPoliciesActionFilter(context, community, Constants.READ);
+            List<ResourcePolicy> policies = authorizeService.getPolicies(context, community);
             authorizeService.addPolicies(context, policies, newLogo);
 
             log.info(LogHelper.getHeader(context, "set_logo",

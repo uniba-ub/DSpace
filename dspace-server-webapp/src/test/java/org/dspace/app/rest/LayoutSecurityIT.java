@@ -1444,6 +1444,7 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
                              .build();
+
         ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
                             .withDspaceObject(itemA)
                             .withAction(Constants.WRITE)
@@ -1939,6 +1940,7 @@ public class LayoutSecurityIT extends AbstractControllerIntegrationTest {
                              .withDspaceObject(itemA)
                              .withAction(Constants.WRITE)
                              .build();
+
         ResourcePolicyBuilder.createResourcePolicy(context, null, groupA)
                             .withDspaceObject(itemA)
                             .withAction(Constants.WRITE)

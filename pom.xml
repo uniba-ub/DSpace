@@ -25,6 +25,8 @@
         <hibernate.version>6.4.8.Final</hibernate.version>
         <hibernate-validator.version>8.0.1.Final</hibernate-validator.version>
         <postgresql.driver.version>42.7.3</postgresql.driver.version>
+        <!-- update to version 10.11.0 and newer will cause runtime problems due to some
+             graaljs dependency (< 21.2.0) as said here: https://github.com/flyway/flyway/issues/3882 -->
         <flyway.version>10.10.0</flyway.version>
         <solr.client.version>8.11.3</solr.client.version>
 
@@ -70,7 +72,8 @@
         <addon-networklab.version>${addons.version}</addon-networklab.version>
         <addon-orchestrator.version>${addons.version}</addon-orchestrator.version>
         <addon-loginmiur.version>${addons.version}</addon-loginmiur.version>
-        
+        <addon-importplus.version>${addons.version}</addon-importplus.version>
+
         <!--=== MAVEN SETTINGS ===-->
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>${project.build.sourceEncoding}</project.reporting.outputEncoding>
@@ -1061,6 +1064,23 @@
                     </dependency>
                 </dependencies>
             </dependencyManagement>
+        </profile>
+
+        <profile>
+          <id>addon-importplus</id>
+          <activation>
+            <activeByDefault>false</activeByDefault>
+          </activation>
+          <dependencyManagement>
+            <dependencies>
+              <dependency>
+                <groupId>it.4science.dspace</groupId>
+                <artifactId>addon-importplus</artifactId>
+                <version>${addon-importplus.version}</version>
+                <type>jar</type>
+              </dependency>
+            </dependencies>
+          </dependencyManagement>
         </profile>
 
         <!--
@@ -2168,7 +2188,7 @@
         <connection>scm:git:git@github.com:4Science/DSpace.git</connection>
         <developerConnection>scm:git:git@github.com:4Science/DSpace.git</developerConnection>
         <url>git@github.com:4Science/DSpace.git</url>
-        <tag>dspace-cris-2024.01.00</tag>
+        <tag>dspace-cris-2024.02.00</tag>
     </scm>
 
 

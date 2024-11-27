@@ -388,21 +388,39 @@
         
         <!-- Builds LoginMIUR addon for DSpace -->
 	   	<profile>
-			<id>addon-loginmiur</id>
-	         <activation>
-	            <property>
-	               <name>loginmiur.on</name>
-	            </property>
-	         </activation>
-			<dependencies>
-				<dependency>
-					<groupId>it.4science.dspace</groupId>
-					<artifactId>addon-loginmiur-api</artifactId>
-					<version>${addon-loginmiur.version}</version>
-					<type>jar</type>
-				</dependency>
-			</dependencies>
-		</profile>
+        <id>addon-loginmiur</id>
+             <activation>
+                <property>
+                   <name>loginmiur.on</name>
+                </property>
+             </activation>
+        <dependencies>
+          <dependency>
+            <groupId>it.4science.dspace</groupId>
+            <artifactId>addon-loginmiur-api</artifactId>
+            <version>${addon-loginmiur.version}</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
+      </profile>
+
+        <!-- Builds Import Plus addon for DSpace -->
+      <profile>
+        <id>addon-importplus</id>
+             <activation>
+                <property>
+                   <name>importplus.on</name>
+                </property>
+             </activation>
+        <dependencies>
+          <dependency>
+            <groupId>it.4science.dspace</groupId>
+            <artifactId>addon-importplus</artifactId>
+            <version>${addon-importplus.version}</version>
+            <type>jar</type>
+          </dependency>
+        </dependencies>
+      </profile>
     </profiles>
 
 
@@ -700,6 +718,12 @@
             <groupId>org.ehcache</groupId>
             <artifactId>ehcache</artifactId>
             <version>${ehcache.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.glassfish.jaxb</groupId>
+                    <artifactId>jaxb-runtime</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <!-- TEST DEPENDENCIES -->

@@ -385,8 +385,7 @@ public class CollectionServiceImpl extends DSpaceObjectServiceImpl<Collection> i
 
             // now create policy for logo bitstream
             // to match our READ policy
-            List<ResourcePolicy> policies = authorizeService
-                .getPoliciesActionFilter(context, collection, Constants.READ);
+            List<ResourcePolicy> policies = authorizeService.getPolicies(context, collection);
             authorizeService.addPolicies(context, policies, newLogo);
 
             log.info(LogHelper.getHeader(context, "set_logo",

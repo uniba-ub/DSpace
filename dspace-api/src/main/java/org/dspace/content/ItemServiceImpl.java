@@ -1658,8 +1658,8 @@ prevent the generation of resource policy entry values with null dspace_object a
     }
 
     /**
-     * Check whether or not there is already an RP on the given dso, which has actionId={@link Constants.READ} and
-     * resourceTypeId={@link ResourcePolicy.TYPE_CUSTOM}
+     * Check whether or not there is already an RP on the given dso, which has actionId={@link Constants#READ} and
+     * resourceTypeId={@link ResourcePolicy#TYPE_CUSTOM}
      *
      * @param context DSpace context
      * @param dso     DSpace object to check for custom read RP
@@ -1770,6 +1770,7 @@ prevent the generation of resource policy entry values with null dspace_object a
         }
         return itemDAO.findByMetadataField(context, mdf, value);
     }
+
     /**
      * Returns an iterator of Items possessing the passed metadata field, or only
      * those matching the passed value, if value is not Item.ANY
@@ -1808,7 +1809,6 @@ prevent the generation of resource policy entry values with null dspace_object a
         return itemDAO.findByMetadataField(context, mdf, value, true);
     }
 
-
     @Override
     public List<Item> findByMetadataQuery(Context context, List<QueryPredicate> queryPredicates,
             List<UUID> collectionUuids, long offset, int limit)
@@ -1816,7 +1816,6 @@ prevent the generation of resource policy entry values with null dspace_object a
         return itemDAO.findByMetadataQuery(context, queryPredicates, collectionUuids, "value ~ ?",
                 offset, limit);
     }
-
 
     @Override
     public long countForMetadataQuery(Context context, List<QueryPredicate> queryPredicates,
@@ -2178,7 +2177,6 @@ prevent the generation of resource policy entry values with null dspace_object a
     protected void moveSingleMetadataValue(Context context, Item dso, int place, MetadataValue rr) {
         // If this is a (virtual) metadata value representing a relationship,
         // then we must also update the corresponding Relationship with the new place
-        // wut?
         if (rr instanceof RelationshipMetadataValue) {
             try {
                 //Retrieve the applicable relationship
