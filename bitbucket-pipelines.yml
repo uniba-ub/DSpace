@@ -14,6 +14,7 @@ definitions:
           - maven
         script:
           - export MAVEN_OPTS="-Xmx4096M"
+          - export MAVEN_ARGS="-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS"
           - mvn install -B -V -P-assembly -Dtest.argLine=-Xmx4096M -Pcoverage-report -DskipUnitTests=false -Pdspace-rest
         artifacts:
           - dspace-api/target/surefire-reports/*-output.txt
@@ -45,6 +46,7 @@ definitions:
           - maven
         script:
           - export MAVEN_OPTS="-Xmx4096M"
+          - export MAVEN_ARGS="-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS"
           #- ./dspace-api/src/test/data/dspaceFolder/bin/install_grobid.sh
           - mvn clean install -DskipUnitTests=true -Pdspace-rest -DskipITs=true -DskipIntegrationTests=true -P !assembly -B -V
           - mvn test -pl dspace-iiif,dspace-oai,dspace-rdf,dspace-rest,dspace-server-webapp,dspace-services,dspace-sword,dspace-swordv2 -Dmaven.test.skip=false -DskipUnitTests=false -Pdspace-rest -DskipITs=false -Pdspace-rest -DskipIntegrationTests=false -B -V -Dsurefire.rerunFailingTestsCount=2 -Dtest.argLine=-Xmx4096M -DfailIfNoTests=false -Dtest=*IT,!Abstract*,!ItemImportIT,!GenericAuthorizationFeatureIT,!ItemRestRepositoryIT,!LeftTiltedRelationshipRestRepositoryIT,!RelationshipRestRepositoryIT,!StatisticsRestRepositoryIT,!WorkspaceItemRestRepositoryIT,!DiscoveryRestControllerIT,!PatchMetadataIT,!RightTiltedRelationshipRestRepositoryIT
@@ -76,6 +78,7 @@ definitions:
           - maven
         script:
           - export MAVEN_OPTS="-Xmx4096M"
+          - export MAVEN_ARGS="-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS"
           #- ./dspace-api/src/test/data/dspaceFolder/bin/install_grobid.sh
           - mvn clean install -DskipUnitTests=true -Pdspace-rest -DskipITs=true -DskipIntegrationTests=true -P !assembly -B -V
           - mvn test -Dmaven.test.skip=false -DskipUnitTests=false -Pdspace-rest -DskipITs=false -Pdspace-rest -DskipIntegrationTests=false -B -V -Dsurefire.rerunFailingTestsCount=2 -Dtest.argLine=-Xmx4096M -DfailIfNoTests=false -Dtest=ItemImportIT,GenericAuthorizationFeatureIT,ItemRestRepositoryIT,LeftTiltedRelationshipRestRepositoryIT,RelationshipRestRepositoryIT,StatisticsRestRepositoryIT,WorkspaceItemRestRepositoryIT,DiscoveryRestControllerIT,PatchMetadataIT,RightTiltedRelationshipRestRepositoryIT
@@ -107,6 +110,7 @@ definitions:
           - maven
         script:
           - export MAVEN_OPTS="-Xmx4096M"
+          - export MAVEN_ARGS="-Dorg.slf4j.simpleLogger.showDateTime=true -Dorg.slf4j.simpleLogger.dateTimeFormat=HH:mm:ss,SSS"
           - mvn clean install license:check -DskipUnitTests=true -Pdspace-rest -DskipITs=true -DskipIntegrationTests=true -P !assembly -B -V
           - mvn verify -Dmaven.test.skip=false -pl dspace-api -DskipUnitTests=true -Pdspace-rest -DskipITs=false -Pdspace-rest -DskipIntegrationTests=false -P !assembly -B -V -Dsurefire.rerunFailingTestsCount=2 -Dtest.argLine=-Xmx4096M
         artifacts:
