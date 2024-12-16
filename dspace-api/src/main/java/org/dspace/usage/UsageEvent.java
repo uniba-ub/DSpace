@@ -7,6 +7,8 @@
  */
 package org.dspace.usage;
 
+import java.util.UUID;
+
 import jakarta.servlet.http.HttpServletRequest;
 import org.dspace.content.DSpaceObject;
 import org.dspace.content.service.DSpaceObjectService;
@@ -14,7 +16,6 @@ import org.dspace.core.Constants;
 import org.dspace.core.Context;
 import org.dspace.services.model.Event;
 
-import java.util.UUID;
 
 /**
  * @author Mark Diggory (mdiggory at atmire.com)
