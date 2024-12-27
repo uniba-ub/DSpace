@@ -85,25 +85,6 @@ public class RorOrgUnitAuthorityIT extends AbstractControllerIntegrationTest {
     @Test
     public void testAuthority() throws Exception {
 
-        configurationService.setProperty(
-            "plugin.named.org.dspace.content.authority.ChoiceAuthority",
-            new String[] {ROR_ORGUNIT_AUTHORITY}
-        );
-
-        configurationService.setProperty("cris.RorOrgUnitAuthority.country.display", "false");
-        configurationService.setProperty("cris.ItemAuthority.OrgUnitAuthority.source", "ror");
-
-        configurationService.setProperty("choices.plugin.crisrp.qualification", "OrgUnitAuthority");
-        configurationService.setProperty("choices.presentation.crisrp.qualification", "suggest");
-        configurationService.setProperty("authority.controlled.crisrp.qualification", "true");
-
-        configurationService.setProperty("choices.plugin.crisrp.education", "OrgUnitAuthority");
-        configurationService.setProperty("choices.presentation.crisrp.education", "suggest");
-        configurationService.setProperty("authority.controlled.crisrp.education", "true");
-
-        pluginService.clearNamedPluginClasses();
-        choiceAuthorityService.clearCache();
-
         String token = getAuthToken(eperson.getEmail(), password);
         getClient(token).perform(get("/api/submission/vocabularies/OrgUnitAuthority/entries")
                             .param("filter", ROR_FILTER))
