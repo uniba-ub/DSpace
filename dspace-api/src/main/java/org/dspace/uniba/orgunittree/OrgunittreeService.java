@@ -393,13 +393,19 @@ public class OrgunittreeService {
     private OrgunittreeNode reloadItem(OrgunittreeNode node, Context context)  {
         if (node.getItem() != null) {
             try {
-                String handle = node.getItem().getHandle();
-            } catch (Exception e) {
-                try {
-                    node.setItem(itemService.find(context, node.getUuid()));
-                } catch (SQLException ex) {
-                    ex.printStackTrace();
-                }
+                //Reload item / entity.
+                //This avoids problems when the belonging collection item has been changed.
+                Item rel = node.getItem();
+                rel = context.reloadEntity(rel);
+                node.setItem(rel);
+            } catch (SQLException ex) {
+                log.error(ex.getMessage());
+            }
+        } else if (node.getItem() == null && node.getUuid() != null) {
+            try {
+                node.setItem(itemService.find(context, node.getUuid()));
+            } catch (SQLException ex) {
+                ex.printStackTrace();
             }
         }
         return node;
