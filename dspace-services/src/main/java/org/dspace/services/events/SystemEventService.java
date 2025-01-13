@@ -104,9 +104,9 @@ public final class SystemEventService implements EventService {
     }
 
     @Override
-    public void consumeAsyncEvent(Consumer<Consumer<Event>> eventConsumer) {
+    public void scheduleAsyncEventConsumer(Consumer<Consumer<Event>> eventConsumer) {
         initExecutor();
-        eventConsumer.accept(this::fireEvent);
+        this.executorService.submit(() -> eventConsumer.accept(this::fireEvent));
     }
 
     private void initExecutor() {
