@@ -537,7 +537,7 @@ public class DCInputsReader {
                                                        "." + field.get("dc-qualifier") +
                                                        " has no language attribute");
                         } else {
-                            field.put(PAIR_TYPE_NAME, pairTypeName);
+                            field.put("language." + PAIR_TYPE_NAME, pairTypeName);
                         }
                     }
                 } else if (StringUtils.equalsIgnoreCase(tagName, "linked-metadata-field")) {
@@ -594,7 +594,7 @@ public class DCInputsReader {
                                            "." + field.get("dc-qualifier") +
                                            " has no name attribute");
             } else {
-                field.put(PAIR_TYPE_NAME, pairTypeName);
+                field.put(value + "." + PAIR_TYPE_NAME, pairTypeName);
             }
         }
     }
@@ -733,7 +733,7 @@ public class DCInputsReader {
                     if (StringUtils.isNotBlank(type) && (type.equals("dropdown")
                         || type.equals("qualdrop_value")
                         || type.equals("list"))) {
-                        String pairsName = fld.get(PAIR_TYPE_NAME);
+                        String pairsName = fld.get(type + "." + PAIR_TYPE_NAME);
                         List<String> v = valuePairs.get(pairsName);
                         if (v == null) {
                             String errString = "Cannot find value pairs for " + pairsName;
